@@ -1,28 +1,44 @@
 {
   "name": "my-ecommerce-app",
   "version": "1.0.0",
+  "private": true,
   "author": "Charles Stover <with-router@charlesstover.com>",
-  "bugs": {
-    "email": "with-router@charlesstover.com",
-    "url": "https://github.com/CharlesStover/with-router/issues"
-  },
-  "directories": {
-    "lib": "src"
-  },
-  "files": [
-    "index.js",
-    "package.json"
-  ],
+  "description": "E-commerce mobile app with React Native, Expo, GraphQL, MongoDB, and Plop",
   "homepage": "https://github.com/CharlesStover/with-router#readme",
-  "license": "MIT",
   "main": "index.js",
   "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
     "build": "webpack",
-    "dev": "set NODE_ENV=development&& webpack",
+    "dev": "set NODE_ENV=development && webpack",
     "prepublishOnly": "webpack",
-    "test": "echo \"No tests exist.\" && exit 0"
+    "test": "echo \"No tests exist.\" && exit 0",
+    "generate": "plop"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@apollo/client": "^3.12.9",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-navigation/native": "^7.0.15",
+    "@react-navigation/stack": "^7.1.2",
+    "dotenv": "^16.4.7",
+    "expo": "^52.0.31",
+    "expo-status-bar": "^2.0.1",
+    "express": "^4.21.2",
+    "graphql": "^16.10.0",
+    "mongoose": "^7.6.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-native": "^0.76.7",
+    "react-native-gesture-handler": "^2.24.0",
+    "react-native-reanimated": "^3.17.1",
+    "react-native-safe-area-context": "^5.3.0",
+    "react-native-screens": "^4.9.1",
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-web": "^0.19.13",
+    "@expo/metro-runtime": "~4.0.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.1.2",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
@@ -30,10 +46,9 @@
     "@babel/preset-react": "^7.0.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-loader": "^8.0.0-beta.6",
-    "react": "^16.6.0",
+    "plop": "^4.0.1",
     "react-router": "^4.3.1",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2"
-  },
-  "private": true
+  }
 }
