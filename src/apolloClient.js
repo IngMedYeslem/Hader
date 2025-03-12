@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 🔹 Création du lien HTTP pour les requêtes GraphQL
 const httpLink = new HttpLink({
-  uri: "http://192.168.100.121:4000/graphql", // URL de ton serveur GraphQL
+  uri: "http://192.168.0.125:4000/graphql", // URL de ton serveur GraphQL
 });
 
 // 🔹 Ajout de l'authentification avec le token

@@ -29,7 +29,7 @@ function ProductList() {
           <Text style={styles.productName}>{product.name}</Text>
           <Text>Prix: {product.price} €</Text>
           
-         {product.image && <Image source={{ uri: `http://localhost:4000/scan/${product.image}` }} style={styles.productImage} />} 
+         {product.image && <Image source={{ uri: `http://localhost:4000/assets/${product.image}` }} style={styles.productImage} />} 
 
         </View>
       ))}

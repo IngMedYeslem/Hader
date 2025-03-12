@@ -153,13 +153,13 @@ app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
 // ✅ Démarrage du serveur
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://192.168.100.121:${PORT}/playground`));
+app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://192.168.0.125:${PORT}/playground`));
 
 
 const path = require("path");
 
 
-// Servir les images du dossier "scan"
-app.use("/scan", express.static(path.join(__dirname, "scan")));
+// Servir les images du dossier "assets"
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 
