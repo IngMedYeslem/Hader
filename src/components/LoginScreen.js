@@ -47,7 +47,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
       <ImageBackground 
-      source={require('../../assets/background.jpeg')} 
+      source={require('../../assets/background.webp')} 
       style={styles.background}
       resizeMode="cover"
     >
@@ -116,45 +116,6 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-// const styles = StyleSheet.create({
-//   background: {
-//     flex: 1,
-//     justifyContent: "center",
-//   },
-//   container: {
-//     flex: 1,
-//     justifyContent: "center",
-//     padding: 20,
-//     backgroundColor: "#f5f5f5",
-//   },
-//   card: {
-//     padding: 30,
-//     borderRadius: 40,
-//     backgroundColor: "rgba(0, 122, 61, 0.7)", // Vert avec 70% d'opacité
-//     elevation: 0, // 🔹 Supprime l'ombre sur Android
-//     shadowOpacity: 0, // 🔹 Supprime l'ombre sur iOS
-//   },
-//   cardTitle: {
-//     // textAlign: "center",
-//     // fontSize: 22,
-//     // fontWeight: "bold",
-//     // textColor:"white",
-
-//     color: "blue",
-//     fontSize: 22, 
-//     fontWeight: "bold", 
-//     justifyContent: "center",
-//     textAlign: "center",
-//   },
-//   input: {
-//     marginBottom: 10,
-//   },
-//   button: {
-//     marginTop: 20,
-//     padding: 5,
-//   },
-// });
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -164,43 +125,82 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#f5f5f5",
   },
   card: {
     padding: 30,
     borderRadius: 40,
-    backgroundColor: "rgba(0, 122, 61, 0.9)", // 🌿 Vert du drapeau
-    elevation: 4, // Effet d'ombre légère
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    borderWidth: 2,
-    borderColor: "#CE1126", // 🔴 Bordures rouges comme les bandes du drapeau
-    overflow: "hidden",
+    backgroundColor: "rgba(255, 255, 255, 0.3)", // Vert avec 70% d'opacité
+    elevation: 0, // 🔹 Supprime l'ombre sur Android
+    shadowOpacity: 0, // 🔹 Supprime l'ombre sur iOS
   },
   cardTitle: {
-    color: "#FFD700", // ⭐ Jaune doré pour rappeler l'étoile et le croissant du drapeau
-    fontSize: 22,
-    fontWeight: "bold",
+    // textAlign: "center",
+    // fontSize: 22,
+    // fontWeight: "bold",
+    // textColor:"white",
+
+    color: "blue",
+    fontSize: 22, 
+    fontWeight: "bold", 
+    justifyContent: "center",
     textAlign: "center",
   },
   input: {
     marginBottom: 10,
-    backgroundColor: "white", // 🎨 Fond blanc pour une meilleure lisibilité
   },
   button: {
     marginTop: 20,
     padding: 5,
-    backgroundColor: "#CE1126", // 🔴 Bouton rouge inspiré du drapeau
   },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  redBands: {
-    position: "absolute",
-    width: "100%",
-    height: "10%", // Épaisseur des bandes rouges
-    backgroundColor: "#CE1126",
-  },
-  topBand: { top: 0 },
-  bottomBand: { bottom: 0 },
 });
+
+// const styles = StyleSheet.create({
+//   background: {
+//     flex: 1,
+//     justifyContent: "center",
+//   },
+//   container: {
+//     flex: 1,
+//     justifyContent: "center",
+//     padding: 20,
+//   },
+//   card: {
+//     padding: 30,
+//     borderRadius: 40,
+//     backgroundColor: "rgba(0, 122, 61, 0.9)", // 🌿 Vert du drapeau
+//     elevation: 4, // Effet d'ombre légère
+//     shadowOpacity: 0.3,
+//     shadowRadius: 5,
+//     borderWidth: 2,
+//     borderColor: "#CE1126", // 🔴 Bordures rouges comme les bandes du drapeau
+//     overflow: "hidden",
+//   },
+//   cardTitle: {
+//     color: "#FFD700", // ⭐ Jaune doré pour rappeler l'étoile et le croissant du drapeau
+//     fontSize: 22,
+//     fontWeight: "bold",
+//     textAlign: "center",
+//   },
+//   input: {
+//     marginBottom: 10,
+//     backgroundColor: "white", // 🎨 Fond blanc pour une meilleure lisibilité
+//   },
+//   button: {
+//     marginTop: 20,
+//     padding: 5,
+//     backgroundColor: "#CE1126", // 🔴 Bouton rouge inspiré du drapeau
+//   },
+//   buttonText: {
+//     color: "white",
+//     fontWeight: "bold",
+//   },
+//   redBands: {
+//     position: "absolute",
+//     width: "100%",
+//     height: "10%", // Épaisseur des bandes rouges
+//     backgroundColor: "#CE1126",
+//   },
+//   topBand: { top: 0 },
+//   bottomBand: { bottom: 0 },
+// });

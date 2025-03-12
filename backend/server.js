@@ -153,7 +153,7 @@ app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
 // ✅ Démarrage du serveur
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://192.168.0.125:${PORT}/playground`));
+app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://192.168.100.121:${PORT}/playground`));
 
 
 const path = require("path");

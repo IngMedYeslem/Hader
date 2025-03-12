@@ -9,13 +9,13 @@ export default function HomeScreen() {
         <Navbar />
 
     <ImageBackground 
-  source={require('../../assets/background.jpeg')} 
+  source={require('../../assets/background.webp')} 
   style={styles.background}
   resizeMode="cover"
 >
-  <View style={styles.container}>
+  {/* <View style={styles.container}>
     <Text style={styles.text}>Bienvenue !</Text>
-  </View>
+  </View> */}
 </ImageBackground>
 </View>
 

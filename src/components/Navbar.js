@@ -8,7 +8,8 @@ export default function Navbar() {
   return (
     <View style={styles.navbar}>
       <TouchableOpacity onPress={() => navigation.navigate("Products")}>
-        <Text style={styles.navText}>🏠 Produits</Text>
+        <Text style={styles.navText}>
+        📝 Produits</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate("addProduct")}>
         <Text style={styles.navText}>➕ Ajouter</Text>
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 15,
-    backgroundColor: "#007bff",
+    backgroundColor: "#005bb5",
   },
   navText: {
     color: "white",

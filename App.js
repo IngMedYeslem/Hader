@@ -14,7 +14,7 @@ const Stack = createStackNavigator();
 
 // 🔹 Configuration du lien Apollo avec l'authentification JWT
 const httpLink = createHttpLink({
-  uri: "http://192.168.0.125:4000/graphql",
+  uri: "http://192.168.100.121:4000/graphql",
 });
 
 const authLink = setContext(async (_, { headers }) => {
