@@ -1,26 +1,41 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import { TextInput, Button, Snackbar, ActivityIndicator } from "react-native-paper";
 import { useMutation } from "@apollo/client";
-import { ADD_PRODUCT } from "../graphql/addProducts";  // ✅ On importe la requête depuis addProducts.js
-import { GET_PRODUCTS } from "../graphql/getProducts";  // ✅ On importe la requête depuis queries.js
-import Navbar from "./Navbar";  // Assure-toi que le chemin est correct
-
-
-
+import { ADD_PRODUCT } from "../graphql/addProducts";
+import { GET_PRODUCTS } from "../graphql/getProducts";
+import Navbar from "./Navbar";
 
 const AddProductForm = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarError, setSnackbarError] = useState(false);
 
-  // Utilisation de la mutation
-  const [addProduct, { data, loading, error }] = useMutation(ADD_PRODUCT, {
-    refetchQueries: [GET_PRODUCTS], // Rafraîchir la liste après ajout
+  const [addProduct, { loading }] = useMutation(ADD_PRODUCT, {
+    refetchQueries: [GET_PRODUCTS],
+    onCompleted: () => {
+      setSnackbarMessage("Produit ajouté avec succès !");
+      setSnackbarError(false);
+      setSnackbarVisible(true);
+      setName("");
+      setPrice("");
+      setImage("");
+    },
+    onError: (error) => {
+      setSnackbarMessage(error.message);
+      setSnackbarError(true);
+      setSnackbarVisible(true);
+    },
   });
 
   const handleAddProduct = () => {
-    if (!name || !price) {
-      alert("Le nom et le prix sont obligatoires !");
+    if (!name.trim() || !price.trim()) {
+      setSnackbarMessage("Le nom et le prix sont obligatoires !");
+      setSnackbarError(true);
+      setSnackbarVisible(true);
       return;
     }
 
@@ -28,67 +43,94 @@ const AddProductForm = () => {
       variables: {
         name,
         price: parseFloat(price),
-        image: image || null,
+        image: image.trim() || null,
       },
-    })
-      .then(() => {
-        alert("Produit ajouté avec succès !");
-        setName("");
-        setPrice("");
-        setImage("");
-      })
-      .catch((err) => alert("Erreur : " + err.message));
+    });
   };
 
   return (
-
-  <View style={{ flex: 1 }}>
-    {/* ✅ Intégration correcte de Navbar */}
-    <Navbar />
-
-
-    <View style={styles.container}>
-      <Text style={styles.label}>Nom du produit :</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Nom"
-      />
-
-      <Text style={styles.label}>Prix :</Text>
-      <TextInput
-        style={styles.input}
-        value={price}
-        onChangeText={setPrice}
-        placeholder="Prix"
-        keyboardType="numeric"
-      />
-
-      <Text style={styles.label}>Image (URL) :</Text>
-      <TextInput
-        style={styles.input}
-        value={image}
-        onChangeText={setImage}
-        placeholder="URL de l'image"
-      />
-
-      <Button title="Ajouter" onPress={handleAddProduct} disabled={loading} />
-
-      {loading && <Text>Ajout en cours...</Text>}
-      {error && <Text style={styles.error}>Erreur : {error.message}</Text>}
-      {data && <Text style={styles.success}>Produit ajouté avec succès !</Text>}
-      </View>
-      </View>    
+    <View style={{ flex: 1 }}>
+      <Navbar />
+      <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
+        <View style={styles.container}>
+          <Text style={styles.title}>Ajouter un produit</Text>
+          <TextInput
+            label="Nom du produit"
+            value={name}
+            onChangeText={setName}
+            mode="outlined"
+            style={styles.input}
+          />
+          <TextInput
+            label="Prix"
+            value={price}
+            onChangeText={setPrice}
+            mode="outlined"
+            keyboardType="numeric"
+            style={styles.input}
+          />
+          <TextInput
+            label="Image (URL)"
+            value={image}
+            onChangeText={setImage}
+            mode="outlined"
+            style={styles.input}
+          />
+          <Button mode="contained" onPress={handleAddProduct} loading={loading} disabled={loading} style={styles.button}>
+            Ajouter
+          </Button>
+          {loading && <ActivityIndicator animating={true} color="#6200ee" style={styles.loader} />}
+        </View>
+      </ImageBackground>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={snackbarError ? styles.snackbarError : styles.snackbarSuccess}
+      >
+        {snackbarMessage}
+      </Snackbar>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  label: { fontWeight: "bold", marginBottom: 5 },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
-  error: { color: "red" },
-  success: { color: "green" },
+  background: {
+    flex: 1,
+    justifyContent: "center",
+    width: "100%",
+    height: "100%", 
+  },
+  container: {
+    padding: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    marginHorizontal: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 22,
+    color: "#005bb5",
+    marginBottom: 20,
+    textAlign: "center",
+    fontWeight: 'bold'
+  },
+  input: {
+    marginBottom: 15,
+  },
+  button: {
+    marginTop: 10,
+    backgroundColor: "#005bb5"
+  },
+  loader: {
+    marginTop: 10,
+  },
+  snackbarSuccess: {
+    backgroundColor: "green",
+  },
+  snackbarError: {
+    backgroundColor: "red",
+  },
 });
 
 export default AddProductForm;

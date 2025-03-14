@@ -9,7 +9,7 @@ export default function HomeScreen() {
         <Navbar />
 
     <ImageBackground 
-  source={require('../../assets/background.webp')} 
+  source={require('../../assets/b2.jpeg')} 
   style={styles.background}
   resizeMode="cover"
 >
@@ -23,7 +23,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
+  background: { flex: 1 ,width: "100%",
+    height: "100%"},
   container: { flex: 1, justifyContent: "center", alignItems: "center" },
   text: { color: "#fff", fontSize: 24, fontWeight: "bold", backgroundColor: "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 8 },
 });

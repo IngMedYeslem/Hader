@@ -7,15 +7,33 @@ const bcrypt = require("bcryptjs");
 const { buildSchema } = require("graphql");
 const { createHandler } = require("graphql-http/lib/use/express");
 const expressPlayground = require("graphql-playground-middleware-express").default;
+const os = require("os"); // 📌 Pour récupérer l'IP locale
+const path = require("path");
 
 const app = express();
 
-// ✅ Middleware CORS avec configuration avancée
+// ✅ Fonction pour récupérer l'IP locale
+const getLocalIp = () => {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === "IPv4" && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return "127.0.0.1"; // Retourne localhost si aucune IP trouvée
+};
+
+const ipAddress = getLocalIp();
+
+
+// ✅ Middleware CORS
 app.use(cors({
-  origin: "*", // ⚠️ Met une origine spécifique en prod pour la sécurité
+  origin: "*",
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // Permet d'envoyer les cookies et en-têtes sécurisés
+  credentials: true,
 }));
 
 app.use(express.json());
@@ -84,11 +102,10 @@ const generateToken = (user) => {
 // 🔹 Middleware d'authentification
 const authMiddleware = (req) => {
   if (!req || !req.headers || !req.headers.authorization) {
-    return {}; // Retourne un contexte vide si pas d'en-tête d'authentification
+    return {};
   }
 
   const token = req.headers.authorization.split(" ")[1]; // "Bearer TOKEN"
-  console.log("🔍 Token reçu :", token);  // 🔥 DEBUG
   if (!token) return {};
 
   try {
@@ -125,16 +142,14 @@ const root = {
 
   products: async () => await Product.find(),
 
-  addProduct: async ({ name, price, image }, context) => {
-    // if (!context.user) throw new Error("Non autorisé. Veuillez vous connecter.");
-
+  addProduct: async ({ name, price, image }) => {
     const newProduct = new Product({ name, price, image });
     await newProduct.save();
     return newProduct;
   },
 };
 
-// ✅ Correction du contexte dans GraphQL
+// ✅ Configuration GraphQL
 app.all(
   "/graphql",
   (req, res, next) => {
@@ -144,22 +159,20 @@ app.all(
   createHandler({
     schema,
     rootValue: root,
-    context: (req) => req.context, // ✅ Correction ici
+    context: (req) => req.context,
   })
 );
 
 // ✅ Ajout de GraphQL Playground
 app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
-// ✅ Démarrage du serveur
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://192.168.100.121:${PORT}/playground`));
-
-
-const path = require("path");
-
-
-// Servir les images du dossier "assets"
+// ✅ Servir les images du dossier "assets"
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
-
+// ✅ Démarrage du serveur avec IP dynamique
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://${ipAddress}:${PORT}/playground`));
+// ✅ Route pour récupérer l'IP et le port du serveur
+app.get("/api/ip", (req, res) => {
+  res.json({ ip: ipAddress, port: process.env.PORT || 4000 });
+});

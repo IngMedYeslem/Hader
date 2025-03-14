@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ImageBackground, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, ImageBackground, StyleSheet, Text, Dimensions } from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// const backgroundSource = Image.resolveAssetSource(require("../../assets/background.jpeg"));
-const backgroundSource = require("../../assets/background.jpeg");
-
 
 // 🔹 Mutation GraphQL pour la connexion
 const LOGIN_MUTATION = gql`
@@ -45,27 +42,35 @@ export default function LoginScreen({ navigation }) {
     await login({ variables: { username, password } });
   };
 
+  // Récupérer la largeur de l'écran pour adapter les styles
+  const screenWidth = Dimensions.get('window').width;
+  const isSmallScreen = screenWidth < 375; // Si l'écran est plus petit que 375px, appliquer les styles responsives
+
+  const stylesToApply = isSmallScreen ? responsiveStyles : styles;
+
   return (
-      <ImageBackground 
-      source={require('../../assets/background.webp')} 
+    <ImageBackground 
+      source={require('../../assets/b2.jpeg')} 
       style={styles.background}
       resizeMode="cover"
     >
-       <KeyboardAvoidingView 
-    behavior={Platform.OS === "ios" ? "padding" : "height"} 
-    style={{ flex: 1, justifyContent: "center" , padding: 20}}
-  >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={styles.keyboardAvoidingView}
+      >
         <Card style={styles.card}>
           <Card.Title 
-            title="C A P I T A L " 
-            titleStyle={styles.cardTitle} 
-            // titleStyle={{ color: "blue", fontSize: 22, fontWeight: "bold",    justifyContent: "center",
-            // textAlign: "center", }} 
-
+            title={
+              <Text style={stylesToApply.title}>
+                <Text style={stylesToApply.englishTitle}>Capital Market</Text> - 
+                <Text style={stylesToApply.arabicTitle}> سوق العاصمة</Text>
+              </Text>
+            }
+            titleStyle={stylesToApply.cardTitle} 
           />
           <Card.Title 
             title="Authentification" 
-            titleStyle={styles.cardTitle} 
+            titleStyle={stylesToApply.cardTitle} 
           />
           <Card.Content>
             <TextInput
@@ -119,32 +124,47 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: "100%",
+    height: "100%",
     justifyContent: "center",
   },
-  container: {
+  keyboardAvoidingView: {
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
   },
   card: {
     padding: 30,
     borderRadius: 40,
     backgroundColor: "rgba(255, 255, 255, 0.3)", // Vert avec 70% d'opacité
-    elevation: 0, // 🔹 Supprime l'ombre sur Android
-    shadowOpacity: 0, // 🔹 Supprime l'ombre sur iOS
+    elevation: 0, // Supprime l'ombre sur Android
+    shadowOpacity: 0, // Supprime l'ombre sur iOS
   },
   cardTitle: {
-    // textAlign: "center",
-    // fontSize: 22,
-    // fontWeight: "bold",
-    // textColor:"white",
-
-    color: "blue",
-    fontSize: 22, 
-    fontWeight: "bold", 
+    color: "#005bb5",
+    fontSize: 22,
     justifyContent: "center",
     textAlign: "center",
+  },
+  title: {
+    flexDirection: 'row', // Alignement horizontal pour les deux textes
+    justifyContent: 'center',
+    textAlign: 'center',
+    fontSize: 22, // Taille de texte par défaut
+    paddingHorizontal: 10, // Un petit padding horizontal pour éviter que le texte touche les bords
+    flexWrap: 'wrap', // Permet au texte de se répartir sur plusieurs lignes si nécessaire
+  },
+  englishTitle: {
+    fontSize: 18, // Taille de texte pour l'anglais
+    fontWeight: 'bold',
+    color: '#005bb5',
+  },
+  arabicTitle: {
+    fontSize: 18, // Taille de texte pour l'arabe
+    fontWeight: 'bold',
+    color: '#005bb5',
+    marginRight: 5, // Espacement entre les deux textes
+    flexWrap: 'wrap', // S'assurer que le texte arabe peut aussi s'enrouler
   },
   input: {
     marginBottom: 10,
@@ -152,55 +172,21 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     padding: 5,
+    backgroundColor: "#005bb5",
   },
 });
 
-// const styles = StyleSheet.create({
-//   background: {
-//     flex: 1,
-//     justifyContent: "center",
-//   },
-//   container: {
-//     flex: 1,
-//     justifyContent: "center",
-//     padding: 20,
-//   },
-//   card: {
-//     padding: 30,
-//     borderRadius: 40,
-//     backgroundColor: "rgba(0, 122, 61, 0.9)", // 🌿 Vert du drapeau
-//     elevation: 4, // Effet d'ombre légère
-//     shadowOpacity: 0.3,
-//     shadowRadius: 5,
-//     borderWidth: 2,
-//     borderColor: "#CE1126", // 🔴 Bordures rouges comme les bandes du drapeau
-//     overflow: "hidden",
-//   },
-//   cardTitle: {
-//     color: "#FFD700", // ⭐ Jaune doré pour rappeler l'étoile et le croissant du drapeau
-//     fontSize: 22,
-//     fontWeight: "bold",
-//     textAlign: "center",
-//   },
-//   input: {
-//     marginBottom: 10,
-//     backgroundColor: "white", // 🎨 Fond blanc pour une meilleure lisibilité
-//   },
-//   button: {
-//     marginTop: 20,
-//     padding: 5,
-//     backgroundColor: "#CE1126", // 🔴 Bouton rouge inspiré du drapeau
-//   },
-//   buttonText: {
-//     color: "white",
-//     fontWeight: "bold",
-//   },
-//   redBands: {
-//     position: "absolute",
-//     width: "100%",
-//     height: "10%", // Épaisseur des bandes rouges
-//     backgroundColor: "#CE1126",
-//   },
-//   topBand: { top: 0 },
-//   bottomBand: { bottom: 0 },
-// });
+// Styles responsives pour les petits écrans
+const responsiveStyles = StyleSheet.create({
+  title: {
+    fontSize: 18, // Réduit la taille de texte pour les petits écrans
+    textAlign: 'center', // Centrer le texte texte
+  },
+  englishTitle: {
+    fontSize: 18, // Réduit la taille de texte pour l'anglais sur petit écran
+  },
+  arabicTitle: {
+    fontSize: 18, // Réduit la taille de texte pour l'arabe sur petit écran
+    textAlign: 'center', // Centrer le texte arabe
+  },
+});
