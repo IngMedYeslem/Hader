@@ -5,8 +5,10 @@ import { useMutation } from "@apollo/client";
 import { ADD_PRODUCT } from "../graphql/addProducts";
 import { GET_PRODUCTS } from "../graphql/getProducts";
 import Navbar from "./Navbar";
+import { useTranslation } from "react-i18next";  // Importer la traduction
 
 const AddProductForm = () => {
+  const { t } = useTranslation(); // Hook de traduction
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState("");
@@ -17,7 +19,7 @@ const AddProductForm = () => {
   const [addProduct, { loading }] = useMutation(ADD_PRODUCT, {
     refetchQueries: [GET_PRODUCTS],
     onCompleted: () => {
-      setSnackbarMessage("Produit ajouté avec succès !");
+      setSnackbarMessage(t("Produit ajouté avec succès !"));
       setSnackbarError(false);
       setSnackbarVisible(true);
       setName("");
@@ -33,7 +35,7 @@ const AddProductForm = () => {
 
   const handleAddProduct = () => {
     if (!name.trim() || !price.trim()) {
-      setSnackbarMessage("Le nom et le prix sont obligatoires !");
+      setSnackbarMessage(t("Le nom et le prix sont obligatoires !"));
       setSnackbarError(true);
       setSnackbarVisible(true);
       return;
@@ -53,16 +55,16 @@ const AddProductForm = () => {
       <Navbar />
       <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
         <View style={styles.container}>
-          <Text style={styles.title}>Ajouter un produit</Text>
+          <Text style={styles.title}>{t("Ajouter un produit")}</Text>
           <TextInput
-            label="Nom du produit"
+            label={t("Nom du produit")}
             value={name}
             onChangeText={setName}
             mode="outlined"
             style={styles.input}
           />
           <TextInput
-            label="Prix"
+            label={t("Prix")}
             value={price}
             onChangeText={setPrice}
             mode="outlined"
@@ -70,14 +72,14 @@ const AddProductForm = () => {
             style={styles.input}
           />
           <TextInput
-            label="Image (URL)"
+            label={t("Image (URL)")}
             value={image}
             onChangeText={setImage}
             mode="outlined"
             style={styles.input}
           />
           <Button mode="contained" onPress={handleAddProduct} loading={loading} disabled={loading} style={styles.button}>
-            Ajouter
+            {t("Ajouter")}
           </Button>
           {loading && <ActivityIndicator animating={true} color="#6200ee" style={styles.loader} />}
         </View>
@@ -109,14 +111,20 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontSize: 22,
-    color: "#005bb5",
+    fontSize: 35,
+    color: "rgba(4, 66, 200, 0.9)",
     marginBottom: 20,
     textAlign: "center",
-    fontWeight: 'bold'
+    fontWeight: "bold",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 5,
+    
   },
   input: {
     marginBottom: 15,
+    borderRadius: 100,
+
   },
   button: {
     marginTop: 10,

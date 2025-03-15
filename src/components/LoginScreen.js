@@ -62,8 +62,8 @@ export default function LoginScreen({ navigation }) {
           <Card.Title 
             title={
               <Text style={stylesToApply.title}>
-                <Text style={stylesToApply.englishTitle}>Capital Market</Text> - 
-                <Text style={stylesToApply.arabicTitle}> سوق العاصمة</Text>
+                <Text style={stylesToApply.englishTitle}>Capital Market</Text>  
+                <Text style={stylesToApply.arabicTitle}> - سوق كبتال</Text>
               </Text>
             }
             titleStyle={stylesToApply.cardTitle} 
@@ -150,9 +150,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // Alignement horizontal pour les deux textes
     justifyContent: 'center',
     textAlign: 'center',
-    fontSize: 22, // Taille de texte par défaut
+    // fontSize: 20, // Taille de texte par défaut
     paddingHorizontal: 10, // Un petit padding horizontal pour éviter que le texte touche les bords
-    flexWrap: 'wrap', // Permet au texte de se répartir sur plusieurs lignes si nécessaire
+    // flexWrap: 'wrap', // Permet au texte de se répartir sur plusieurs lignes si nécessaire
+    color: "rgba(4, 66, 200, 0.9)",
+    // marginBottom: 25,
+    // textAlign: "center",
+    // fontWeight: "bold",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 8, height: 8 },
+    textShadowRadius: 10,
+
   },
   englishTitle: {
     fontSize: 18, // Taille de texte pour l'anglais
@@ -184,9 +192,11 @@ const responsiveStyles = StyleSheet.create({
   },
   englishTitle: {
     fontSize: 18, // Réduit la taille de texte pour l'anglais sur petit écran
+    
   },
   arabicTitle: {
     fontSize: 18, // Réduit la taille de texte pour l'arabe sur petit écran
     textAlign: 'center', // Centrer le texte arabe
+    
   },
 });
