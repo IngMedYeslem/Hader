@@ -6,6 +6,8 @@ import { ADD_PRODUCT } from "../graphql/addProducts";
 import { GET_PRODUCTS } from "../graphql/getProducts";
 import Navbar from "./Navbar";
 import { useTranslation } from "react-i18next";  // Importer la traduction
+import { launchImageLibrary } from "react-native-image-picker";
+import axios from 'axios';
 
 const AddProductForm = () => {
   const { t } = useTranslation(); // Hook de traduction
@@ -15,8 +17,9 @@ const AddProductForm = () => {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarError, setSnackbarError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [addProduct, { loading }] = useMutation(ADD_PRODUCT, {
+  const [addProduct] = useMutation(ADD_PRODUCT, {
     refetchQueries: [GET_PRODUCTS],
     onCompleted: () => {
       setSnackbarMessage(t("Produit ajouté avec succès !"));
@@ -33,12 +36,60 @@ const AddProductForm = () => {
     },
   });
 
+  const handleChooseImage = () => {
+    const options = {
+      mediaType: 'photo',
+      maxWidth: 800,
+      maxHeight: 800,
+    };
+
+    launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        console.log('Image selection cancelled');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else {
+        const source = { uri: response.assets[0].uri };
+        setImage(source.uri);
+      }
+    });
+  };
+
+  const uploadImage = async (uri) => {
+    const data = new FormData();
+    data.append('image', {
+      uri,
+      type: 'image/jpeg',
+      name: 'product-image.jpg',
+    });
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:3000/upload', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setImage(response.data.imageUrl); // Mettre à jour l'URL de l'image
+      setLoading(false);
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      setLoading(false);
+    }
+  };
+
   const handleAddProduct = () => {
     if (!name.trim() || !price.trim()) {
       setSnackbarMessage(t("Le nom et le prix sont obligatoires !"));
       setSnackbarError(true);
       setSnackbarVisible(true);
       return;
+    }
+
+    if (image) {
+      uploadImage(image); // Upload de l'image avant d'ajouter le produit
     }
 
     addProduct({
@@ -71,12 +122,16 @@ const AddProductForm = () => {
             keyboardType="numeric"
             style={styles.input}
           />
+          <Button mode="contained" onPress={handleChooseImage} style={styles.button}>
+            {t("Choisir une image")}
+          </Button>
           <TextInput
             label={t("Image (URL)")}
             value={image}
             onChangeText={setImage}
             mode="outlined"
             style={styles.input}
+            editable={false} // L'utilisateur ne modifie pas l'URL manuellement
           />
           <Button mode="contained" onPress={handleAddProduct} loading={loading} disabled={loading} style={styles.button}>
             {t("Ajouter")}
@@ -101,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     width: "100%",
-    height: "100%", 
+    height: "100%",
   },
   container: {
     padding: 20,
@@ -119,16 +174,14 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.9)",
     textShadowOffset: { width: 3, height: 3 },
     textShadowRadius: 5,
-    
   },
   input: {
     marginBottom: 15,
     borderRadius: 100,
-
   },
   button: {
     marginTop: 10,
-    backgroundColor: "#005bb5"
+    backgroundColor: "#005bb5",
   },
   loader: {
     marginTop: 10,

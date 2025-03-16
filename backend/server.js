@@ -9,6 +9,7 @@ const { createHandler } = require("graphql-http/lib/use/express");
 const expressPlayground = require("graphql-playground-middleware-express").default;
 const os = require("os"); // 📌 Pour récupérer l'IP locale
 const path = require("path");
+const multer = require("multer"); // 📌 Importation de multer
 
 const app = express();
 
@@ -27,7 +28,6 @@ const getLocalIp = () => {
 
 const ipAddress = getLocalIp();
 
-
 // ✅ Middleware CORS
 app.use(cors({
   origin: "*",
@@ -36,7 +36,8 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+// ✅ Augmentation de la limite de taille pour JSON (utile pour des objets volumineux)
+app.use(express.json({ limit: "10mb" })); // Limite de 10 Mo pour les données JSON
 
 // ✅ Vérification de la variable d'environnement
 if (!process.env.MONGO_URI) {
@@ -57,6 +58,7 @@ const UserSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
+  profileImage: { type: String, required: false }, // Ajout du champ profileImage
 });
 const User = mongoose.model("User", UserSchema);
 
@@ -73,6 +75,7 @@ const schema = buildSchema(`
     id: ID!
     username: String!
     email: String!
+    profileImage: String
     token: String
   }
 
@@ -88,7 +91,7 @@ const schema = buildSchema(`
   }
 
   type Mutation {
-    register(username: String!, email: String!, password: String!): User
+    register(username: String!, email: String!, password: String!, profileImage: String): User
     login(username: String!, password: String!): User
     addProduct(name: String!, price: Float!, image: String): Product
   }
@@ -117,17 +120,34 @@ const authMiddleware = (req) => {
   }
 };
 
+// 📌 Configuration de Multer pour gérer les fichiers
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Spécifie le dossier où les fichiers seront stockés
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    // Détermine le nom du fichier (par exemple, avec un timestamp pour éviter les collisions)
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limite de 10 Mo pour les fichiers téléchargés
+}); // Création du middleware multer avec la configuration
+
 // 🔹 Résolveurs GraphQL
 const root = {
-  register: async ({ username, email, password }) => {
+  register: async ({ username, email, password, profileImage }) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) throw new Error("L'utilisateur existe déjà.");
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
+    const user = new User({ username, email, password: hashedPassword, profileImage });
     await user.save();
 
-    return { id: user.id, username, email, token: generateToken(user) };
+    return { id: user.id, username, email, profileImage: user.profileImage, token: generateToken(user) };
   },
 
   login: async ({ username, password }) => {
@@ -137,7 +157,7 @@ const root = {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Mot de passe incorrect.");
 
-    return { id: user.id, username, email: user.email, token: generateToken(user) };
+    return { id: user.id, username, email: user.email, token: generateToken(user), profileImage: user.profileImage };
   },
 
   products: async () => await Product.find(),
@@ -166,12 +186,23 @@ app.all(
 // ✅ Ajout de GraphQL Playground
 app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
 
-// ✅ Servir les images du dossier "assets"
-app.use("/assets", express.static(path.join(__dirname, "assets")));
+// ✅ Servir les fichiers statiques (images)
+app.use("/assets", express.static(path.join(__dirname, "uploads")));
+
+// ✅ Route pour le téléchargement d'image (exemple pour enregistrer une image de profil utilisateur)
+app.post("/upload-profile-image", upload.single("profileImage"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("Aucun fichier téléchargé.");
+  }
+
+  const imagePath = `/assets/${req.file.filename}`; // Chemin de l'image dans le dossier 'uploads'
+  res.json({ imagePath });
+});
 
 // ✅ Démarrage du serveur avec IP dynamique
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Serveur lancé sur http://${ipAddress}:${PORT}/playground`));
+
 // ✅ Route pour récupérer l'IP et le port du serveur
 app.get("/api/ip", (req, res) => {
   res.json({ ip: ipAddress, port: process.env.PORT || 4000 });

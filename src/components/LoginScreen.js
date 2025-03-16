@@ -1,17 +1,29 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ImageBackground, StyleSheet, Text, Dimensions } from "react-native";
+import { 
+  KeyboardAvoidingView, 
+  Platform, 
+  ImageBackground, 
+  StyleSheet, 
+  Text, 
+  Image, 
+  Dimensions, 
+  View 
+} from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 🔹 Mutation GraphQL pour la connexion
 const LOGIN_MUTATION = gql`
   mutation Login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
       token
+      username
+      email
+      profileImage
     }
   }
 `;
+
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -24,6 +36,14 @@ export default function LoginScreen({ navigation }) {
     onCompleted: async (data) => {
       if (data.login.token) {
         await AsyncStorage.setItem("token", data.login.token);
+
+        // Stockage des informations utilisateur
+        const userData = {
+          username: data.login.username,
+          profileImage: data.login.profileImage,
+        };
+        await AsyncStorage.setItem("user", JSON.stringify(userData));
+
         navigation.replace("HomeScreen");
       }
     },
@@ -42,12 +62,6 @@ export default function LoginScreen({ navigation }) {
     await login({ variables: { username, password } });
   };
 
-  // Récupérer la largeur de l'écran pour adapter les styles
-  const screenWidth = Dimensions.get('window').width;
-  const isSmallScreen = screenWidth < 375; // Si l'écran est plus petit que 375px, appliquer les styles responsives
-
-  const stylesToApply = isSmallScreen ? responsiveStyles : styles;
-
   return (
     <ImageBackground 
       source={require('../../assets/b2.jpeg')} 
@@ -58,20 +72,16 @@ export default function LoginScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : "height"} 
         style={styles.keyboardAvoidingView}
       >
+        <Image 
+          source={require('../../assets/logo.jpeg')}
+          style={styles.productImage} 
+        />
         <Card style={styles.card}>
-          <Card.Title 
-            title={
-              <Text style={stylesToApply.title}>
-                <Text style={stylesToApply.englishTitle}>Capital Market</Text>  
-                <Text style={stylesToApply.arabicTitle}> - سوق كبتال</Text>
-              </Text>
-            }
-            titleStyle={stylesToApply.cardTitle} 
-          />
-          <Card.Title 
-            title="Authentification" 
-            titleStyle={stylesToApply.cardTitle} 
-          />
+          <View style={styles.titleContainer}>
+            <Text style={styles.englishTitle}>Capital Market -</Text>  
+            <Text style={styles.arabicTitle}>سوق كبتال</Text>
+          </View>
+
           <Card.Content>
             <TextInput
               label="Username"
@@ -81,6 +91,7 @@ export default function LoginScreen({ navigation }) {
               autoCapitalize="none"
               style={styles.input}
             />
+
             <TextInput
               label="Mot de passe"
               mode="outlined"
@@ -95,20 +106,26 @@ export default function LoginScreen({ navigation }) {
               }
               style={styles.input}
             />
+
             <Button
-              mode="outlined"
+              mode="contained"
               loading={loading}
               onPress={handleLogin}
-              buttonColor="blue"
-              textColor="white"
               style={styles.button}
             >
               Se connecter
             </Button>
+
+            <Button
+              mode="text"
+              onPress={() => navigation.navigate("RegisterScreen")}
+              style={styles.registerButton}
+            >
+              Créer un compte
+            </Button>
           </Card.Content>
         </Card>
 
-        {/* Snackbar pour afficher les erreurs */}
         <Snackbar
           visible={snackbarVisible}
           onDismiss={() => setSnackbarVisible(false)}
@@ -122,81 +139,14 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  card: {
-    padding: 30,
-    borderRadius: 40,
-    backgroundColor: "rgba(255, 255, 255, 0.3)", // Vert avec 70% d'opacité
-    elevation: 0, // Supprime l'ombre sur Android
-    shadowOpacity: 0, // Supprime l'ombre sur iOS
-  },
-  cardTitle: {
-    color: "#005bb5",
-    fontSize: 22,
-    justifyContent: "center",
-    textAlign: "center",
-  },
-  title: {
-    flexDirection: 'row', // Alignement horizontal pour les deux textes
-    justifyContent: 'center',
-    textAlign: 'center',
-    // fontSize: 20, // Taille de texte par défaut
-    paddingHorizontal: 10, // Un petit padding horizontal pour éviter que le texte touche les bords
-    // flexWrap: 'wrap', // Permet au texte de se répartir sur plusieurs lignes si nécessaire
-    color: "rgba(4, 66, 200, 0.9)",
-    // marginBottom: 25,
-    // textAlign: "center",
-    // fontWeight: "bold",
-    textShadowColor: "rgba(0, 0, 0, 0.9)",
-    textShadowOffset: { width: 8, height: 8 },
-    textShadowRadius: 10,
-
-  },
-  englishTitle: {
-    fontSize: 18, // Taille de texte pour l'anglais
-    fontWeight: 'bold',
-    color: '#005bb5',
-  },
-  arabicTitle: {
-    fontSize: 18, // Taille de texte pour l'arabe
-    fontWeight: 'bold',
-    color: '#005bb5',
-    marginRight: 5, // Espacement entre les deux textes
-    flexWrap: 'wrap', // S'assurer que le texte arabe peut aussi s'enrouler
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 20,
-    padding: 5,
-    backgroundColor: "#005bb5",
-  },
-});
-
-// Styles responsives pour les petits écrans
-const responsiveStyles = StyleSheet.create({
-  title: {
-    fontSize: 18, // Réduit la taille de texte pour les petits écrans
-    textAlign: 'center', // Centrer le texte texte
-  },
-  englishTitle: {
-    fontSize: 18, // Réduit la taille de texte pour l'anglais sur petit écran
-    
-  },
-  arabicTitle: {
-    fontSize: 18, // Réduit la taille de texte pour l'arabe sur petit écran
-    textAlign: 'center', // Centrer le texte arabe
-    
-  },
+  background: { flex: 1, width: "100%", height: "100%", justifyContent: "center" },
+  keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
+  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.3)", elevation: 0.1, shadowOpacity: 0.1 },
+  titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
+  englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
+  arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
+  input: { marginBottom: 10 },
+  button: { marginTop: 20, padding: 8, backgroundColor: "#005bb5" },
+  registerButton: { marginTop: 10, alignSelf: "center" },
+  productImage: { width: 100, height: 100, alignSelf: "center", marginBottom: 50, borderRadius: 50 },
 });

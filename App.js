@@ -9,6 +9,8 @@ import LoginScreen from "./src/components/LoginScreen";  // Écran de connexion
 import ProductList from "./src/components/ProductList";  // Écran de liste des produits
 import AddProductForm from "./src/components/AddProductForm";  // Écran d'ajout des produits
 import HomeScreen from "./src/components/HomeScreen";  // Écran HomeScreen
+import RegisterScreen from "./src/components/RegisterScreen";  // Écran RegisterScreen
+import ProfileScreen from "./src/components/ProfileScreen";  // Écran ProfileScreen
 import "./src/i18n";
 
 const Stack = createStackNavigator();
@@ -57,6 +59,9 @@ export default function App() {
           <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="addProduct" component={AddProductForm} options={{ headerShown: false }}  />
           <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false }} />
+          <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
+
         </Stack.Navigator>
       </NavigationContainer>
     </ApolloProvider>
