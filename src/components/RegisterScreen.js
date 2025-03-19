@@ -13,6 +13,8 @@ import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!, $profileImage: String) {
@@ -80,33 +82,69 @@ export default function RegisterScreen({ navigation }) {
     return true;
   };
 
+  // const selectProfileImage = async () => {
+  //   console.log("📷 Tentative de sélection d'une image...");
+  //   const hasPermission = await requestPermissions();
+  //   if (!hasPermission) return;
+
+  //   try {
+  //     const result = await ImagePicker.launchImageLibraryAsync({
+  //       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //       quality: 0.5,
+  //       base64: true,
+  //     });
+
+  //     if (result.canceled) {
+  //       console.log("⚠️ Sélection annulée.");
+  //       return;
+  //     }
+
+  //     if (result.assets && result.assets.length > 0) {
+  //       const selectedImage = result.assets[0];
+  //       console.log("✅ Image sélectionnée :", selectedImage.uri);
+  //       setProfileImage(`data:${selectedImage.mimeType};base64,${selectedImage.base64}`);
+  //     }
+  //   } catch (error) {
+  //     console.error("❌ Erreur lors de la sélection de l'image :", error);
+  //   }
+  // };
+
+
   const selectProfileImage = async () => {
     console.log("📷 Tentative de sélection d'une image...");
     const hasPermission = await requestPermissions();
     if (!hasPermission) return;
-
+  
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
+        quality: 0.5, // Réduire la qualité de l'image
         base64: true,
       });
-
+  
       if (result.canceled) {
         console.log("⚠️ Sélection annulée.");
         return;
       }
-
+  
       if (result.assets && result.assets.length > 0) {
         const selectedImage = result.assets[0];
         console.log("✅ Image sélectionnée :", selectedImage.uri);
-        setProfileImage(`data:${selectedImage.mimeType};base64,${selectedImage.base64}`);
+  
+        // Compresser et redimensionner l'image
+        const compressedImage = await ImageManipulator.manipulateAsync(
+          selectedImage.uri, // URI de l'image sélectionnée
+          [{ resize: { width: 500 } }], // Redimensionner l'image à une largeur de 500px
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true } // Compresser l'image à 50% de sa qualité
+        );
+  
+        // Mettre à jour l'état avec l'image compressée
+        setProfileImage(`data:${compressedImage.mimeType};base64,${compressedImage.base64}`);
       }
     } catch (error) {
       console.error("❌ Erreur lors de la sélection de l'image :", error);
     }
   };
-
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
       setSnackbarMessage("Tous les champs sont requis.");
@@ -250,7 +288,7 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: "100%", height: "100%" },
     keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.3)" },
+  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0)" },
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
   englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
   arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },

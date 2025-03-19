@@ -141,7 +141,8 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: "100%", height: "100%", justifyContent: "center" },
   keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.3)", elevation: 0.1, shadowOpacity: 0.1 },
+  card: {padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.0)", 
+    elevation: 0.0, shadowOpacity: 0.1 },
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
   englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
   arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
