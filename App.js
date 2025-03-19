@@ -20,7 +20,7 @@ export default function App() {
 
   useEffect(() => {
     // Récupérer l'IP du serveur backend
-    fetch("http://172.20.10.4:4000/api/ip") // URL de l'API pour récupérer l'IP du serveur
+    fetch("http://192.168.100.121:4000/api/ip") // URL de l'API pour récupérer l'IP du serveur
       .then((res) => res.json())
       .then((data) => {
         const serverIp = `http://${data.ip}:${data.port}`; // Exemple de structure de réponse { ip: '172.20.10.4', port: '4000' }

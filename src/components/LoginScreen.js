@@ -6,7 +6,6 @@ import {
   StyleSheet, 
   Text, 
   Image, 
-  Dimensions, 
   View 
 } from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
@@ -24,7 +23,6 @@ const LOGIN_MUTATION = gql`
   }
 `;
 
-
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +35,6 @@ export default function LoginScreen({ navigation }) {
       if (data.login.token) {
         await AsyncStorage.setItem("token", data.login.token);
 
-        // Stockage des informations utilisateur
         const userData = {
           username: data.login.username,
           profileImage: data.login.profileImage,
@@ -76,13 +73,16 @@ export default function LoginScreen({ navigation }) {
           source={require('../../assets/logo.jpeg')}
           style={styles.productImage} 
         />
+        
+        <View style={styles.titleContainer}>
+          <Text style={styles.englishTitle}>Capital Market -</Text>  
+          <Text style={styles.arabicTitle}>سوق كبتال</Text>
+        </View>
+        
         <Card style={styles.card}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.englishTitle}>Capital Market -</Text>  
-            <Text style={styles.arabicTitle}>سوق كبتال</Text>
-          </View>
-
           <Card.Content>
+            <Text style={styles.authTitle}>Authentification</Text>
+
             <TextInput
               label="Username"
               mode="outlined"
@@ -141,13 +141,23 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: "100%", height: "100%", justifyContent: "center" },
   keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: {padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.0)", 
-    elevation: 0.0, shadowOpacity: 0.1 },
+  card: {
+    padding: 20, 
+    borderRadius: 15, 
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    borderWidth: 0,
+  },
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
-  englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
-  arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
-  input: { marginBottom: 10 },
-  button: { marginTop: 20, padding: 8, backgroundColor: "#005bb5" },
-  registerButton: { marginTop: 10, alignSelf: "center" },
-  productImage: { width: 100, height: 100, alignSelf: "center", marginBottom: 110, borderRadius: 50 },
+  englishTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5' },
+  arabicTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
+  authTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#005bb5' },
+  input: { marginBottom: 15 },
+  button: { marginTop: 20, padding: 8, backgroundColor: "#005bb5", borderRadius: 10 },
+  registerButton: { marginTop: 10, alignSelf: "center", color: "#005bb5" },
+  productImage: { width: 80, height: 80, alignSelf: "center", marginBottom: 20, borderRadius: 40 },
 });

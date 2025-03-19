@@ -183,11 +183,13 @@ export default function RegisterScreen({ navigation }) {
           style={styles.productImage} 
         />
 
-        <Card style={styles.card}>
-          <View style={styles.titleContainer}>
+<View style={styles.titleContainer}>
             <Text style={styles.englishTitle}>Capital Market -</Text>  
             <Text style={styles.arabicTitle}>  سوق كبتال</Text>
           </View>
+        <Card style={styles.card}>
+          
+          <Text style={styles.createAccountText}>Créer un compte</Text>
 
           <Card.Content>
             <TextInput
@@ -288,13 +290,33 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: "100%", height: "100%" },
     keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0)" },
-  titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
-  englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
-  arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
-  input: { marginBottom: 10 },
+  card: {  padding: 20, 
+    borderRadius: 15, 
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    borderWidth: 0, },
+  titleContainer: {  
+     flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 0,
+    marginTop: 15,  // Ajustez cette valeur pour pousser le titre vers le bas 
+    },
+  englishTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5' },
+  arabicTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5',  textAlign: "center", marginBottom: 10, },
+  input: { marginBottom: 1 },
   button: { marginTop: 20, backgroundColor: "#005bb5" },
   loginButton: { marginTop: 10, alignSelf: "center" },
   profileImagePreview: { width: 100, height: 100, alignSelf: "center", marginTop: 10, borderRadius: 50 },
-  productImage: { width: 100, height: 100, alignSelf: "center", borderRadius: 50 },
+  productImage: {
+     width: 100,
+  height: 100,
+  alignSelf: "center",
+  borderRadius: 50,
+  marginTop: 0, },
+  createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#005bb5" },
+
 });
