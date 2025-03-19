@@ -20,7 +20,8 @@ const resources = {
       authentication: "Authentification",
       incorrectCredentials: "Identifiants incorrects.",
       enterUsernamePassword: "Veuillez entrer un nom d'utilisateur et un mot de passe.",
-  
+     "Déconnexion": "Déconnexion",
+    "Bonjour": "Bonjour",
    
     }
   },
@@ -42,6 +43,8 @@ const resources = {
       authentication: "المصادقة",
       incorrectCredentials: "بيانات الاعتماد غير صحيحة.",
       enterUsernamePassword: "يرجى إدخال اسم المستخدم وكلمة المرور.",
+      "Déconnexion": "تسجيل الخروج",
+      "Bonjour": "مرحبا"
    
     }
   }

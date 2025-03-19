@@ -24,7 +24,7 @@ export default function App() {
       .then((res) => res.json())
       .then((data) => {
         const serverIp = `http://${data.ip}:${data.port}`; // Exemple de structure de réponse { ip: '172.20.10.4', port: '4000' }
-        console.log(`🚀 test  sur http://${serverIp}`);
+        console.log(`🚀 test  sur ${serverIp}`);
         setApiUrl(serverIp); // Mettre à jour l'URL de l'API avec l'IP dynamique
       })
       .catch(console.error);

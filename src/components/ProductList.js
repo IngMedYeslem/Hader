@@ -61,17 +61,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   productCard: {
-    borderWidth: 1,
+    borderWidth: 3,
     borderColor: "#ddd",
     padding: 10,
     marginVertical: 10,
     borderRadius: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.0)", // ✅ Amélioration pour une meilleure lisibilité
+    backgroundColor: "rgba(255, 255, 255, 0.7)", // ✅ Amélioration pour une meilleure lisibilité
   },
   productName: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 1,
   },
   productImage: {
     width: 100,

@@ -148,5 +148,5 @@ const styles = StyleSheet.create({
   input: { marginBottom: 10 },
   button: { marginTop: 20, padding: 8, backgroundColor: "#005bb5" },
   registerButton: { marginTop: 10, alignSelf: "center" },
-  productImage: { width: 100, height: 100, alignSelf: "center", marginBottom: 50, borderRadius: 50 },
+  productImage: { width: 100, height: 100, alignSelf: "center", marginBottom: 110, borderRadius: 50 },
 });

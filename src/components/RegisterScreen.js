@@ -12,15 +12,17 @@ import {
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { launchImageLibrary } from 'react-native-image-picker'; // Utiliser launchImageLibrary
+import * as ImagePicker from "expo-image-picker";
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!, $profileImage: String) {
     register(username: $username, email: $email, password: $password, profileImage: $profileImage) {
       token
+     
     }
   }
 `;
+
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -30,20 +32,80 @@ export default function RegisterScreen({ navigation }) {
   const [secureText, setSecureText] = useState(true);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [profileImage, setProfileImage] = useState(null); // Ajoute un état pour l'image du profil
+  const [profileImage, setProfileImage] = useState(null);
 
   const [register, { loading }] = useMutation(REGISTER_MUTATION, {
+    
     onCompleted: async (data) => {
-      if (data.register.token) {
-        await AsyncStorage.setItem("token", data.register.token);
-        navigation.replace("HomeScreen");
+      try {
+        const token = data.register.token;
+        // const profileImageUrl = data.register.profileImage || "";
+        // console.log("token :", token);
+        // console.log("profileImageUrl :", profileImageUrl);
+
+
+         // Stockage des informations utilisateur
+         const userData = {
+          username: username,
+          profileImage: profileImage,
+        };
+        await AsyncStorage.setItem("user", JSON.stringify(userData));
+
+
+        if (token) {
+          await AsyncStorage.setItem("token", token);
+          // if (profileImageUrl) {
+          //   await AsyncStorage.setItem("profileImage", profileImageUrl);
+          // }
+          navigation.replace("HomeScreen");
+        }
+      } catch (error) {
+        console.error("Erreur AsyncStorage :", error);
       }
     },
-    onError: () => {
+    
+    onError: (error) => {
+      console.error("❌ Erreur d'inscription :", error);
       setSnackbarMessage("L'inscription a échoué. Essayez un autre username ou email.");
       setSnackbarVisible(true);
     },
   });
+
+  const requestPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission requise pour accéder à la galerie.");
+      return false;
+    }
+    return true;
+  };
+
+  const selectProfileImage = async () => {
+    console.log("📷 Tentative de sélection d'une image...");
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        base64: true,
+      });
+
+      if (result.canceled) {
+        console.log("⚠️ Sélection annulée.");
+        return;
+      }
+
+      if (result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        console.log("✅ Image sélectionnée :", selectedImage.uri);
+        setProfileImage(`data:${selectedImage.mimeType};base64,${selectedImage.base64}`);
+      }
+    } catch (error) {
+      console.error("❌ Erreur lors de la sélection de l'image :", error);
+    }
+  };
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -63,31 +125,10 @@ export default function RegisterScreen({ navigation }) {
         username, 
         email, 
         password, 
-        profileImage 
+        profileImage: profileImage || "" 
       } 
     });
   };
-
-  const selectProfileImage = () => {
-    const options = {
-      mediaType: 'photo', // S'assurer que seul les fichiers image sont sélectionnés
-      quality: 1, // Qualité de l'image
-    };
-
-    launchImageLibrary(options, response => { // Remplacer showImagePicker par launchImageLibrary
-      if (response.didCancel) {
-        console.log('User canceled image picker');
-      } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorMessage);
-      } else {
-        setProfileImage(response.assets[0].uri); // Stocke l'URI de l'image
-      }
-    });
-  };
-
-  const screenWidth = Dimensions.get('window').width;
-  const isSmallScreen = screenWidth < 375; 
-  const stylesToApply = isSmallScreen ? responsiveStyles : styles;
 
   return (
     <ImageBackground 
@@ -106,8 +147,8 @@ export default function RegisterScreen({ navigation }) {
 
         <Card style={styles.card}>
           <View style={styles.titleContainer}>
-            <Text style={stylesToApply.englishTitle}>Capital Market -</Text>  
-            <Text style={stylesToApply.arabicTitle}>  سوق كبتال</Text>
+            <Text style={styles.englishTitle}>Capital Market -</Text>  
+            <Text style={styles.arabicTitle}>  سوق كبتال</Text>
           </View>
 
           <Card.Content>
@@ -160,7 +201,6 @@ export default function RegisterScreen({ navigation }) {
               style={styles.input}
             />
 
-            {/* Ajouter un bouton pour sélectionner une image */}
             <Button 
               mode="contained" 
               onPress={selectProfileImage}
@@ -190,8 +230,8 @@ export default function RegisterScreen({ navigation }) {
               onPress={() => navigation.navigate("Login")}
               style={styles.loginButton}
             >
-  <Text style={{ fontSize: 10 }}>Vous avez déjà un compte ? Connectez-vous</Text>
-  </Button>
+              <Text style={{ fontSize: 10 }}>Vous avez déjà un compte ? Connectez-vous</Text>
+            </Button>
           </Card.Content>
         </Card>
 
@@ -208,77 +248,15 @@ export default function RegisterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  card: {
-    padding: 30,
-    borderRadius: 40,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  titleContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  englishTitle: {
-    fontSize: 20, 
-    fontWeight: 'bold',
-    color: '#005bb5',
-  },
-  arabicTitle: {
-    fontSize: 20, 
-    fontWeight: 'bold',
-    color: '#005bb5',
-    marginLeft: 5, 
-  },
-  input: {
-    marginBottom: 10,
-  },
-  button: {
-    marginTop: 20,
-    padding: 8,
-    backgroundColor: "#005bb5",
-  },
-  loginButton: {
-    marginTop: 10,
-    alignSelf: "center",
-    color: '#005bb5',
-
-  },
-  productImage: {
-    width: 100,
-    height: 100,
-    alignSelf: "center",
-    marginBottom: 0,
-    borderRadius: 50,
-  },
-  profileImagePreview: {
-    width: 100,
-    height: 100,
-    alignSelf: "center",
-    marginTop: 10,
-    borderRadius: 50,
-    
-  },
-});
-
-const responsiveStyles = StyleSheet.create({
-  englishTitle: {
-    fontSize: 18,
-  },
-  arabicTitle: {
-    fontSize: 18,
-    textAlign: 'center',
-  },
+  background: { flex: 1, width: "100%", height: "100%" },
+    keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
+  card: { padding: 30, borderRadius: 40, backgroundColor: "rgba(255, 255, 255, 0.3)" },
+  titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
+  englishTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5' },
+  arabicTitle: { fontSize: 20, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
+  input: { marginBottom: 10 },
+  button: { marginTop: 20, backgroundColor: "#005bb5" },
+  loginButton: { marginTop: 10, alignSelf: "center" },
+  profileImagePreview: { width: 100, height: 100, alignSelf: "center", marginTop: 10, borderRadius: 50 },
+  productImage: { width: 100, height: 100, alignSelf: "center", borderRadius: 50 },
 });
