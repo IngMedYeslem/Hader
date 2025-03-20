@@ -10,7 +10,6 @@ import ProductList from "./src/components/ProductList";  // Écran de liste des 
 import AddProductForm from "./src/components/AddProductForm";  // Écran d'ajout des produits
 import HomeScreen from "./src/components/HomeScreen";  // Écran HomeScreen
 import RegisterScreen from "./src/components/RegisterScreen";  // Écran RegisterScreen
-import ProfileScreen from "./src/components/ProfileScreen";  // Écran ProfileScreen
 import "./src/i18n";
 
 const Stack = createStackNavigator();
@@ -20,7 +19,7 @@ export default function App() {
 
   useEffect(() => {
     // Récupérer l'IP du serveur backend
-    fetch("http://192.168.100.121:4000/api/ip") // URL de l'API pour récupérer l'IP du serveur
+    fetch("http://172.20.10.4:4000/api/ip") // URL de l'API pour récupérer l'IP du serveur
       .then((res) => res.json())
       .then((data) => {
         const serverIp = `http://${data.ip}:${data.port}`; // Exemple de structure de réponse { ip: '172.20.10.4', port: '4000' }
@@ -60,7 +59,6 @@ export default function App() {
           <Stack.Screen name="addProduct" component={AddProductForm} options={{ headerShown: false }}  />
           <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false }} />
           <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
 
         </Stack.Navigator>
       </NavigationContainer>

@@ -58,8 +58,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.clear();
-      setUser(null); // Met à jour immédiatement l'état utilisateur
-      setMenuVisible(false); // Fermer le menu
+      setUser(null);
+      setMenuVisible(false);
       navigation.replace("Login");
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
@@ -107,15 +107,19 @@ const Navbar = () => {
           <Text style={styles.navText}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
         </TouchableOpacity>
 
-        {/* Menu utilisateur */}
+        {/* Affichage de la photo de profil */}
+        <TouchableOpacity style={styles.profileContainer} onPress={() => setMenuVisible(true)}>
+          {renderProfile()}
+        </TouchableOpacity>
+      </View>
+
+      {/* Menu positionné en bas à droite */}
+      <View style={styles.profileMenuWrapper}>
         <Menu
           visible={menuVisible}
-          anchor={
-            <TouchableOpacity style={styles.profileContainer} onPress={() => setMenuVisible(true)}>
-              {renderProfile()}
-            </TouchableOpacity>
-          }
+          anchor={<View />} // Ancre vide pour garder l'affichage correct
           onRequestClose={() => setMenuVisible(false)}
+          style={styles.menuContainer}
         >
           {user ? (
             <>
@@ -204,6 +208,21 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 14,
     marginLeft: 10,
+  },
+  profileMenuWrapper: {
+    position: "absolute",
+    bottom: 20, // Positionné en bas
+    right: 15, // Aligné à droite
+    backgroundColor: "white",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 5, // Ombre pour Android
+  },
+  menuContainer: {
+    alignSelf: "flex-end", // S'assure que le menu reste aligné à droite
   },
 });
 
