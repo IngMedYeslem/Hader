@@ -11,17 +11,18 @@ import {
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import styles from "./styles";  // Importer les styles
+import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
 
-const LOGIN_MUTATION = gql`
-  mutation Login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
-      token
-      username
-      email
-      profileImage
-    }
-  }
-`;
+// const LOGIN_MUTATION = gql`
+//   mutation Login($username: String!, $password: String!) {
+//     login(username: $username, password: $password) {
+//       token
+//       username
+//       profileImage
+//     }
+//   }
+// `;
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -38,6 +39,8 @@ export default function LoginScreen({ navigation }) {
         const userData = {
           username: data.login.username,
           profileImage: data.login.profileImage,
+          role: data.login.role,  // Stocker les rôles aussi
+
         };
         await AsyncStorage.setItem("user", JSON.stringify(userData));
 
@@ -111,7 +114,7 @@ export default function LoginScreen({ navigation }) {
               mode="contained"
               loading={loading}
               onPress={handleLogin}
-              style={styles.button}
+              style={styles.buttonlogin}
             >
               Se connecter
             </Button>
@@ -138,26 +141,3 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  background: { flex: 1, width: "100%", height: "100%", justifyContent: "center" },
-  keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: {
-    padding: 20, 
-    borderRadius: 15, 
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    borderWidth: 0,
-  },
-  titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
-  englishTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5' },
-  arabicTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
-  authTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#005bb5' },
-  input: { marginBottom: 15 },
-  button: { marginTop: 20, padding: 8, backgroundColor: "#005bb5", borderRadius: 10 },
-  registerButton: { marginTop: 10, alignSelf: "center", color: "#005bb5" },
-  productImage: { width: 80, height: 80, alignSelf: "center", marginBottom: 20, borderRadius: 40 },
-});

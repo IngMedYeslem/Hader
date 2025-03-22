@@ -14,6 +14,7 @@ import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
+import styles from "./styles";  // Importer les styles
 
 
 const REGISTER_MUTATION = gql`
@@ -82,33 +83,7 @@ export default function RegisterScreen({ navigation }) {
     return true;
   };
 
-  // const selectProfileImage = async () => {
-  //   console.log("📷 Tentative de sélection d'une image...");
-  //   const hasPermission = await requestPermissions();
-  //   if (!hasPermission) return;
-
-  //   try {
-  //     const result = await ImagePicker.launchImageLibraryAsync({
-  //       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //       quality: 0.5,
-  //       base64: true,
-  //     });
-
-  //     if (result.canceled) {
-  //       console.log("⚠️ Sélection annulée.");
-  //       return;
-  //     }
-
-  //     if (result.assets && result.assets.length > 0) {
-  //       const selectedImage = result.assets[0];
-  //       console.log("✅ Image sélectionnée :", selectedImage.uri);
-  //       setProfileImage(`data:${selectedImage.mimeType};base64,${selectedImage.base64}`);
-  //     }
-  //   } catch (error) {
-  //     console.error("❌ Erreur lors de la sélection de l'image :", error);
-  //   }
-  // };
-
+ 
 
   const selectProfileImage = async () => {
     console.log("📷 Tentative de sélection d'une image...");
@@ -287,36 +262,36 @@ export default function RegisterScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  background: { flex: 1, width: "100%", height: "100%" },
-    keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  card: {  padding: 20, 
-    borderRadius: 15, 
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    borderWidth: 0, },
-  titleContainer: {  
-     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 0,
-    marginTop: 15,  // Ajustez cette valeur pour pousser le titre vers le bas 
-    },
-  englishTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5' },
-  arabicTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5',  textAlign: "center", marginBottom: 10, },
-  input: { marginBottom: 1 },
-  button: { marginTop: 20, backgroundColor: "#005bb5" },
-  loginButton: { marginTop: 10, alignSelf: "center" },
-  profileImagePreview: { width: 100, height: 100, alignSelf: "center", marginTop: 10, borderRadius: 50 },
-  productImage: {
-     width: 100,
-  height: 100,
-  alignSelf: "center",
-  borderRadius: 50,
-  marginTop: 0, },
-  createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#005bb5" },
+// const styles = StyleSheet.create({
+//   background: { flex: 1, width: "100%", height: "100%" },
+//     keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
+//   card: {  padding: 20, 
+//     borderRadius: 15, 
+//     backgroundColor: "rgba(255, 255, 255, 0.25)",
+//     elevation: 5,
+//     shadowColor: "#000",
+//     shadowOffset: { width: 0, height: 2 },
+//     shadowOpacity: 0.2,
+//     shadowRadius: 5,
+//     borderWidth: 0, },
+//   titleContainer: {  
+//      flexDirection: 'row',
+//     justifyContent: 'center',
+//     marginBottom: 0,
+//     marginTop: 15,  // Ajustez cette valeur pour pousser le titre vers le bas 
+//     },
+//   englishTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5' },
+//   arabicTitle: { fontSize: 22, fontWeight: 'bold', color: '#005bb5',  textAlign: "center", marginBottom: 10, },
+//   input: { marginBottom: 1 },
+//   button: { marginTop: 20, backgroundColor: "#005bb5" },
+//   loginButton: { marginTop: 10, alignSelf: "center" },
+//   profileImagePreview: { width: 100, height: 100, alignSelf: "center", marginTop: 10, borderRadius: 50 },
+//   productImage: {
+//      width: 100,
+//   height: 100,
+//   alignSelf: "center",
+//   borderRadius: 50,
+//   marginTop: 0, },
+//   createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#005bb5" },
 
-});
+// });

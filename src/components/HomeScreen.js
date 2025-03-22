@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, ImageBackground } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native"; // Pour la navigation
 import Navbar from "./Navbar"; // Assure-toi que le chemin est correct
+import styles from "./styles";  // Importer les styles
 
 export default function HomeScreen() {
   const [profileImage, setProfileImage] = useState(null);
@@ -41,7 +42,7 @@ export default function HomeScreen() {
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={styles.container}>
+        <View style={styles.containerhomscreen}>
           <Text style={styles.text}>Bienvenue !</Text>
           {/* {profileImage && (
             <Image source={{ uri: profileImage }} style={styles.profileImage} />
@@ -52,9 +53,9 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  background: { flex: 1, width: "100%", height: "100%" },
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  text: { color: "#fff", fontSize: 24, fontWeight: "bold", backgroundColor: "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 8 },
-  profileImage: { width: 100, height: 100, borderRadius: 50, marginTop: 20 },
-});
+// const styles = StyleSheet.create({
+//   background: { flex: 1, width: "100%", height: "100%" },
+//   container: { flex: 1, justifyContent: "center", alignItems: "center" },
+//   text: { color: "#fff", fontSize: 24, fontWeight: "bold", backgroundColor: "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 8 },
+//   profileImage: { width: 100, height: 100, borderRadius: 50, marginTop: 20 },
+// });

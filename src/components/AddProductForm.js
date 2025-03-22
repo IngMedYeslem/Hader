@@ -8,6 +8,7 @@ import Navbar from "./Navbar";
 import { useTranslation } from "react-i18next";  // Importer la traduction
 import { launchImageLibrary } from "react-native-image-picker";
 import axios from 'axios';
+import styles from "./styles";  // Importer les styles
 
 const AddProductForm = () => {
   const { t } = useTranslation(); // Hook de traduction
@@ -106,9 +107,9 @@ const AddProductForm = () => {
       <Navbar />
       <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
         <View style={styles.container}>
-          <Text style={styles.title}>{t("Ajouter un produit")}</Text>
+          <Text style={styles.title}>{t("AjouterProd")}</Text>
           <TextInput
-            label={t("Nom du produit")}
+            label={t("NomProduit")}
             value={name}
             onChangeText={setName}
             mode="outlined"
@@ -134,7 +135,7 @@ const AddProductForm = () => {
             editable={false} // L'utilisateur ne modifie pas l'URL manuellement
           />
           <Button mode="contained" onPress={handleAddProduct} loading={loading} disabled={loading} style={styles.button}>
-            {t("Ajouter")}
+            {t("AjouterProd")}
           </Button>
           {loading && <ActivityIndicator animating={true} color="#6200ee" style={styles.loader} />}
         </View>
@@ -151,47 +152,47 @@ const AddProductForm = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
-  },
-  container: {
-    padding: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    marginHorizontal: 20,
-    borderRadius: 10,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 35,
-    color: "rgba(4, 66, 200, 0.9)",
-    marginBottom: 20,
-    textAlign: "center",
-    fontWeight: "bold",
-    textShadowColor: "rgba(0, 0, 0, 0.9)",
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 5,
-  },
-  input: {
-    marginBottom: 15,
-    borderRadius: 100,
-  },
-  button: {
-    marginTop: 10,
-    backgroundColor: "#005bb5",
-  },
-  loader: {
-    marginTop: 10,
-  },
-  snackbarSuccess: {
-    backgroundColor: "green",
-  },
-  snackbarError: {
-    backgroundColor: "red",
-  },
-});
+// const styles = StyleSheet.create({
+//   background: {
+//     flex: 1,
+//     justifyContent: "center",
+//     width: "100%",
+//     height: "100%",
+//   },
+//   container: {
+//     padding: 20,
+//     backgroundColor: "rgba(255, 255, 255, 0.2)",
+//     marginHorizontal: 20,
+//     borderRadius: 10,
+//     elevation: 5,
+//   },
+//   title: {
+//     fontSize: 35,
+//     color: "rgba(4, 66, 200, 0.9)",
+//     marginBottom: 20,
+//     textAlign: "center",
+//     fontWeight: "bold",
+//     textShadowColor: "rgba(0, 0, 0, 0.9)",
+//     textShadowOffset: { width: 3, height: 3 },
+//     textShadowRadius: 5,
+//   },
+//   input: {
+//     marginBottom: 15,
+//     borderRadius: 100,
+//   },
+//   button: {
+//     marginTop: 10,
+//     backgroundColor: "#005bb5",
+//   },
+//   loader: {
+//     marginTop: 10,
+//   },
+//   snackbarSuccess: {
+//     backgroundColor: "green",
+//   },
+//   snackbarError: {
+//     backgroundColor: "red",
+//   },
+// });
 
 export default AddProductForm;
