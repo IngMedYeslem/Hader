@@ -21,8 +21,10 @@ const resources = {
       enterUsernamePassword: "Veuillez entrer un nom d'utilisateur et un mot de passe.",
      "Déconnexion": "Déconnexion",
     "Bonjour": "Bonjour",
+    "email": "Email",
     "nomWorck": "Mon capital market",
-   
+    "GestionRoles": "Gestion des Rôles",
+    "updateProfil": "Mettre à jour le profil",
     }
   },
   ar: {
@@ -43,7 +45,10 @@ const resources = {
       enterUsernamePassword: "يرجى إدخال اسم المستخدم وكلمة المرور.",
       "Déconnexion": "تسجيل الخروج",
       "Bonjour": "مرحبا",
+    "email": "إيميل",
       "nomWorck": "سوق كابتال الخاص بي",
+      "GestionRoles": "إدارة الأدوار",
+      "updateProfil": "تحديث الملف الشخصي",
 
    
     }

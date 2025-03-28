@@ -54,7 +54,8 @@
     "react-native-safe-area-context": "^5.3.0",
     "react-native-screens": "^4.9.2",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "^0.19.13"
+    "react-native-web": "^0.19.13",
+    "shadcn-ui": "^0.9.5"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

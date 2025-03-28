@@ -39,7 +39,7 @@ export default {
         favicon: "./assets/logo.jpeg"
       },
       extra: {
-        API_URL: process.env.API_URL || "http://192.168.100.121:4000" // Utilisation d'une variable d'environnement si elle est définie
+        API_URL: process.env.API_URL || "http://172.20.10.4:4000" // Utilisation d'une variable d'environnement si elle est définie
       }
     }
   };

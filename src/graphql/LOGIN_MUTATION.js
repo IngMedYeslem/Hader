@@ -8,7 +8,9 @@ export const LOGIN_MUTATION = gql`
       username
       email
       profileImage
-      role
+       roles  
+           
+      
     }
   }
 `;

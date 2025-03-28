@@ -69,15 +69,24 @@ const Navbar = () => {
   };
 
   const navItems = [
+    
+    
   ];
 
-  if (role === "LIST-PROD") {
+ 
+
+  if (role && role.includes("ADMIN")) {
+    navItems.push({ id: "1", name: t("GestionRoles"), icon: "list", screen: "AddRole" });
+  }
+  
+  if (role && role.includes("LIST-PROD")) {
     navItems.push({ id: "1", name: t("Produits"), icon: "list", screen: "Products" });
   }
 
-  if (role === "AJOUT-PROD") {
+  if (role && role.includes("AJOUT-PROD")) {
     navItems.push({ id: "2", name: t("AjouterProd"), icon: "plus-circle", screen: "addProduct" });
   }
+  
 
   const renderProfile = () => {
     if (user && user.username) {
@@ -130,6 +139,22 @@ const Navbar = () => {
                 {t("Bonjour")}, {user.username} 
               </MenuItem>
               <MenuItem>{t("nomWorck")}</MenuItem>
+            
+              <MenuItem >
+                <Feather name="mail" size={20} color="red" />
+                <Text style={styles.logoutText}>{user.email}</Text>
+              </MenuItem>
+
+               {/* 🔹 BOUTON DE MISE À JOUR DU PROFIL */}
+            <MenuItem
+              onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate("UpdateUserScreen");
+              }}
+            >
+              <Feather name="edit" size={20} color="blue" />
+              <Text style={styles.menuText}>{t("updateProfil")}</Text>
+            </MenuItem>
               <MenuDivider />
               <MenuItem onPress={handleLogout}>
                 <Feather name="log-out" size={20} color="red" />

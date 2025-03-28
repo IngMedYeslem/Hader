@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { Text, View, Image, StyleSheet, ScrollView, ImageBackground } from 'react-native';
+import { Text, View, Image, ScrollView, ImageBackground } from 'react-native';
 import { GET_PRODUCTS } from "../graphql/getProducts";  // ✅ On importe la requête GraphQL
 import Navbar from "./Navbar";  // Assure-toi que le chemin est correct
 import styles from "./styles";  // Importer les styles
@@ -47,44 +47,5 @@ function ProductList() {
   );
 }
 
-// const styles = StyleSheet.create({
-//   wrapper: {
-//     flex: 1, 
-//   },
-//   scrollContainer: {
-//     flex: 1,
-//   },
-//   contentContainer: {
-//     flexGrow: 1, 
-//     paddingBottom: 20, // Ajout d'un espace en bas
-//   },
-//   container: {
-//     padding: 10,
-//   },
-//   productCard: {
-//     borderWidth: 3,
-//     borderColor: "#ddd",
-//     padding: 10,
-//     marginVertical: 10,
-//     borderRadius: 5,
-//     backgroundColor: "rgba(255, 255, 255, 0.7)", // ✅ Amélioration pour une meilleure lisibilité
-//   },
-//   productName: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginBottom: 1,
-//   },
-//   productImage: {
-//     width: 100,
-//     height: 100,
-//     marginTop: 5,
-//   },
-//   background: {
-//     flex: 1,
-//     justifyContent: "center",
-//     width: "100%",
-//     height: "100%", 
-//   },
-// });
 
 export default ProductList;

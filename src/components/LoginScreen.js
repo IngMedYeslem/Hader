@@ -3,26 +3,16 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ImageBackground, 
-  StyleSheet, 
   Text, 
   Image, 
   View 
 } from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
-import { useMutation, gql } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "./styles";  // Importer les styles
 import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
 
-// const LOGIN_MUTATION = gql`
-//   mutation Login($username: String!, $password: String!) {
-//     login(username: $username, password: $password) {
-//       token
-//       username
-//       profileImage
-//     }
-//   }
-// `;
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState("");
@@ -38,8 +28,9 @@ export default function LoginScreen({ navigation }) {
 
         const userData = {
           username: data.login.username,
+          email: data.login.email,
           profileImage: data.login.profileImage,
-          role: data.login.role,  // Stocker les rôles aussi
+          role: data.login.roles ,  // Stocker les rôles aussi
 
         };
         await AsyncStorage.setItem("user", JSON.stringify(userData));

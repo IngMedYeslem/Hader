@@ -21,6 +21,8 @@ const useApolloClient = () => {
         // Ajout de l'authentification avec le token
         const authLink = setContext(async (_, { headers }) => {
           const token = await AsyncStorage.getItem("token"); // Récupère le token stocké
+          console.log("Token récupéré pour Apollo :", token);
+
           return {
             headers: {
               ...headers,

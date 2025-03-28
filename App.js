@@ -11,6 +11,8 @@ import ProductList from "./src/components/ProductList";  // Écran de liste des 
 import AddProductForm from "./src/components/AddProductForm";  // Écran d'ajout des produits
 import HomeScreen from "./src/components/HomeScreen";  // Écran HomeScreen
 import RegisterScreen from "./src/components/RegisterScreen";  // Écran RegisterScreen
+import UpdateUserScreen from "./src/components/UpdateUserScreen";  // Écran UpdateUserScreen
+import AddRole from "./src/components/AddRole";  // Écran AddRole
 import "./src/i18n";
 
 const Stack = createStackNavigator();
@@ -28,6 +30,13 @@ export default function App() {
 
     const authLink = setContext(async (_, { headers }) => {
       const token = await AsyncStorage.getItem("token");
+      console.log("Token récupéré :", token); // Vérifier le token récupéré
+
+      console.log("Headers envoyés dans Apollo :", {
+        ...headers,
+        Authorization: token ? `Bearer ${token}` : "",
+      });
+
       return {
         headers: {
           ...headers,
@@ -55,6 +64,8 @@ export default function App() {
           <Stack.Screen name="addProduct" component={AddProductForm} options={{ headerShown: false }} />
           <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false }} />
           <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="UpdateUserScreen" component={UpdateUserScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="AddRole" component={AddRole} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApolloProvider>

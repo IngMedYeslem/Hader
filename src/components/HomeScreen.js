@@ -44,18 +44,11 @@ export default function HomeScreen() {
       >
         <View style={styles.containerhomscreen}>
           <Text style={styles.text}>Bienvenue !</Text>
-          {/* {profileImage && (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
-          )} */}
+          
         </View>
       </ImageBackground>
     </View>
   );
 }
 
-// const styles = StyleSheet.create({
-//   background: { flex: 1, width: "100%", height: "100%" },
-//   container: { flex: 1, justifyContent: "center", alignItems: "center" },
-//   text: { color: "#fff", fontSize: 24, fontWeight: "bold", backgroundColor: "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 8 },
-//   profileImage: { width: 100, height: 100, borderRadius: 50, marginTop: 20 },
-// });
+

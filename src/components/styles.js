@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
       keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
   card: {
     padding: 20, 
-    borderRadius: 15, 
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    borderRadius: 20, 
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

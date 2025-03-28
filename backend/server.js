@@ -22,18 +22,6 @@ const getLocalIp = () => {
     .find(net => net.family === "IPv4" && !net.internal)?.address || "127.0.0.1";
 };
 
-// ✅ Récupération de l'IP locale
-// const getLocalIp = () => {
-//   const nets = os.networkInterfaces();
-//   for (const name of Object.keys(nets)) {
-//     for (const net of nets[name]) {
-//       if (net.family === "IPv4" && !net.internal) {
-//         return net.address;
-//       }
-//     }
-//   }
-//   return "127.0.0.1";
-// };
 
 
 // ✅ Connexion à MongoDB
@@ -58,12 +46,13 @@ app.use(express.json({ limit: "10mb" }));
 // ✅ Configuration GraphQL
 app.all(
   "/graphql",
-  (req, res, next) => {
-    req.context = authMiddleware(req);
-    next();
-  },
-  createHandler({ schema, rootValue: resolvers, context: (req) => req.context })
+  createHandler({
+    schema,
+    rootValue: resolvers,
+    context: (req) => authMiddleware(req) // 👉 Passe directement `authMiddleware(req)`
+  })
 );
+
 
 // ✅ Ajout de GraphQL Playground
 app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
@@ -74,6 +63,12 @@ app.use("/api", uploadRoutes);
 // ✅ Démarrage du serveur
 const PORT = process.env.PORT || 4000;
 const localIp = getLocalIp();
+const frontendEnvPath = path.join(__dirname, "../.env"); // Adapte le chemin si nécessaire
+
+fs.writeFileSync(frontendEnvPath, `API_URL=http://${localIp}:${PORT}\n`, { encoding: "utf8" });
+
+console.log(`✅ Fichier .env mis à jour : API_URL=http://${localIp}:${PORT}`);
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Serveur lancé sur :`);
