@@ -69,7 +69,20 @@ module.exports = {
       roles
     };
   },
-  
+ // 🔹 Ajout de la requête pour récupérer tous les utilisateurs
+users: async () => {
+  const users = await User.find().populate("roles", "name");
+
+  return users.map(user => ({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    profileImage: user.profileImage,
+    roles: user.roles.map(role => role.name), // 🔹 Convertir en tableau de strings
+    token: user.token
+  }));
+},
+
 
 
   products: async () => await Product.find(),
@@ -136,5 +149,24 @@ module.exports = {
 
   roles: async () => {
     return await Role.find();
+  },
+
+  updateProfileImage: async ({ username, profileImage }, context) => {
+    if (!context.user) throw new Error("Accès refusé : Authentification requise.");
+
+    const user = await User.findOne({ username });
+    if (!user) throw new Error("Utilisateur non trouvé.");
+
+    // Vérifier si l'utilisateur connecté met à jour son propre profil ou s'il est admin
+    const isAdmin = context.user.roles.includes("ADMIN");
+    if (!isAdmin && context.user.username !== username) {
+      throw new Error("Accès refusé : Vous ne pouvez modifier que votre propre profil.");
+    }
+
+    // Mise à jour de l'image de profil
+    user.profileImage = profileImage;
+    await user.save();
+
+    return user;
   }
 };

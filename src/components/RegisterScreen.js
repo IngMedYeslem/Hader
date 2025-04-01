@@ -40,11 +40,7 @@ export default function RegisterScreen({ navigation }) {
     onCompleted: async (data) => {
       try {
         const token = data.register.token;
-        // const profileImageUrl = data.register.profileImage || "";
-        // console.log("token :", token);
-        // console.log("profileImageUrl :", profileImageUrl);
-
-
+       
          // Stockage des informations utilisateur
          const userData = {
           username: username,
@@ -55,9 +51,7 @@ export default function RegisterScreen({ navigation }) {
 
         if (token) {
           await AsyncStorage.setItem("token", token);
-          // if (profileImageUrl) {
-          //   await AsyncStorage.setItem("profileImage", profileImageUrl);
-          // }
+          
           navigation.replace("HomeScreen");
         }
       } catch (error) {

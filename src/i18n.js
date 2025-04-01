@@ -25,6 +25,21 @@ const resources = {
     "nomWorck": "Mon capital market",
     "GestionRoles": "Gestion des Rôles",
     "updateProfil": "Mettre à jour le profil",
+    GestionUsers: "Gestion des Utilisateurs",
+    
+      "AjouterRole": "Ajouter un Rôle",
+      "NomRole": "Nom du rôle (ex: ADMIN)",
+      "AjoutRole": "Ajouter",
+      "AjoutEnCours": "Ajout...",
+      "RoleRequis": "Le nom du rôle est requis !",
+      "RoleAjouteSucces": "Rôle ajouté avec succès !",
+      "ErreurAjoutRole": "Erreur lors de l'ajout du rôle",
+      "SeConnecter": "Se connecter",
+      "Bonjour": "Bonjour",
+      "NomWorck": "Nom du travail",
+      "SeDeconnecter": "Se déconnecter"
+    
+    
     }
   },
   ar: {
@@ -49,8 +64,21 @@ const resources = {
       "nomWorck": "سوق كابتال الخاص بي",
       "GestionRoles": "إدارة الأدوار",
       "updateProfil": "تحديث الملف الشخصي",
-
-   
+      "GestionUsers": "إدارة المستخدمين",
+      
+        "AjouterRole": "إضافة دور",
+        "NomRole": "اسم الدور (مثل: ADMIN)",
+        "AjoutRole": "إضافة",
+        "AjoutEnCours": "جارٍ الإضافة...",
+        "RoleRequis": "اسم الدور مطلوب!",
+        "RoleAjouteSucces": "تم إضافة الدور بنجاح!",
+        "ErreurAjoutRole": "حدث خطأ أثناء إضافة الدور",
+        "SeConnecter": "تسجيل الدخول",
+        "Bonjour": "مرحباً",
+        "NomWorck": "اسم العمل",
+        "SeDeconnecter": "تسجيل الخروج"
+      
+         
     }
   }
 };

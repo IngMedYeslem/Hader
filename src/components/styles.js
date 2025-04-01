@@ -3,14 +3,30 @@ import { StyleSheet } from "react-native";
 // Définir un fichier de styles commun pour toute l'application
 const styles = StyleSheet.create({
   
-    navbar: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#005bb5",
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-      },
+  navbar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#005bb5",
+    paddingVertical: 0,
+    paddingHorizontal: 10,
+    width: "100%",
+    height: 80, // Ajuste la hauteur selon tes besoins
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    elevation: 5, // Ajoute une ombre sur Android
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    zIndex: 1000, // Assurez-vous qu'elle est visible
+
+    }
+,  
       navItem: {
         flexDirection: "column",
         alignItems: "center",
@@ -178,6 +194,37 @@ const styles = StyleSheet.create({
 
   createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#005bb5" },
 
+
+  profileMenuWrapper: {
+    position: "absolute",
+    top: 50,
+    right: 10,
+  },
+  menuContainer: {
+    borderRadius: 10,
+    padding: 10,
+  },
+  profileHeader: {
+    alignItems: "center",
+    paddingBottom: 10,
+  },
+  profileImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginBottom: 5,
+  },
+  username: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  menuText: {
+    marginLeft: 10,
+  },
+  logoutText: {
+    marginLeft: 10,
+    color: "red",
+  },
 
   // Autres styles globaux
 });

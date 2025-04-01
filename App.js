@@ -13,6 +13,7 @@ import HomeScreen from "./src/components/HomeScreen";  // Écran HomeScreen
 import RegisterScreen from "./src/components/RegisterScreen";  // Écran RegisterScreen
 import UpdateUserScreen from "./src/components/UpdateUserScreen";  // Écran UpdateUserScreen
 import AddRole from "./src/components/AddRole";  // Écran AddRole
+import UserAdminScreen from "./src/components/UserAdminScreen";  // Écran UserAdminScreen
 import "./src/i18n";
 
 const Stack = createStackNavigator();
@@ -66,6 +67,7 @@ export default function App() {
           <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerShown: false }} />
           <Stack.Screen name="UpdateUserScreen" component={UpdateUserScreen} options={{ headerShown: false }} />
           <Stack.Screen name="AddRole" component={AddRole} options={{ headerShown: false }} />
+          <Stack.Screen name="UserAdminScreen" component={UserAdminScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApolloProvider>

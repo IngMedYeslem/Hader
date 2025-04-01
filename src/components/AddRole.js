@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ImageBackground } from "react-native";
 import { useMutation, gql } from "@apollo/client";
-import { Card, Button, TextInput } from "react-native-paper";
+import { Card, Button, TextInput, Snackbar } from "react-native-paper";
+import Navbar from "./Navbar";
+import styles from "./styles";
+import { useTranslation } from "react-i18next";  // Importer la traduction
 
 // 🔹 Mutation GraphQL pour ajouter un rôle
 const ADD_ROLE_MUTATION = gql`
@@ -15,41 +18,62 @@ const ADD_ROLE_MUTATION = gql`
 
 const AddRole = () => {
   const [roleName, setRoleName] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarError, setSnackbarError] = useState(false);
   const [addRole, { loading, error }] = useMutation(ADD_ROLE_MUTATION);
+  const { t } = useTranslation(); // Hook de traduction
 
   const handleSubmit = async () => {
     if (!roleName.trim()) {
-      console.error("Le nom du rôle est requis !");
+      setSnackbarMessage(t("RoleRequis"));
+      setSnackbarError(true);
+      setSnackbarVisible(true);
       return;
     }
 
     try {
       await addRole({ variables: { name: roleName } });
-      console.log(`✅ Rôle "${roleName}" ajouté avec succès !`);
+      setSnackbarMessage(`${t("RoleAjouteSucces")} "${roleName}"`);
+      setSnackbarError(false);
+      setSnackbarVisible(true);
       setRoleName(""); // Réinitialiser le champ
     } catch (err) {
-      console.error("❌ Erreur lors de l'ajout du rôle :", err.message);
+      setSnackbarMessage(`${t("ErreurAjoutRole")}: ${err.message}`);
+      setSnackbarError(true);
+      setSnackbarVisible(true);
     }
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Card style={{ padding: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
-          Ajouter un Rôle
-        </Text>
-        <TextInput
-          label="Nom du rôle (ex: ADMIN)"
-          mode="outlined"
-          value={roleName}
-          onChangeText={setRoleName}
-          style={{ marginBottom: 10 }}
-        />
-        <Button mode="contained" onPress={handleSubmit} loading={loading}>
-          {loading ? "Ajout..." : "Ajouter"}
-        </Button>
-        {error && <Text style={{ color: "red", marginTop: 10 }}>{error.message}</Text>}
-      </Card>
+    <View style={{ flex: 1 }}>
+      <Navbar />
+      <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
+        <View style={styles.container}>
+          <Text style={styles.title}>{t("AjouterRole")}</Text>
+          <Card style={styles.card}>
+            <TextInput
+              label={t("NomRole")}
+              mode="outlined"
+              value={roleName}
+              onChangeText={setRoleName}
+              style={styles.input}
+            />
+            <Button mode="contained" onPress={handleSubmit} loading={loading} style={styles.button}>
+              {loading ? t("AjoutEnCours") : t("AjoutRole")}
+            </Button>
+            {error && <Text style={{ color: "red", marginTop: 10 }}>{error.message}</Text>}
+          </Card>
+        </View>
+      </ImageBackground>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={snackbarError ? styles.snackbarError : styles.snackbarSuccess}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };

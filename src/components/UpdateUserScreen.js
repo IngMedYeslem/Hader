@@ -22,7 +22,7 @@ export default function UpdateUserScreen({ navigation }) {
           setUsername(userData.username || "");
           setEmail(userData.email || "");
 
-          // ✅ Vérifie si `roles` est un tableau et le convertit en chaîne
+          // ✅ Vérifie si `role` est un tableau et le convertit en chaîne
           setRole(userData.role ? (Array.isArray(userData.role) ? userData.role.join(", ") : userData.role) : "");
         }
       } catch (error) {
