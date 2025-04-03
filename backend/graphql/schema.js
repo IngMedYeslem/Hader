@@ -35,9 +35,9 @@ module.exports = buildSchema(`
     updateRole(id: ID!, name: String!): Role
     deleteRole(id: ID!): String
     addProduct(name: String!, price: Float!, image: String): Product
-    updateUser(id: ID!, username: String!, email: String!, roles: [String]!): User  
+    updateUser(username: String!, email: String!, roles: [String]!): User  
     deleteUser(id: ID!): String
-  updateProfileImage(username: String!, profileImage: String!): User
+   updateProfileImage(username: String!, profileImage: String!): User
 
   }
 `);

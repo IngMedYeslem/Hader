@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, View, ImageBackground, Text } from "react-native";
 import { Card, TextInput, Button, Snackbar, ActivityIndicator } from "react-native-paper";
 import { useQuery, useMutation } from "@apollo/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GET_USERS } from "../graphql/GetUsers";
 import { UPDATE_USER_MUTATION } from "../graphql/UpdateUser";
 import Navbar from "./Navbar";
@@ -18,8 +19,28 @@ export default function UserAdminScreen() {
   const [updatedData, setUpdatedData] = useState({});
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
 
-  if (loading) return <ActivityIndicator animating={true} color="#6200ee" style={styles.loader} />;
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const savedUser = await AsyncStorage.getItem("user");
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          setUsername(userData.username || "");
+          setEmail(userData.email || "");
+          setRole(userData.role ? (Array.isArray(userData.role) ? userData.role.join(", ") : userData.role) : "");
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données utilisateur :", error);
+      }
+    };
+    loadUserData();
+  }, []);
+
+  if (loading) return <ActivityIndicator animating color="#6200ee" style={styles.loader} />;
   if (error) return <Text style={styles.errorText}>{t("Erreur")}: {error.message}</Text>;
 
   const handleEdit = (user) => {
@@ -28,21 +49,25 @@ export default function UserAdminScreen() {
   };
 
   const handleChange = (field, value) => {
-    setUpdatedData({ ...updatedData, [field]: value });
+    setUpdatedData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
-    await updateUser({
-      variables: {
-        username: updatedData.username,
-        email: updatedData.email,
-        roles: updatedData.roles.split(",").map(r => r.trim())
-      },
-    });
-    setEditingUser(null);
-    setSnackbarMessage(t("Utilisateur mis à jour avec succès"));
-    setSnackbarVisible(true);
-    refetch();
+    try {
+      await updateUser({
+        variables: {
+          username: updatedData.username,
+          email: updatedData.email,
+          roles: updatedData.roles.split(",").map((r) => r.trim()),
+        },
+      });
+      setEditingUser(null);
+      setSnackbarMessage(t("Utilisateur mis à jour avec succès"));
+      setSnackbarVisible(true);
+      refetch();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error);
+    }
   };
 
   return (
@@ -54,27 +79,15 @@ export default function UserAdminScreen() {
             {t("Retour")}
           </Button>
           <Text style={styles.title}>{t("Gestion des utilisateurs")}</Text>
-          {data.users.map((user) => (
+          {data?.users.map((user) => (
             <Card key={user.id} style={styles.card}>
               <Card.Title title={user.username} subtitle={user.email} />
               <Card.Content>
                 {editingUser?.id === user.id ? (
                   <>
-                    <TextInput label={t("Nom")}
-                      value={updatedData.username}
-                      onChangeText={(text) => handleChange("username", text)}
-                      style={styles.input}
-                    />
-                    <TextInput label={t("Email")}
-                      value={updatedData.email}
-                      onChangeText={(text) => handleChange("email", text)}
-                      style={styles.input}
-                    />
-                    <TextInput label={t("Roles")}
-                      value={updatedData.roles}
-                      onChangeText={(text) => handleChange("roles", text)}
-                      style={styles.input}
-                    />
+                    <TextInput label={t("Nom")} value={updatedData.username} onChangeText={(text) => handleChange("username", text)} style={styles.input} />
+                    <TextInput label={t("Email")} value={updatedData.email} onChangeText={(text) => handleChange("email", text)} style={styles.input} />
+                    <TextInput label={t("Roles")} value={updatedData.roles} onChangeText={(text) => handleChange("roles", text)} style={styles.input} />
                     <Button mode="contained" onPress={handleSave} loading={updating} style={styles.button}>
                       {t("Enregistrer")}
                     </Button>

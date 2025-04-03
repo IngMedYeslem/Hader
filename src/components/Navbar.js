@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { View, Text, TouchableOpacity, Image, FlatList } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -28,6 +28,7 @@ const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [register] = useMutation(UPDATE_PROFILE_IMAGE);;
+  const menuRef = useRef(null); // Ajout de useRef pour gérer le menu
 
   const loadLanguage = useCallback(async () => {
     try {
@@ -207,17 +208,22 @@ const selectProfileImage = async () => {
           <Text style={styles.navText}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.profileContainer} onPress={() => setMenuVisible(true)}>
+        {/* <TouchableOpacity style={styles.profileContainer} onPress={() => setMenuVisible(true)}>
           {renderProfile()}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
-    <View style={styles.profileMenuWrapper}>
+    <View style={styles.rightContainer}>
   <Menu
-    visible={menuVisible}
-    anchor={<View />}
-    onRequestClose={() => setMenuVisible(false)}
-    style={styles.menuContainer}
+    ref={menuRef}
+    anchor={
+      <TouchableOpacity style={styles.profileContainer} onPress={() => menuRef.current?.show()}>
+        {renderProfile()}
+      </TouchableOpacity>
+    }
+    onRequestClose={() => menuRef.current?.hide()}
+
+    // style={styles.menuContainer}
   >
     {user ? (
       <>
@@ -241,7 +247,7 @@ const selectProfileImage = async () => {
           <Text style={styles.logoutText}>{user.email}</Text>
         </MenuItem>
 
-        {/* 🔹 Mise à jour du profil */}
+        {/* 🔹 Mise à jour du profil
         <MenuItem
           onPress={() => {
             setMenuVisible(false);
@@ -250,7 +256,7 @@ const selectProfileImage = async () => {
         >
           <Feather name="edit" size={20} color="blue" />
           <Text style={styles.menuText}>{t("updateProfil")}</Text>
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuDivider />
 
@@ -263,7 +269,7 @@ const selectProfileImage = async () => {
     ) : (
       <MenuItem
         onPress={() => {
-          setMenuVisible(false);
+          // setMenuVisible(false);
           navigation.navigate("Login");
         }}
       >
@@ -275,6 +281,7 @@ const selectProfileImage = async () => {
 </View>
 
     </View>
+
   );
 };
 

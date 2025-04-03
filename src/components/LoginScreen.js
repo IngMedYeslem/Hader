@@ -10,7 +10,6 @@ import {
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
 
 import styles from "./styles";  // Importer les styles
 import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
