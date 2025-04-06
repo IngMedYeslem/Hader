@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { View, Text, TouchableOpacity,ImageBackground, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { Menu, MenuItem, MenuDivider } from "react-native-material-menu";
-import styles from "./styles";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useMutation, gql } from "@apollo/client";
+import styles from "./styles";
 
 const UPDATE_PROFILE_IMAGE = gql`
   mutation UpdateProfileImage($username: String!, $profileImage: String!) {
@@ -28,7 +28,6 @@ const Navbar = () => {
   const [register] = useMutation(UPDATE_PROFILE_IMAGE);
 
   const menuRefProfile = useRef(null);
-  const menuRefNavigation = useRef(null);
 
   const role = user?.role || "";
 
@@ -119,27 +118,10 @@ const Navbar = () => {
     }
   };
 
-  const navItems = useMemo(() => {
-    const items = [];
-
-    if (role.includes("ADMIN")) {
-      items.push({ id: "1", name: t("GestionRoles"), icon: "list", screen: "AddRole" });
-      items.push({ id: "2", name: t("GestionUsers"), icon: "list", screen: "UserAdminScreen" });
-    }
-    if (role.includes("LIST-PROD")) {
-      items.push({ id: "3", name: t("Produits"), icon: "list", screen: "Products" });
-    }
-    if (role.includes("AJOUT-PROD")) {
-      items.push({ id: "4", name: t("AjouterProd"), icon: "plus-circle", screen: "addProduct" });
-    }
-
-    return items;
-  }, [role, t]);
-
   const renderProfile = () => {
     if (user?.username) {
       return user.profileImage ? (
-        <Feather name="user" size={25} style={styles.colorText}/>
+        <Feather name="user" size={25} style={styles.colorText} />
       ) : (
         <View style={styles.initialsContainer}>
           <Text style={styles.profileInitials}>{user.username[0].toUpperCase()}</Text>
@@ -151,50 +133,26 @@ const Navbar = () => {
 
   return (
     <View style={styles.navbar}>
-      <Menu
-        ref={menuRefNavigation}
-        anchor={
-          <TouchableOpacity style={styles.profileContainer} onPress={() => menuRefNavigation.current?.show()}>
-            <Feather name="menu" size={24} style={styles.colorText} />
-          </TouchableOpacity>
-        }
-        onRequestClose={() => menuRefNavigation.current?.hide()}
+      
+      {/* === ☰ Menu Icon, navigue vers l'écran de navigation === */}
+      <TouchableOpacity
+        style={styles.profileContainer}
+        onPress={() => navigation.navigate("NavigationListScreen", { role })}
       >
-        {navItems.map((item) => (
-          <MenuItem
-            key={item.id}
-            onPress={() => {
-              navigation.navigate(item.screen);
-              menuRefNavigation.current?.hide();
-            }}
-          >
-            <Feather name={item.icon} size={20} color="black" />
-            <Text style={styles.menuText}>{item.name}</Text>
-          </MenuItem>
-        ))}
-      </Menu>
+        <Feather name="menu" size={24} style={styles.colorText} />
+      </TouchableOpacity>
 
+      {/* === Logo centré === */}
+      <TouchableOpacity onPress={() => navigation.navigate("HomeScreen")}>
+        <Image
+          source={require("../../assets/logo.png")}
+          style={styles.logoContainer}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
 
-
-
-     
-
-
- {/* Logo centré et cliquable */}
- <View >
-    <TouchableOpacity onPress={() => navigation.navigate("HomeScreen")}>
-      <Image 
-        source={require('../../assets/logo.png')}
-        style={styles.logoContainer} 
-        resizeMode="contain"
-      />
-    </TouchableOpacity>
-  </View>
-
-
-    
-
-      <View style={styles.rightContainer}>
+      {/* === Menu utilisateur === */}
+      {/* <View style={styles.rightContainer}>
         <Menu
           ref={menuRefProfile}
           anchor={
@@ -217,25 +175,16 @@ const Navbar = () => {
 
               <MenuDivider />
 
-              <MenuItem ><Text style={styles.language}>{t("nomWorck")}</Text></MenuItem>
-
-              {/* <MenuItem>
-                <Feather name="mail" size={20} color="red" />
-                <Text style={styles.language}>{user.email}</Text>
-              </MenuItem> */}
-
+              <MenuItem>
+                <Text style={styles.language}>{t("nomWorck")}</Text>
+              </MenuItem>
 
               <MenuItem style={styles.navItem} onPress={toggleLanguage}>
-        {/* <TouchableOpacity style={styles.navItem} onPress={toggleLanguage}> */}
-        
-          <MaterialIcons name="language" size={24} color= "#005bb5" />
-          <Text style={styles.language}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
-        {/* </TouchableOpacity> */}
-        </MenuItem>
+                <MaterialIcons name="language" size={24} color="#005bb5" />
+                <Text style={styles.language}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
+              </MenuItem>
 
               <MenuDivider />
-
-
 
               <MenuItem onPress={handleLogout}>
                 <Feather name="log-out" size={20} color="red" />
@@ -249,7 +198,15 @@ const Navbar = () => {
             </MenuItem>
           )}
         </Menu>
-      </View>
+      </View> */}
+
+<TouchableOpacity
+  style={styles.profileContainer}
+  onPress={() => navigation.navigate("UserMenuScreen", { user, profileImage, language })}
+>
+  <Feather name="user" size={25} style={styles.colorText} />
+</TouchableOpacity>
+
     </View>
   );
 };
