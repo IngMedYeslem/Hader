@@ -59,15 +59,18 @@ export default function App() {
   return (
     <ApolloProvider client={client}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="addProduct" component={AddProductForm} options={{ headerShown: false }} />
-          <Stack.Screen name="Products" component={ProductList} options={{ headerShown: false }} />
-          <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="UpdateUserScreen" component={UpdateUserScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="AddRole" component={AddRole} options={{ headerShown: false }} />
-          <Stack.Screen name="UserAdminScreen" component={UserAdminScreen} options={{ headerShown: false }} />
+        <Stack.Navigator initialRouteName="Login"  screenOptions={{
+    headerShown: false,
+    gestureEnabled: false, // Désactive le swipe pour tous les écrans
+  }}>
+          <Stack.Screen name="Login" component={LoginScreen}  />
+          <Stack.Screen name="HomeScreen" component={HomeScreen}  />
+          <Stack.Screen name="addProduct" component={AddProductForm}  />
+          <Stack.Screen name="Products" component={ProductList}  />
+          <Stack.Screen name="RegisterScreen" component={RegisterScreen}  />
+          <Stack.Screen name="UpdateUserScreen" component={UpdateUserScreen}  />
+          <Stack.Screen name="AddRole" component={AddRole}  />
+          <Stack.Screen name="UserAdminScreen" component={UserAdminScreen}  />
         </Stack.Navigator>
       </NavigationContainer>
     </ApolloProvider>

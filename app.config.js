@@ -30,13 +30,13 @@ export default {
           "READ_EXTERNAL_STORAGE"
         ],
         adaptiveIcon: {
-          foregroundImage: "./assets/logo.jpeg",
+          foregroundImage: "./assets/logo.png",
           backgroundColor: "#FFFFFF"
         },
         useNextNotificationsApi: true
       },
       web: {
-        favicon: "./assets/logo.jpeg"
+        favicon: "./assets/logo.png"
       },
       extra: {
         API_URL: process.env.API_URL || "http://172.20.10.4:4000" // Utilisation d'une variable d'environnement si elle est définie

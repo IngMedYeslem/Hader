@@ -67,6 +67,8 @@
     "plop": "^4.0.1",
     "react-router": "^4.3.1",
     "webpack": "^4.23.1",
-    "webpack-cli": "^3.1.2"
+    "webpack-cli": "^3.1.2",
+    "typescript": "^5.3.3",
+    "@types/react": "~18.3.12"
   }
 }

@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useCallback,useEffect} from "react";
 import { 
   KeyboardAvoidingView, 
   Platform, 
   ImageBackground, 
-  Text, 
-  Image, 
-  View 
-} from "react-native";
+  TouchableOpacity,
+  Text,Image,View} from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import styles from "./styles";  // Importer les styles
 import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
+import { useTranslation } from "react-i18next";
+import { MenuItem } from "react-native-material-menu";
+import { MaterialIcons } from "@expo/vector-icons";
 
 
 export default function LoginScreen({ navigation }) {
@@ -21,6 +22,8 @@ export default function LoginScreen({ navigation }) {
   const [secureText, setSecureText] = useState(true);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState("fr");
 
   const [login, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: async (data) => {
@@ -54,6 +57,25 @@ export default function LoginScreen({ navigation }) {
     await login({ variables: { username, password } });
   };
 
+  const loadLanguage = useCallback(async () => {
+    const savedLang = await AsyncStorage.getItem("language");
+    if (savedLang) {
+      setLanguage(savedLang);
+      i18n.changeLanguage(savedLang);
+    }
+  }, [i18n]);
+
+  useEffect(() => {
+      loadLanguage();
+    }, [loadLanguage]);
+
+  const toggleLanguage = async () => {
+    const newLang = language === "fr" ? "ar" : "fr";
+    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
+    await AsyncStorage.setItem("language", newLang);
+  };
+
   return (
     <ImageBackground 
       source={require('../../assets/b2.jpeg')} 
@@ -64,31 +86,89 @@ export default function LoginScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : "height"} 
         style={styles.keyboardAvoidingView}
       >
-        <Image 
-          source={require('../../assets/logo.jpeg')}
-          style={styles.productImage} 
-        />
         
-        <View style={styles.titleContainer}>
-          <Text style={styles.englishTitle}>Capital Market -</Text>  
-          <Text style={styles.arabicTitle}>سوق كبتال</Text>
-        </View>
+
+                
         
         <Card style={styles.card}>
+            {/* <Text style={styles.arabicTitle}>MC</Text> */}
+         
+<Image 
+          source={require('../../assets/logo.png')}
+          style={[styles.productImage,{textAlign: "left"}]} 
+        />
+
+        <TouchableOpacity
+  style={[
+    styles.navItem,
+    {
+      alignSelf: language === "ar" ? "flex-end" : "flex-start", // pour aligner le bloc entier
+      flexDirection: "row", // même sens pour les enfants
+      alignItems: "center"
+    }
+  ]}
+  onPress={toggleLanguage}
+>
+  <MaterialIcons name="language" size={24} style={styles.colorText} />
+  <Text style={[styles.colorText, { marginLeft: 8 }]}>
+    {language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}
+  </Text>
+</TouchableOpacity>
+
+
           <Card.Content>
-            <Text style={styles.authTitle}>Authentification</Text>
+          <Text style={styles.englishTitle}>{t("cp")}</Text>  
+            <Text style={styles.authTitle}>{t("Authentification")}</Text>
 
             <TextInput
-              label="Username"
-              mode="outlined"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              style={styles.input}
-            />
+  placeholder={t("username")}
+  placeholderTextColor="#C8A55F" // Couleur du placeholder
+  mode="outlined"
+  value={username}
+  onChangeText={setUsername}
+  autoCapitalize="none"
+  style={
+    [styles.input,
+    {
+      textAlign: language === "ar" ? "right" : "left",
+      
 
-            <TextInput
-              label="Mot de passe"
+    }]
+  }
+/>
+
+<TextInput
+  placeholder={t("password")}
+  placeholderTextColor="#C8A55F" // Couleur du placeholder
+  mode="outlined"
+              secureTextEntry={secureText}
+              value={password}
+              onChangeText={setPassword}
+  style={[
+    styles.input,
+    {
+      textAlign: language === "ar" ? "right" : "left",
+    },
+  ]}
+  right={language === "ar" ? null : (
+    <TextInput.Icon 
+      icon={secureText ? "eye-off" : "eye"} 
+      onPress={() => setSecureText(!secureText)}
+    />
+  )}
+  left={language === "ar" ? (
+    <TextInput.Icon 
+      icon={secureText ? "eye-off" : "eye"} 
+      onPress={() => setSecureText(!secureText)}
+    />
+  ) : null}
+/>
+
+
+
+            {/* <TextInput
+             label={<Text style={styles.colorText}>{t("password")}</Text>}
+
               mode="outlined"
               secureTextEntry={secureText}
               value={password}
@@ -100,7 +180,7 @@ export default function LoginScreen({ navigation }) {
                 />
               }
               style={styles.input}
-            />
+            /> */}
 
             <Button
               mode="contained"
@@ -108,15 +188,17 @@ export default function LoginScreen({ navigation }) {
               onPress={handleLogin}
               style={styles.buttonlogin}
             >
-              Se connecter
+              <Text >{t("SeConnecter")}</Text>
+
             </Button>
 
             <Button
               mode="text"
               onPress={() => navigation.navigate("RegisterScreen")}
-              style={styles.registerButton}
             >
-              Créer un compte
+          <Text style={styles.colorText}>{t("Ccompte")}</Text>
+
+              
             </Button>
           </Card.Content>
         </Card>

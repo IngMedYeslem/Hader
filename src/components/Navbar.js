@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { View, Text, TouchableOpacity, Image, FlatList } from "react-native";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { View, Text, TouchableOpacity,ImageBackground, Image } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { Menu, MenuItem, MenuDivider } from "react-native-material-menu";
 import styles from "./styles";
-import * as ImagePicker from 'expo-image-picker'; // Importation d'ImagePicker
-import * as ImageManipulator from 'expo-image-manipulator'; // Importation d'ImageManipulator
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useMutation, gql } from "@apollo/client";
-
 
 const UPDATE_PROFILE_IMAGE = gql`
   mutation UpdateProfileImage($username: String!, $profileImage: String!) {
@@ -22,23 +21,22 @@ const UPDATE_PROFILE_IMAGE = gql`
 const Navbar = () => {
   const navigation = useNavigation();
   const { t, i18n } = useTranslation();
+
   const [language, setLanguage] = useState("fr");
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
-  const [menuVisible, setMenuVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
-  const [register] = useMutation(UPDATE_PROFILE_IMAGE);;
-  const menuRef = useRef(null); // Ajout de useRef pour gérer le menu
+  const [register] = useMutation(UPDATE_PROFILE_IMAGE);
+
+  const menuRefProfile = useRef(null);
+  const menuRefNavigation = useRef(null);
+
+  const role = user?.role || "";
 
   const loadLanguage = useCallback(async () => {
-    try {
-      const savedLang = await AsyncStorage.getItem("language");
-      if (savedLang) {
-        setLanguage(savedLang);
-        i18n.changeLanguage(savedLang);
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement de la langue :", error);
+    const savedLang = await AsyncStorage.getItem("language");
+    if (savedLang) {
+      setLanguage(savedLang);
+      i18n.changeLanguage(savedLang);
     }
   }, [i18n]);
 
@@ -48,44 +46,36 @@ const Navbar = () => {
 
   useFocusEffect(
     useCallback(() => {
-      async function loadUser() {
+      const loadUser = async () => {
         try {
           const savedUser = await AsyncStorage.getItem("user");
           const savedProfileImage = await AsyncStorage.getItem("profileImage");
 
           if (savedUser) {
             const parsedUser = JSON.parse(savedUser);
-            setUser({ ...parsedUser, profileImage: savedProfileImage || parsedUser.profileImage });
-            setRole(parsedUser.role);
-            setProfileImage(savedProfileImage || parsedUser.profileImage);
+            const finalImage = savedProfileImage || parsedUser.profileImage;
+            setUser({ ...parsedUser, profileImage: finalImage });
+            setProfileImage(finalImage);
           }
         } catch (error) {
-          console.error("Erreur lors de la récupération des données utilisateur :", error);
+          console.error("Erreur récupération utilisateur :", error);
         }
-      }
+      };
       loadUser();
     }, [])
   );
-  useEffect(() => {
-      if (user?.profileImage) {
-        setProfileImage(user.profileImage);
-      }
-    }, [user?.profileImage]);
-  
-const selectProfileImage = async () => {
-  try {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.5,
-      base64: true,
-    });
 
-    if (result.canceled) return;
+  const selectProfileImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.5,
+        base64: true,
+      });
 
-    if (result.assets && result.assets.length > 0) {
+      if (result.canceled || !result.assets?.length) return;
+
       const selectedImage = result.assets[0];
-
-      // Compression de l'image
       const compressedImage = await ImageManipulator.manipulateAsync(
         selectedImage.uri,
         [{ resize: { width: 500 } }],
@@ -93,42 +83,24 @@ const selectProfileImage = async () => {
       );
 
       const base64Image = `data:image/jpeg;base64,${compressedImage.base64}`;
-      setUser((prevUser) => ({
-        ...prevUser,
-        profileImage: base64Image,
-      }));
-
-      // Mise à jour locale immédiate
+      setUser(prev => ({ ...prev, profileImage: base64Image }));
       setProfileImage(base64Image);
-
-      // Enregistrement dans le stockage local
       await AsyncStorage.setItem("profileImage", base64Image);
 
-      // Appel API pour mettre à jour l'image sur le serveur
-      const { data } = await register({ 
-        variables: { 
-          username: user.username, 
-          profileImage: base64Image
-        } 
+      const { data } = await register({
+        variables: { username: user.username, profileImage: base64Image }
       });
 
-      // Vérifier la réponse et mettre à jour l'image avec celle renvoyée par l'API
-      if (data && data.updateProfileImage && data.updateProfileImage.profileImage) {
-        setUser((prevUser) => ({
-          ...prevUser,
-          profileImage: data.updateProfileImage.profileImage,
-        }));
-
-        setProfileImage(data.updateProfileImage.profileImage);
-        await AsyncStorage.setItem("profileImage", data.updateProfileImage.profileImage);
+      const updatedImage = data?.updateProfileImage?.profileImage;
+      if (updatedImage) {
+        setUser(prev => ({ ...prev, profileImage: updatedImage }));
+        setProfileImage(updatedImage);
+        await AsyncStorage.setItem("profileImage", updatedImage);
       }
+    } catch (error) {
+      console.error("Erreur sélection image :", error);
     }
-  } catch (error) {
-    console.error("Erreur lors de la sélection de l'image :", error);
-  }
-};
-
-
+  };
 
   const toggleLanguage = async () => {
     const newLang = language === "fr" ? "ar" : "fr";
@@ -141,44 +113,33 @@ const selectProfileImage = async () => {
     try {
       await AsyncStorage.clear();
       setUser(null);
-      setRole(null);
-      setMenuVisible(false);
       navigation.replace("Login");
     } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
+      console.error("Erreur déconnexion :", error);
     }
   };
 
-  const navItems = [
-    
-    
-  ];
+  const navItems = useMemo(() => {
+    const items = [];
 
- 
+    if (role.includes("ADMIN")) {
+      items.push({ id: "1", name: t("GestionRoles"), icon: "list", screen: "AddRole" });
+      items.push({ id: "2", name: t("GestionUsers"), icon: "list", screen: "UserAdminScreen" });
+    }
+    if (role.includes("LIST-PROD")) {
+      items.push({ id: "3", name: t("Produits"), icon: "list", screen: "Products" });
+    }
+    if (role.includes("AJOUT-PROD")) {
+      items.push({ id: "4", name: t("AjouterProd"), icon: "plus-circle", screen: "addProduct" });
+    }
 
-  if (role && role.includes("ADMIN")) {
-    navItems.push({ id: "1", name: t("GestionRoles"), icon: "list", screen: "AddRole" });
-  }
+    return items;
+  }, [role, t]);
 
-  if (role && role.includes("ADMIN")) {
-    navItems.push( { id: "3", name: t("GestionUsers"), icon: "list", screen: "UserAdminScreen" });
-  }
-  
-  if (role && role.includes("LIST-PROD")) {
-    navItems.push({ id: "4", name: t("Produits"), icon: "list", screen: "Products" });
-  }
-
-  if (role && role.includes("AJOUT-PROD")) {
-    navItems.push({ id: "2", name: t("AjouterProd"), icon: "plus-circle", screen: "addProduct" });
-  }
-  
-
- 
   const renderProfile = () => {
-    if (user && user.username) {
+    if (user?.username) {
       return user.profileImage ? (
-        <Feather name="user" size={25} color="white" />
-
+        <Feather name="user" size={25} style={styles.colorText}/>
       ) : (
         <View style={styles.initialsContainer}>
           <Text style={styles.profileInitials}>{user.username[0].toUpperCase()}</Text>
@@ -189,99 +150,107 @@ const selectProfileImage = async () => {
   };
 
   return (
-    <View style={styles.navbar} >
-      <FlatList
-        data={navItems}
-        horizontal
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate(item.screen)}>
-            <Feather name={item.icon} size={24} color="white" />
-            <Text style={styles.navText}>{item.name}</Text>
+    <View style={styles.navbar}>
+      <Menu
+        ref={menuRefNavigation}
+        anchor={
+          <TouchableOpacity style={styles.profileContainer} onPress={() => menuRefNavigation.current?.show()}>
+            <Feather name="menu" size={24} style={styles.colorText} />
           </TouchableOpacity>
-        )}
+        }
+        onRequestClose={() => menuRefNavigation.current?.hide()}
+      >
+        {navItems.map((item) => (
+          <MenuItem
+            key={item.id}
+            onPress={() => {
+              navigation.navigate(item.screen);
+              menuRefNavigation.current?.hide();
+            }}
+          >
+            <Feather name={item.icon} size={20} color="black" />
+            <Text style={styles.menuText}>{item.name}</Text>
+          </MenuItem>
+        ))}
+      </Menu>
+
+
+
+
+     
+
+
+ {/* Logo centré et cliquable */}
+ <View >
+    <TouchableOpacity onPress={() => navigation.navigate("HomeScreen")}>
+      <Image 
+        source={require('../../assets/logo.png')}
+        style={styles.logoContainer} 
+        resizeMode="contain"
       />
+    </TouchableOpacity>
+  </View>
+
+
+    
 
       <View style={styles.rightContainer}>
-        <TouchableOpacity style={styles.navItem} onPress={toggleLanguage}>
-          <MaterialIcons name="language" size={24} color="white" />
-          <Text style={styles.navText}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
-        </TouchableOpacity>
-
-        {/* <TouchableOpacity style={styles.profileContainer} onPress={() => setMenuVisible(true)}>
-          {renderProfile()}
-        </TouchableOpacity> */}
-      </View>
-
-    <View style={styles.rightContainer}>
-  <Menu
-    ref={menuRef}
-    anchor={
-      <TouchableOpacity style={styles.profileContainer} onPress={() => menuRef.current?.show()}>
-        {renderProfile()}
-      </TouchableOpacity>
-    }
-    onRequestClose={() => menuRef.current?.hide()}
-
-    // style={styles.menuContainer}
-  >
-    {user ? (
-      <>
-        {/* 🔹 Section Profil */}
-        <View style={styles.profileHeader}>
-        <TouchableOpacity onPress={selectProfileImage}>
-          <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
-        </TouchableOpacity>
-          <MenuItem disabled style={styles.username}>
-            {t("Bonjour")}, {user.username}
-          </MenuItem>
-        </View>
-
-        <MenuDivider />
-
-        <MenuItem>{t("nomWorck")}</MenuItem>
-
-        {/* 🔹 Email */}
-        <MenuItem>
-          <Feather name="mail" size={20} color="red" />
-          <Text style={styles.logoutText}>{user.email}</Text>
-        </MenuItem>
-
-        {/* 🔹 Mise à jour du profil
-        <MenuItem
-          onPress={() => {
-            setMenuVisible(false);
-            navigation.navigate("UpdateUserScreen");
-          }}
+        <Menu
+          ref={menuRefProfile}
+          anchor={
+            <TouchableOpacity style={styles.profileContainer} onPress={() => menuRefProfile.current?.show()}>
+              {renderProfile()}
+            </TouchableOpacity>
+          }
+          onRequestClose={() => menuRefProfile.current?.hide()}
         >
-          <Feather name="edit" size={20} color="blue" />
-          <Text style={styles.menuText}>{t("updateProfil")}</Text>
-        </MenuItem> */}
+          {user ? (
+            <>
+              <View style={styles.profileHeader}>
+                <TouchableOpacity onPress={selectProfileImage}>
+                  <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+                </TouchableOpacity>
+                <MenuItem disabled style={styles.language}>
+                  {t("Bonjour")}, {user.username}
+                </MenuItem>
+              </View>
 
-        <MenuDivider />
+              <MenuDivider />
 
-        {/* 🔹 Déconnexion */}
-        <MenuItem onPress={handleLogout}>
-          <Feather name="log-out" size={20} color="red" />
-          <Text style={styles.logoutText}>{t("Déconnexion")}</Text>
+              <MenuItem ><Text style={styles.language}>{t("nomWorck")}</Text></MenuItem>
+
+              {/* <MenuItem>
+                <Feather name="mail" size={20} color="red" />
+                <Text style={styles.language}>{user.email}</Text>
+              </MenuItem> */}
+
+
+              <MenuItem style={styles.navItem} onPress={toggleLanguage}>
+        {/* <TouchableOpacity style={styles.navItem} onPress={toggleLanguage}> */}
+        
+          <MaterialIcons name="language" size={24} color= "#005bb5" />
+          <Text style={styles.language}>{language === "fr" ? "🇫🇷 France" : "🇲🇷 العربية"}</Text>
+        {/* </TouchableOpacity> */}
         </MenuItem>
-      </>
-    ) : (
-      <MenuItem
-        onPress={() => {
-          // setMenuVisible(false);
-          navigation.navigate("Login");
-        }}
-      >
-        <Feather name="log-in" size={20} color="green" />
-        <Text style={styles.loginText}>{t("Se connecter")}</Text>
-      </MenuItem>
-    )}
-  </Menu>
-</View>
 
+              <MenuDivider />
+
+
+
+              <MenuItem onPress={handleLogout}>
+                <Feather name="log-out" size={20} color="red" />
+                <Text style={styles.logoutText}>{t("Déconnexion")}</Text>
+              </MenuItem>
+            </>
+          ) : (
+            <MenuItem onPress={() => navigation.navigate("Login")}>
+              <Feather name="log-in" size={20} color="green" />
+              <Text style={styles.loginText}>{t("Se connecter")}</Text>
+            </MenuItem>
+          )}
+        </Menu>
+      </View>
     </View>
-
   );
 };
 

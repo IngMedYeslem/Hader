@@ -1,19 +1,17 @@
-import React, { useState } from "react";
+import React, { useState , useCallback,useEffect} from "react";
 import { 
   KeyboardAvoidingView, 
   Platform, 
   ImageBackground, 
   Text, 
-  Image, 
-  View 
-} from "react-native";
+  Image} from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
 import styles from "./styles";  // Importer les styles
-
+import { useTranslation } from "react-i18next";
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!, $profileImage: String) {
@@ -34,7 +32,8 @@ export default function RegisterScreen({ navigation }) {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [profileImage, setProfileImage] = useState(null);
-
+const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState("fr");
   const [register, { loading }] = useMutation(REGISTER_MUTATION, {
     
     onCompleted: async (data) => {
@@ -135,6 +134,25 @@ export default function RegisterScreen({ navigation }) {
     });
   };
 
+   const loadLanguage = useCallback(async () => {
+      const savedLang = await AsyncStorage.getItem("language");
+      if (savedLang) {
+        setLanguage(savedLang);
+        i18n.changeLanguage(savedLang);
+      }
+    }, [i18n]);
+  
+    useEffect(() => {
+        loadLanguage();
+      }, [loadLanguage]);
+  
+    const toggleLanguage = async () => {
+      const newLang = language === "fr" ? "ar" : "fr";
+      setLanguage(newLang);
+      i18n.changeLanguage(newLang);
+      await AsyncStorage.setItem("language", newLang);
+    };
+
   return (
     <ImageBackground 
       source={require('../../assets/b2.jpeg')} 
@@ -145,22 +163,24 @@ export default function RegisterScreen({ navigation }) {
         behavior={Platform.OS === "ios" ? "padding" : "height"} 
         style={styles.keyboardAvoidingView}
       >
-        <Image 
-          source={require('../../assets/logo.jpeg')}
+        {/* <Image 
+          source={require('../../assets/logo.png')}
           style={styles.productImage} 
-        />
+        /> */}
 
-<View style={styles.titleContainer}>
+{/* <View style={styles.titleContainer}>
             <Text style={styles.englishTitle}>Capital Market -</Text>  
             <Text style={styles.arabicTitle}>  سوق كبتال</Text>
-          </View>
+          </View> */}
         <Card style={styles.card}>
           
-          <Text style={styles.createAccountText}>Créer un compte</Text>
+          <Text style={[styles.authTitle,styles.createAccountText]}>{t("Ccompte")}</Text>
+
 
           <Card.Content>
             <TextInput
-              label="Nom d'utilisateur"
+             label= {<Text style={styles.colorText}>{t("username")}</Text>}
+
               mode="outlined"
               value={username}
               onChangeText={setUsername}
@@ -169,7 +189,7 @@ export default function RegisterScreen({ navigation }) {
             />
 
             <TextInput
-              label="Email"
+              label= {<Text style={styles.colorText}>{t("email")}</Text>}
               mode="outlined"
               value={email}
               onChangeText={setEmail}
@@ -179,8 +199,8 @@ export default function RegisterScreen({ navigation }) {
             />
 
             <TextInput
-              label="Mot de passe"
-              mode="outlined"
+             label={<Text style={styles.colorText}>{t("password")}</Text>}
+             mode="outlined"
               secureTextEntry={secureText}
               value={password}
               onChangeText={setPassword}
@@ -194,7 +214,8 @@ export default function RegisterScreen({ navigation }) {
             />
 
             <TextInput
-              label="Confirmer le mot de passe"
+              label={<Text style={styles.colorText}>{t("confirmPassword")}</Text>}
+
               mode="outlined"
               secureTextEntry={secureText}
               value={confirmPassword}
@@ -213,7 +234,8 @@ export default function RegisterScreen({ navigation }) {
               onPress={selectProfileImage}
               style={styles.button}
             >
-              Sélectionner une image de profil
+             <Text >{t("selectProfileImage")}</Text>
+
             </Button>
 
             {profileImage && (
@@ -229,7 +251,8 @@ export default function RegisterScreen({ navigation }) {
               onPress={handleRegister}
               style={styles.button}
             >
-              S'inscrire
+              <Text >{t("inscrire")}</Text>
+
             </Button>
 
             <Button 
@@ -237,7 +260,7 @@ export default function RegisterScreen({ navigation }) {
               onPress={() => navigation.navigate("Login")}
               style={styles.loginButton}
             >
-              <Text style={{ fontSize: 10 }}>Vous avez déjà un compte ? Connectez-vous</Text>
+              <Text  style={[{ fontSize: 10 }, styles.colorText]}>{t("VConnectezVous")}</Text>
             </Button>
           </Card.Content>
         </Card>

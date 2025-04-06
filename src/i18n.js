@@ -16,6 +16,7 @@ const resources = {
       login: "Se connecter",
       username: "Nom d'utilisateur",
       password: "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
       authentication: "Authentification",
       incorrectCredentials: "Identifiants incorrects.",
       enterUsernamePassword: "Veuillez entrer un nom d'utilisateur et un mot de passe.",
@@ -37,9 +38,13 @@ const resources = {
       "SeConnecter": "Se connecter",
       "Bonjour": "Bonjour",
       "NomWorck": "Nom du travail",
-      "SeDeconnecter": "Se déconnecter"
-    
-    
+      "SeDeconnecter": "Se déconnecter",
+      "cp": "𝕄𝕒𝕣𝕔𝕙é ℂ𝕒𝕡𝕚𝕥𝕒𝕝𝕖",
+      "Authentification": "Authentification",
+      "Ccompte": "Créer un compte",
+    "selectProfileImage": "Sélectionner une image de profil",
+    "inscrire": "S'inscrire",
+    "VConnectezVous": "Vous avez déjà un compte ? Connectez-vous?",
     }
   },
   ar: {
@@ -60,7 +65,7 @@ const resources = {
       enterUsernamePassword: "يرجى إدخال اسم المستخدم وكلمة المرور.",
       "Déconnexion": "تسجيل الخروج",
       "Bonjour": "مرحبا",
-    "email": "إيميل",
+    "email": "البريد الإلكتروني",
       "nomWorck": "سوق كابتال الخاص بي",
       "GestionRoles": "إدارة الأدوار",
       "updateProfil": "تحديث الملف الشخصي",
@@ -76,9 +81,14 @@ const resources = {
         "SeConnecter": "تسجيل الدخول",
         "Bonjour": "مرحباً",
         "NomWorck": "اسم العمل",
-        "SeDeconnecter": "تسجيل الخروج"
-      
-         
+        "SeDeconnecter": "تسجيل الخروج",
+        "cp": "سُــوقْ كَــبِّـتَــالْ",
+      "Authentification": "المصادقة",
+      "Ccompte": "إنشاء حساب",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "selectProfileImage": "اختر صورة الملف الشخصي",
+      "inscrire": "تسجيل",
+      "VConnectezVous": "هل لديك حساب بالفعل؟ قم بتسجيل الدخول?",
     }
   }
 };

@@ -11,13 +11,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#005bb5",
+    backgroundColor: "#2C3E50",
     paddingVertical: 0,
     paddingHorizontal: 10,
     width: "100%",
     height: 80, // Ajuste la hauteur selon tes besoins
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    // borderBottomLeftRadius: 30,
+    // borderBottomRightRadius: 30,
     elevation: 5, // Ajoute une ombre sur Android
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
@@ -29,15 +31,18 @@ const styles = StyleSheet.create({
 ,  
       navItem: {
         flexDirection: "column",
-        alignItems: "center",
+        // alignItems: "center",
         marginHorizontal: 5,
         marginVertical: 15,
       },
       navText: {
         fontSize: 12,
         fontWeight: "bold",
-        color: "white",
-        marginTop: 5,
+        color: "#005bb5",
+         marginTop: 5,
+      },
+      language: {
+       color: "#005bb5"
       },
       rightContainer: {
         flexDirection: "row",
@@ -108,7 +113,7 @@ const styles = StyleSheet.create({
       },
       title: {
         fontSize: 35,
-        color: "rgba(4, 66, 200, 0.9)",
+        color: "#C8A55F",
         marginBottom: 20,
         textAlign: "center",
         fontWeight: "bold",
@@ -116,12 +121,18 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 3, height: 3 },
         textShadowRadius: 5,
       },
-      input: {
-        marginBottom: 15,
+      colorText: {
+        color: "#C8A55F",
       },
+
+      input: {
+        color: "#C8A55F", // Couleur du texte saisi
+        marginBottom: 15 ,
+            
+       },
       button: {
         marginTop: 10,
-        backgroundColor: "#005bb5",
+        backgroundColor: "#C8A55F",
       },
       loader: {
         marginTop: 10,
@@ -148,7 +159,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 20, 
     borderRadius: 20, 
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    backgroundColor: "#2C3E50",
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -157,12 +168,13 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
-  englishTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5' },
-  arabicTitle: { fontSize: 24, fontWeight: 'bold', color: '#005bb5', marginLeft: 5 },
-  authTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#005bb5' },
-  buttonlogin: { marginTop: 20, padding: 8, backgroundColor: "#005bb5", borderRadius: 30 },
-  registerButton: { marginTop: 10, alignSelf: "center", color: "#005bb5" },
-  productImage: { width: 80, height: 80, alignSelf: "center", marginBottom: 20, borderRadius: 40 },
+  englishTitle: { fontSize: 30, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: 'white', textShadowRadius: 5, },
+  arabicTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginLeft: 5 },
+  authTitle: { fontSize: 20, 
+     textAlign: 'center', marginBottom: 20, color: '#C8A55F' },
+  buttonlogin: { marginTop: 20, padding: 8, backgroundColor: "#C8A55F", borderRadius: 30 },
+  registerButton: { marginTop: 10, alignSelf: "center",  color: '#C8A55F'  },
+  productImage: { width: 70, height: 70, alignSelf: "center", marginBottom: 8, borderRadius: 40 },
   wrapper: {
     flex: 1, 
   },
@@ -192,7 +204,7 @@ const styles = StyleSheet.create({
   loginButton: { marginTop: 10, alignSelf: "center" },
   profileImagePreview: { width: 100, height: 100, alignSelf: "center", marginTop: 10, borderRadius: 50 },
 
-  createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10, color: "#005bb5" },
+  createAccountText: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 10 },
 
 
   profileMenuWrapper: {
@@ -220,12 +232,19 @@ const styles = StyleSheet.create({
   },
   menuText: {
     marginLeft: 10,
+    color: "#005bb5"
+
   },
   logoutText: {
     marginLeft: 10,
     color: "red",
   },
+  logoContainer: {
+    
+    
+    width: 50, height: 80, alignSelf: "center", marginBottom: 2, borderRadius: 40 
 
+  },
   // Autres styles globaux
 });
 
