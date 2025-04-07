@@ -1,18 +1,18 @@
-// LoginScreen.js
 import React, { useState } from "react";
 import { 
-  KeyboardAvoidingView, 
+  View, // Remplace KeyboardAvoidingView
   Platform, 
   ImageBackground, 
   Text,
-  Image} from "react-native";
+  Image
+} from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
-import styles from "./styles";  // Importer les styles
+import styles from "./styles";
 
 export default function LoginScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -26,15 +26,13 @@ export default function LoginScreen({ navigation }) {
     onCompleted: async (data) => {
       if (data.login.token) {
         await AsyncStorage.setItem("token", data.login.token);
-
         const userData = {
           username: data.login.username,
           email: data.login.email,
           profileImage: data.login.profileImage,
-          role: data.login.roles, // Stocker les rôles aussi
+          role: data.login.roles,
         };
         await AsyncStorage.setItem("user", JSON.stringify(userData));
-
         navigation.replace("HomeScreen");
       }
     },
@@ -59,10 +57,8 @@ export default function LoginScreen({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
-        style={styles.keyboardAvoidingView}
-      >
+      {/* Remplacement de KeyboardAvoidingView par View */}
+      <View style={styles.container}>
         <Card style={styles.card}>
           <Image 
             source={require('../../assets/logo.png')}
@@ -84,9 +80,7 @@ export default function LoginScreen({ navigation }) {
               autoCapitalize="none"
               style={[
                 styles.input,
-                {
-                  textAlign: i18n.language === "ar" ? "right" : "left", // Dynamique en fonction de la langue
-                }
+                { textAlign: i18n.language === "ar" ? "right" : "left" }
               ]}
             />
 
@@ -99,9 +93,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setPassword}
               style={[
                 styles.input,
-                {
-                  textAlign: i18n.language === "ar" ? "right" : "left", // Dynamique en fonction de la langue
-                }
+                { textAlign: i18n.language === "ar" ? "right" : "left" }
               ]}
               right={i18n.language === "ar" ? null : (
                 <TextInput.Icon 
@@ -134,7 +126,6 @@ export default function LoginScreen({ navigation }) {
             </Button>
           </Card.Content>
         </Card>
-
         <Snackbar
           visible={snackbarVisible}
           onDismiss={() => setSnackbarVisible(false)}
@@ -142,7 +133,7 @@ export default function LoginScreen({ navigation }) {
         >
           {snackbarMessage}
         </Snackbar>
-      </KeyboardAvoidingView>
+      </View>
     </ImageBackground>
   );
 }

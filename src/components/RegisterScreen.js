@@ -4,7 +4,7 @@ import {
   Platform, 
   ImageBackground, 
   Text, 
-  Image 
+  Image,View 
 } from "react-native";
 import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation, gql } from "@apollo/client";
@@ -151,10 +151,7 @@ export default function RegisterScreen({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
-        style={styles.keyboardAvoidingView}
-      >
+    <View style={styles.container}>
         <Card style={styles.card}>
           <Text style={[styles.authTitle, styles.createAccountText]}>
             {t("Ccompte")}
@@ -281,7 +278,7 @@ export default function RegisterScreen({ navigation }) {
         >
           {snackbarMessage}
         </Snackbar>
-      </KeyboardAvoidingView>
+      </View>
     </ImageBackground>
   );
 }

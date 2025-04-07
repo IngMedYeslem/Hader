@@ -72,7 +72,7 @@ const UserMenuScreen = () => {
   const handleLogout = () => {
     Alert.alert(
       t("Confirmation"),
-      t("Voulez-vous vraiment vous déconnecter ?"),
+      t("cdeconnecter"),
       [
         { text: t("Annuler"), style: "cancel" },
         {

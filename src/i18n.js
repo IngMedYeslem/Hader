@@ -45,7 +45,10 @@ const resources = {
     "selectProfileImage": "Sélectionner une image de profil",
     "inscrire": "S'inscrire",
     "VConnectezVous": "Vous avez déjà un compte ? Connectez-vous?",
-    "mainMenu": "Menu principal"
+    "mainMenu": "Menu principal",
+    "Confirmation": "Confirmation",
+    "cdeconnecter": "Voulez-vous vraiment vous déconnecter ?",
+    "Annuler": "Annuler",
     }
   },
   ar: {
@@ -90,7 +93,10 @@ const resources = {
       "selectProfileImage": "اختر صورة الملف الشخصي",
       "inscrire": "تسجيل",
       "VConnectezVous": "هل لديك حساب بالفعل؟ قم بتسجيل الدخول?",
-      "mainMenu": "القائمة الرئيسية"
+      "mainMenu": "القائمة الرئيسية",
+      "Confirmation": "تأكيد",
+      cdeconnecter: "هل تريد حقًا تسجيل الخروج؟",
+      "Annuler": "إلغاء",
     }
   }
 };

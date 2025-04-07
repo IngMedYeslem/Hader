@@ -49,7 +49,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
       },
       profileContainer: {
-        marginLeft: 15,
+        // marginLeft: 15,
+        marginLeft: 'auto',  // Pousse l'élément complètement à droite
+
       },
       profileImage: {
         width: 40,
@@ -107,7 +109,7 @@ const styles = StyleSheet.create({
       container: {
         padding: 20,
         backgroundColor: "rgba(255, 255, 255, 0.2)",
-        marginHorizontal: 20,
+        // marginHorizontal: 20,
         borderRadius: 10,
         elevation: 5,
       },
@@ -155,7 +157,25 @@ const styles = StyleSheet.create({
          backgroundColor: "rgba(0, 0, 0, 0.5)",
           padding: 10, borderRadius: 8 },
     
-      keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
+  //     keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
+  // card: {
+  //   padding: 20, 
+  //   borderRadius: 20, 
+  //   backgroundColor: "#2C3E50",
+  //   elevation: 5,
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.2,
+  //   shadowRadius: 5,
+  //   borderWidth: 0,
+  // },
+  keyboardAvoidingView: { 
+    flex: 1, 
+    justifyContent: "center", 
+    padding: 20,
+    // Empêche le défilement indésirable
+    width: '100%',
+  },
   card: {
     padding: 20, 
     borderRadius: 20, 
@@ -242,9 +262,36 @@ const styles = StyleSheet.create({
   logoContainer: {
     
     
-    width: 50, height: 80, alignSelf: "center", marginBottom: 2, borderRadius: 40 
+    width: 50, height: 50, alignSelf: "center", marginBottom: 2, borderRadius: 40 
 
   },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  
+  logoImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25, // La moitié de la width/height pour un cercle parfait
+  },
+  
+ 
+  logoButton: {
+    position: 'absolute',
+    left: '50%',
+    right: '50%',
+    alignItems: 'center',
+  },
+  userImage: {
+   
+    color: "#C8A55F",
+   
+
+  },
+  
   // Autres styles globaux
 });
 
