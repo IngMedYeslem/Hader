@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, ImageBackground, Text } from "react-native";
+import { ScrollView, View, ImageBackground, Text ,TouchableOpacity} from "react-native";
 import { Card, TextInput, Button, Snackbar, ActivityIndicator } from "react-native-paper";
 import { useQuery, useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -9,6 +9,8 @@ import Navbar from "./Navbar";
 import { useTranslation } from "react-i18next";
 import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
+
+// import { Ionicons } from '@expo/vector-icons';
 
 export default function UserAdminScreen() {
   const { t } = useTranslation();
@@ -75,17 +77,22 @@ export default function UserAdminScreen() {
       <Navbar />
       <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
         <ScrollView contentContainerStyle={styles.container}>
-          <Button mode="contained" onPress={() => navigation.goBack()} style={styles.button}>
-            {t("Retour")}
-          </Button>
-          <Text style={styles.title}>{t("Gestion des utilisateurs")}</Text>
+       
+       
+        {/* <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backHistoryBtn}>
+        <Ionicons name="arrow-back" size={28} color="white" />
+       </TouchableOpacity>
+       </View> */}
+{/* <Text style={styles.title}>{t("Gestion des utilisateurs")}</Text> */}
+
           {data?.users.map((user) => (
-            <Card key={user.id} style={styles.card}>
+            <Card key={user.id} style={styles.cardusergestion}>
               <Card.Title title={user.username} subtitle={user.email} />
               <Card.Content>
                 {editingUser?.id === user.id ? (
                   <>
-                    <TextInput label={t("Nom")} value={updatedData.username} onChangeText={(text) => handleChange("username", text)} style={styles.input} />
+                    <TextInput label={t("Nom")} value={updatedData.username} onChangeText={(text) => handleChange("username", text)} style={styles.input} disabled/>
                     <TextInput label={t("Email")} value={updatedData.email} onChangeText={(text) => handleChange("email", text)} style={styles.input} />
                     <TextInput label={t("Roles")} value={updatedData.roles} onChangeText={(text) => handleChange("roles", text)} style={styles.input} />
                     <Button mode="contained" onPress={handleSave} loading={updating} style={styles.button}>

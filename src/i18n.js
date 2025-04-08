@@ -26,7 +26,7 @@ const resources = {
     "nomWorck": "Mon capital market",
     "GestionRoles": "Gestion des Rôles",
     "updateProfil": "Mettre à jour le profil",
-    GestionUsers: "Gestion des Utilisateurs",
+    "GestionUsers": "Gestion des Utilisateurs",
     
       "AjouterRole": "Ajouter un Rôle",
       "NomRole": "Nom du rôle (ex: ADMIN)",
@@ -49,6 +49,12 @@ const resources = {
     "Confirmation": "Confirmation",
     "cdeconnecter": "Voulez-vous vraiment vous déconnecter ?",
     "Annuler": "Annuler",
+    "Retour": "Retour",
+    "Modifier": "Modifier",
+    "Enregistrer": "Enregistrer",
+    "HomeScreen": "Écran d'accueil",
+    "profile": "Profil",
+
     }
   },
   ar: {
@@ -97,6 +103,11 @@ const resources = {
       "Confirmation": "تأكيد",
       cdeconnecter: "هل تريد حقًا تسجيل الخروج؟",
       "Annuler": "إلغاء",
+      "Retour": "عودة",
+      "Modifier": "تعديل",
+      "Enregistrer": "حفظ",
+      "HomeScreen": "الشاشة الرئيسية",
+      "profile": "الملف الشخصي",
     }
   }
 };

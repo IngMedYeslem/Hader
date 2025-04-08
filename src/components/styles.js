@@ -157,18 +157,7 @@ const styles = StyleSheet.create({
          backgroundColor: "rgba(0, 0, 0, 0.5)",
           padding: 10, borderRadius: 8 },
     
-  //     keyboardAvoidingView: { flex: 1, justifyContent: "center", padding: 20 },
-  // card: {
-  //   padding: 20, 
-  //   borderRadius: 20, 
-  //   backgroundColor: "#2C3E50",
-  //   elevation: 5,
-  //   shadowColor: "#000",
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowOpacity: 0.2,
-  //   shadowRadius: 5,
-  //   borderWidth: 0,
-  // },
+  
   keyboardAvoidingView: { 
     flex: 1, 
     justifyContent: "center", 
@@ -186,6 +175,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     borderWidth: 0,
+  },
+
+  cardusergestion: {
+    padding: 20,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF", // Intérieur blanc
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    borderWidth: 1,             // Bordure visible
+    borderColor: "#2C3E50",         // Couleur de la bordure
+    marginBottom: 20, // ✅ espace entre les cards
+
   },
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
   englishTitle: { fontSize: 30, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: 'white', textShadowRadius: 5, },
@@ -291,6 +295,52 @@ const styles = StyleSheet.create({
    
 
   },
+  backButtonModern: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+
+  },
+  
+  backButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: "#C8A55F",
+    fontWeight: "500",
+  },
+
+  backHistoryBtn: {
+    padding: 10,
+    borderRadius: 50,
+    alignSelf: "flex-start",
+    marginLeft: 16,
+    marginTop: 40,
+    backgroundColor: "#C8A55F", // ou "transparent" si tu veux juste l'icône
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },  
+
+  headerGlobal: {
+    // backgroundColor: "#C8A55F", 
+    // headerTintColor: "#C8A55F", 
+    backgroundColor: "#2C3E50",
+
+    fontSize: 18,
+        color: "#C8A55F",
+        // marginBottom: 20,
+        textAlign: "center",
+        fontWeight: "bold",
+        textShadowColor: "rgba(0, 0, 0, 0.9)",
+        textShadowOffset: { width: 3, height: 3 },
+        textShadowRadius: 5,
+  },  
+  
+  
   
   // Autres styles globaux
 });

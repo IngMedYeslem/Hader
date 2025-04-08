@@ -138,12 +138,6 @@ export default function RegisterScreen({ navigation }) {
     loadLanguage();
   }, [loadLanguage]);
 
-  const toggleLanguage = async () => {
-    const newLang = language === "fr" ? "ar" : "fr";
-    setLanguage(newLang);
-    i18n.changeLanguage(newLang);
-    await AsyncStorage.setItem("language", newLang);
-  };
 
   return (
     <ImageBackground 

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, ImageBackground } from "react-native";
+import { View, Text, ImageBackground,TouchableOpacity } from "react-native";
 import { useMutation, gql } from "@apollo/client";
 import { Card, Button, TextInput, Snackbar } from "react-native-paper";
 import Navbar from "./Navbar";
 import styles from "./styles";
 import { useTranslation } from "react-i18next";  // Importer la traduction
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
 
 // 🔹 Mutation GraphQL pour ajouter un rôle
 const ADD_ROLE_MUTATION = gql`
@@ -23,6 +25,7 @@ const AddRole = () => {
   const [snackbarError, setSnackbarError] = useState(false);
   const [addRole, { loading, error }] = useMutation(ADD_ROLE_MUTATION);
   const { t } = useTranslation(); // Hook de traduction
+  const navigation = useNavigation();
 
   const handleSubmit = async () => {
     if (!roleName.trim()) {
@@ -49,6 +52,9 @@ const AddRole = () => {
     <View style={{ flex: 1 }}>
       <Navbar />
       <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
+
+     
+
         <View style={styles.container}>
           <Text style={styles.title}>{t("AjouterRole")}</Text>
           <Card style={styles.card}>

@@ -18,6 +18,9 @@ import NavigationListScreen from "./src/components/NavigationListScreen";  // É
 import "./src/i18n";
 import UserMenuScreen from "./src/components/UserMenuScreen";
 const Stack = createStackNavigator();
+import styles from "./src/components/styles";
+import { Text,Platform} from "react-native";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -26,6 +29,7 @@ const API_URL = Constants.expoConfig?.extra?.API_URL || "http://localhost:4000";
 
 export default function App() {
   const [client, setClient] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const httpLink = createHttpLink({ uri: `${API_URL}/graphql` });
@@ -65,15 +69,46 @@ export default function App() {
     gestureEnabled: false, // Désactive le swipe pour tous les écrans
   }}>
           <Stack.Screen name="Login" component={LoginScreen}  />
-          <Stack.Screen name="HomeScreen" component={HomeScreen}  />
+          <Stack.Screen name="HomeScreen" component={HomeScreen}  options={{
+          headerShown: true,
+          headerTitle: () => ( <Text style={styles.headerGlobal}>{t("HomeScreen")}</Text>  ),
+          headerStyle: {backgroundColor: styles.card.backgroundColor,  },
+          headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
+          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerLeft: () => null, // ❌ Masque la flèche de retour
+        }} />
           <Stack.Screen name="addProduct" component={AddProductForm}  />
           <Stack.Screen name="Products" component={ProductList}  />
           <Stack.Screen name="RegisterScreen" component={RegisterScreen}  />
           <Stack.Screen name="UpdateUserScreen" component={UpdateUserScreen}  />
-          <Stack.Screen name="AddRole" component={AddRole}  />
-          <Stack.Screen name="UserAdminScreen" component={UserAdminScreen}  />
-          <Stack.Screen name="NavigationListScreen" component={NavigationListScreen}  />
-          <Stack.Screen name="UserMenuScreen" component={UserMenuScreen}  />
+          <Stack.Screen name="AddRole" component={AddRole}  options={{
+          headerShown: true,
+          headerTitle: () => ( <Text style={styles.headerGlobal}>{t("AjouterRole")}</Text>  ),
+          headerStyle: {backgroundColor: styles.card.backgroundColor,  },
+          headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
+          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+        }} />
+          <Stack.Screen name="UserAdminScreen" component={UserAdminScreen}  options={{
+          headerShown: true,
+          headerTitle: () => ( <Text style={styles.headerGlobal}>{t("GestionUsers")}</Text>  ),
+          headerStyle: {backgroundColor: styles.card.backgroundColor,  },
+          headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
+          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+        }} />
+          <Stack.Screen name="NavigationListScreen" component={NavigationListScreen}   options={{
+          headerShown: true,
+          headerTitle: () => ( <Text style={styles.headerGlobal}>{t("mainMenu")}</Text>  ),
+          headerStyle: {backgroundColor: styles.card.backgroundColor,  },
+          headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
+          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+        }} />
+          <Stack.Screen name="UserMenuScreen" component={UserMenuScreen}  options={{
+          headerShown: true,
+          headerTitle: () => ( <Text style={styles.headerGlobal}>{t("profile")}</Text>  ),
+          headerStyle: {backgroundColor: styles.card.backgroundColor,  },
+          headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
+          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+        }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApolloProvider>

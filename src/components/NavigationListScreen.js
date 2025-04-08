@@ -42,7 +42,7 @@ const NavigationListScreen = ({ route }) => {
         resizeMode="cover"
       >
         <View style={styles.container}>
-          <Text style={styles.title}>{t("mainMenu")}</Text>
+          {/* <Text style={styles.title}>{t("mainMenu")}</Text> */}
 
           <Card style={styles.card}>
             {navItems.map((item) => (
