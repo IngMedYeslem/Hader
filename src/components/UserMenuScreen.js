@@ -162,7 +162,7 @@ const UserMenuScreen = () => {
 
           <Card style={styles.card}>
             {/* Nom d'utilisateur */}
-            <Text style={styles.title}>
+            <Text style={styles.titleprofil}>
               {t("Bonjour")}, {user.username}
             </Text>
 
@@ -224,6 +224,8 @@ const UserMenuScreen = () => {
               </Text>
             </TouchableOpacity>
           </Card>
+
+         <Text style={styles.textcoprit}>{t("copr")}</Text> 
         </View>
       </ImageBackground>
     </View>

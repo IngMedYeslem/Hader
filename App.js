@@ -74,7 +74,7 @@ export default function App() {
           headerTitle: () => ( <Text style={styles.headerGlobal}>{t("HomeScreen")}</Text>  ),
           headerStyle: {backgroundColor: styles.card.backgroundColor,  },
           headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
-          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerBackTitle: '', // Le texte de retour pour Android et iOS
           headerLeft: () => null, // ❌ Masque la flèche de retour
         }} />
           <Stack.Screen name="addProduct" component={AddProductForm}  />
@@ -86,28 +86,30 @@ export default function App() {
           headerTitle: () => ( <Text style={styles.headerGlobal}>{t("AjouterRole")}</Text>  ),
           headerStyle: {backgroundColor: styles.card.backgroundColor,  },
           headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
-          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerBackTitle: '', // Le texte de retour pour Android et iOS
         }} />
           <Stack.Screen name="UserAdminScreen" component={UserAdminScreen}  options={{
           headerShown: true,
           headerTitle: () => ( <Text style={styles.headerGlobal}>{t("GestionUsers")}</Text>  ),
           headerStyle: {backgroundColor: styles.card.backgroundColor,  },
           headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
-          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerBackTitle: '', // Le texte de retour pour Android et iOS
         }} />
           <Stack.Screen name="NavigationListScreen" component={NavigationListScreen}   options={{
           headerShown: true,
           headerTitle: () => ( <Text style={styles.headerGlobal}>{t("mainMenu")}</Text>  ),
           headerStyle: {backgroundColor: styles.card.backgroundColor,  },
           headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
-          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerBackTitle: '', // Le texte de retour pour Android et iOS
         }} />
           <Stack.Screen name="UserMenuScreen" component={UserMenuScreen}  options={{
           headerShown: true,
           headerTitle: () => ( <Text style={styles.headerGlobal}>{t("profile")}</Text>  ),
           headerStyle: {backgroundColor: styles.card.backgroundColor,  },
           headerTintColor: styles.colorText.color, // Couleur des icônes (flèche retour)
-          headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          // headerBackTitle: t("Retour"), // Le texte de retour pour Android et iOS
+          headerBackTitle: '', // Le texte de retour pour Android et iOS
+
         }} />
         </Stack.Navigator>
       </NavigationContainer>

@@ -54,6 +54,10 @@ const resources = {
     "Enregistrer": "Enregistrer",
     "HomeScreen": "Écran d'accueil",
     "profile": "Profil",
+    "Bienvenue": "Bienvenue !",
+    "ContactSupport": "Centre d'aide",
+    "messagAide": "Bonjour, j’ai besoin d’aide pour me connecter.",
+    "copr":"Tous droits réservés © 2025 𝕄𝕒𝕣𝕔𝕙é ℂ𝕒𝕡𝕚𝕥𝕒𝕝𝕖. Votre plateforme de marketing intelligent."
 
     }
   },
@@ -108,6 +112,10 @@ const resources = {
       "Enregistrer": "حفظ",
       "HomeScreen": "الشاشة الرئيسية",
       "profile": "الملف الشخصي",
+      "Bienvenue": "أهلا بك!",
+      "ContactSupport": "مركز المساعدة",
+      "messagAide": "مرحبًا، أحتاج إلى مساعدة لتسجيل الدخول.",
+      "copr":"جميع الحقوق محفوظة © 2025 لشركة سُــوقْ كَــبِّـتَــالْ. منصتكم الموثوقة للتسويق الذكي."
     }
   }
 };

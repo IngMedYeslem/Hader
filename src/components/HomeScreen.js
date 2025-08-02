@@ -4,10 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native"; // Pour la navigation
 import Navbar from "./Navbar"; // Assure-toi que le chemin est correct
 import styles from "./styles";  // Importer les styles
+import { useTranslation } from "react-i18next";
 
 export default function HomeScreen() {
   const [profileImage, setProfileImage] = useState(null);
   const navigation = useNavigation(); // Hook de navigation
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -43,7 +45,7 @@ export default function HomeScreen() {
         resizeMode="cover"
       >
         <View style={styles.containerhomscreen}>
-          <Text style={styles.text}>Bienvenue !</Text>
+          <Text style={styles.text}>{t("Bienvenue")}</Text>
           
         </View>
       </ImageBackground>

@@ -123,6 +123,16 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 3, height: 3 },
         textShadowRadius: 5,
       },
+      titleprofil: {
+        fontSize: 30,
+        color: "white",
+        marginBottom: 20,
+        textAlign: "center",
+        fontWeight: "bold",
+        textShadowColor: "rgba(0, 0, 0, 0.9)",
+        textShadowOffset: { width: 3, height: 3 },
+        textShadowRadius: 5,
+      },
       colorText: {
         color: "#C8A55F",
       },
@@ -326,8 +336,7 @@ const styles = StyleSheet.create({
   },  
 
   headerGlobal: {
-    // backgroundColor: "#C8A55F", 
-    // headerTintColor: "#C8A55F", 
+   
     backgroundColor: "#2C3E50",
 
     fontSize: 18,
@@ -339,7 +348,16 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 3, height: 3 },
         textShadowRadius: 5,
   },  
-  
+  textcoprit: { 
+    color: "#C8A55F", 
+    fontSize: 14, 
+    textAlign: "center",
+
+    fontWeight: "bold",
+      padding: 8,
+    },
+
+
   
   
   // Autres styles globaux

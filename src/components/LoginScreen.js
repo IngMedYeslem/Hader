@@ -13,6 +13,7 @@ import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import styles from "./styles";
+import { Linking } from "react-native";
 
 export default function LoginScreen({ navigation }) {
   const { t, i18n } = useTranslation();
@@ -42,6 +43,18 @@ export default function LoginScreen({ navigation }) {
     },
   });
 
+
+  const openWhatsApp = () => {
+    const phoneNumber = "+22236251999"; // Remplace avec ton numéro WhatsApp
+    // const message = {t("messagAide")};
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(t("messagAide"))}`;
+  
+    Linking.openURL(url).catch(() => {
+      setSnackbarMessage("WhatsApp n'est pas installé.");
+      setSnackbarVisible(true);
+    });
+  };
+  
   const handleLogin = async () => {
     if (!username || !password) {
       setSnackbarMessage("Veuillez entrer un username et un mot de passe.");
@@ -124,6 +137,17 @@ export default function LoginScreen({ navigation }) {
             >
               <Text style={styles.colorText}>{t("Ccompte")}</Text>
             </Button>
+
+            <Button
+  mode="outlined"
+  icon="whatsapp"
+  onPress={openWhatsApp}
+  style={{ marginTop: 10, borderColor: "#C8A55F" }}
+  textColor="#25D366"
+>
+  <Text style={{ color: "#25D366" }}>{t("ContactSupport") || "Contacter via WhatsApp"}</Text>
+</Button>
+
           </Card.Content>
         </Card>
         <Snackbar
