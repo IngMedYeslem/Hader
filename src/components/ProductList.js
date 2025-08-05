@@ -1,44 +1,52 @@
 import { useQuery } from "@apollo/client";
-import { Text, View, Image, ScrollView, ImageBackground } from 'react-native';
-import { GET_PRODUCTS } from "../graphql/getProducts";  // ✅ On importe la requête GraphQL
-import Navbar from "./Navbar";  // Assure-toi que le chemin est correct
-import styles from "./styles";  // Importer les styles
+import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { GET_PRODUCTS } from "../graphql/getProducts";
+import Navbar from "./Navbar";
+import styles from "./styles";
+
+const { width } = Dimensions.get('window');
+const itemWidth = (width - 60) / 2;
 
 function ProductList() {
   const { loading, error, data } = useQuery(GET_PRODUCTS);
 
-  if (loading) return <Text>Chargement...</Text>;
-  if (error) return <Text>Erreur : {error.message}</Text>;
+  if (loading) return <Text style={styles.loadingText}>Chargement...</Text>;
+  if (error) return <Text style={styles.errorText}>Erreur : {error.message}</Text>;
 
   return (
     <View style={styles.wrapper}>
-      {/* ✅ Navbar en dehors du ScrollView */}
       <Navbar />
-
-      {/* ✅ Image de fond placée autour du contenu */}
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
         resizeMode="cover"
       >
-        {/* ✅ Activation du défilement */}
         <ScrollView 
           style={styles.scrollContainer} 
           contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.container}>
+          <View style={styles.alibabaGrid}>
             {data.products.map((product) => (
-              <View key={product.id} style={styles.productCard}>
-                <Text style={styles.productName}>{product.name}</Text>
-                <Text>Prix: {product.price} €</Text>
-                {product.image && (
-                  <Image 
-                    source={{ uri: `http://localhost:4000/assets/${product.image}` }} 
-                    style={styles.productImage} 
-                  />
-                )}
-              </View>
+              <TouchableOpacity key={product.id} style={[styles.alibabaCard, { width: itemWidth }]}>
+                <View style={styles.imageContainer}>
+                  {product.images ? (
+                    <Image 
+                      source={{ uri: product.images }} 
+                      style={styles.alibabaImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.placeholderImage}>
+                      <Text style={styles.placeholderText}>📷</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.productInfo}>
+                  <Text style={styles.alibabaProductName} numberOfLines={2}>{product.name}</Text>
+                  <Text style={styles.alibabaPrice}>{product.price} €</Text>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         </ScrollView>
@@ -46,6 +54,5 @@ function ProductList() {
     </View>
   );
 }
-
 
 export default ProductList;

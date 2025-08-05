@@ -352,15 +352,76 @@ const styles = StyleSheet.create({
     color: "#C8A55F", 
     fontSize: 14, 
     textAlign: "center",
-
     fontWeight: "bold",
-      padding: 8,
-    },
+    padding: 8,
+  },
 
-
-  
-  
-  // Autres styles globaux
+  // Styles Alibaba Interface
+  alibabaGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 20,
+    paddingBottom: 100,
+  },
+  alibabaCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  imageContainer: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#f5f5f5",
+  },
+  alibabaImage: {
+    width: "100%",
+    height: "100%",
+  },
+  placeholderImage: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+  },
+  placeholderText: {
+    fontSize: 40,
+    color: "#ccc",
+  },
+  productInfo: {
+    padding: 12,
+  },
+  alibabaProductName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  alibabaPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ff6b35",
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 50,
+    fontSize: 16,
+    color: "#C8A55F",
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 50,
+    fontSize: 16,
+    color: "red",
+  },
 });
 
 export default styles;

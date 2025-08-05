@@ -87,14 +87,14 @@ users: async () => {
 
   products: async () => await Product.find(),
 
-  addProduct: async ({ name, price, image }, context) => {
+  addProduct: async ({ name, price, images }, context) => {
     if (!context.user) throw new Error("Accès refusé : Authentification requise.");
 
     if (!context.user.roles.includes("AJOUT-PROD")) {
       throw new Error("Accès refusé : Vous n'êtes pas autorisé à ajouter un produit.");
     }
 
-    const newProduct = new Product({ name, price, image });
+    const newProduct = new Product({ name, price, images });
     await newProduct.save();
     return newProduct;
   },

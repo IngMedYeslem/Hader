@@ -19,7 +19,7 @@ module.exports = buildSchema(`
     id: ID!
     name: String!
     price: Float!
-    image: String
+    images: String
   }
 
   type Query {
@@ -34,7 +34,7 @@ module.exports = buildSchema(`
     addRole(name: String!): Role
     updateRole(id: ID!, name: String!): Role
     deleteRole(id: ID!): String
-    addProduct(name: String!, price: Float!, image: String): Product
+    addProduct(name: String!, price: Float!, images: String): Product
     updateUser(username: String!, email: String!, roles: [String]!): User  
     deleteUser(id: ID!): String
    updateProfileImage(username: String!, profileImage: String!): User
