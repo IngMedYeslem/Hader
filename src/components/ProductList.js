@@ -2,13 +2,20 @@ import { useQuery } from "@apollo/client";
 import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
 import { GET_PRODUCTS } from "../graphql/getProducts";
 import Navbar from "./Navbar";
+import AddProduct from "./AddProduct";
 import styles from "./styles";
+import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
 
 function ProductList() {
+  const [showAddProduct, setShowAddProduct] = useState(false);
   const { loading, error, data } = useQuery(GET_PRODUCTS);
+
+  if (showAddProduct) {
+    return <AddProduct onBack={() => setShowAddProduct(false)} />;
+  }
 
   if (loading) return <Text style={styles.loadingText}>Chargement...</Text>;
   if (error) return <Text style={styles.errorText}>Erreur : {error.message}</Text>;
@@ -50,6 +57,13 @@ function ProductList() {
             ))}
           </View>
         </ScrollView>
+        
+        <TouchableOpacity 
+          style={styles.floatingBtn} 
+          onPress={() => setShowAddProduct(true)}
+        >
+          <Text style={styles.floatingBtnText}>+</Text>
+        </TouchableOpacity>
       </ImageBackground>
     </View>
   );
