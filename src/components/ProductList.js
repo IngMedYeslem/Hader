@@ -1,28 +1,34 @@
-import { useQuery } from "@apollo/client";
 import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
-import { GET_PRODUCTS } from "../graphql/getProducts";
-import Navbar from "./Navbar";
+import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
 import styles from "./styles";
 import { useState } from 'react';
+import { useTranslation } from '../translations';
+
+const mockProducts = [
+  { id: 1, name: 'iPhone 14', price: 999, images: 'https://via.placeholder.com/150' },
+  { id: 2, name: 'Samsung Galaxy', price: 799, images: 'https://via.placeholder.com/150' },
+  { id: 3, name: 'MacBook Pro', price: 1999, images: null },
+  { id: 4, name: 'iPad Air', price: 599, images: 'https://via.placeholder.com/150' },
+];
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
 
 function ProductList() {
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const { loading, error, data } = useQuery(GET_PRODUCTS);
+  const [products, setProducts] = useState(mockProducts);
+  const { t } = useTranslation();
 
   if (showAddProduct) {
-    return <AddProduct onBack={() => setShowAddProduct(false)} />;
+    return <AddProduct onBack={() => setShowAddProduct(false)} onAdd={(newProduct) => {
+      setProducts([...products, { ...newProduct, id: Date.now() }]);
+    }} />;
   }
-
-  if (loading) return <Text style={styles.loadingText}>Chargement...</Text>;
-  if (error) return <Text style={styles.errorText}>Erreur : {error.message}</Text>;
 
   return (
     <View style={styles.wrapper}>
-      <Navbar />
+      <SimpleNavbar />
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
@@ -34,7 +40,7 @@ function ProductList() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.alibabaGrid}>
-            {data.products.map((product) => (
+            {products.map((product) => (
               <TouchableOpacity key={product.id} style={[styles.alibabaCard, { width: itemWidth }]}>
                 <View style={styles.imageContainer}>
                   {product.images ? (

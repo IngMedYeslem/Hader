@@ -528,6 +528,10 @@ const styles = StyleSheet.create({
     color: "#C8A55F",
     fontWeight: "bold",
   },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
   imagePickerBtn: {
     borderWidth: 2,
     borderColor: "#C8A55F",
@@ -548,6 +552,76 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: "center",
     marginBottom: 10,
+  },
+  arabicText: {
+    fontFamily: 'System',
+    textAlign: 'right',
+  },
+  shopHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 10,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  syncBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 8,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#C8A55F',
+    marginRight: 10,
+    width: 35,
+    height: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  syncText: {
+    color: '#C8A55F',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  shopTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#C8A55F',
+    textShadowColor: 'rgba(0, 0, 0, 0.9)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
+  },
+  logoutBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 8,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#C8A55F',
+  },
+  logoutText: {
+    color: '#C8A55F',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#C8A55F',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: 'rgba(200, 165, 95, 0.8)',
+    textAlign: 'center',
   },
 });
 

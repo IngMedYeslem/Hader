@@ -1,77 +1,115 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const { createHandler } = require("graphql-http/lib/use/express");
-const expressPlayground = require("graphql-playground-middleware-express").default;
-const os = require("os");
-const fs = require("fs");
-const path = require("path");
-
-const connectDB = require("./config/db");
-const schema = require("./graphql/schema");
-const resolvers = require("./graphql/resolvers");
-const authMiddleware = require("./middlewares/auth");
-const uploadRoutes = require("./routes/upload");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const upload = require('./upload');
+const fs = require('fs');
 
 const app = express();
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use('/uploads', express.static('uploads'));
 
-// ✅ Fonction pour récupérer l'adresse IP locale
-const getLocalIp = () => {
-  return Object.values(os.networkInterfaces())
-    .flat()
-    .find(net => net.family === "IPv4" && !net.internal)?.address || "127.0.0.1";
-};
-
-
-
-// ✅ Connexion à MongoDB
-connectDB();
-
-// ✅ Vérifier si le dossier 'uploads/' existe, sinon le créer
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+// Créer le dossier uploads s'il n'existe pas
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
 }
 
-// ✅ Configuration CORS
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+// Route de santé pour vérifier la connectivité
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
-app.use(express.json({ limit: "10mb" }));
+mongoose.connect('mongodb://localhost:27017/ecommerce', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-// ✅ Configuration GraphQL
-app.all(
-  "/graphql",
-  createHandler({
-    schema,
-    rootValue: resolvers,
-    context: (req) => authMiddleware(req) // 👉 Passe directement `authMiddleware(req)`
-  })
-);
+const shopSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  createdAt: { type: Date, default: Date.now }
+});
 
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: Number,
+  images: String,
+  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
+  createdAt: { type: Date, default: Date.now }
+});
 
-// ✅ Ajout de GraphQL Playground
-app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
+const Shop = mongoose.model('Shop', shopSchema);
+const Product = mongoose.model('Product', productSchema);
 
-// ✅ Routes d'upload
-app.use("/api", uploadRoutes);
+// Routes Boutiques
+app.post('/api/shops/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const shop = await Shop.findOne({ email, password });
+    if (shop) {
+      res.json(shop);
+    } else {
+      res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// ✅ Démarrage du serveur
-const PORT = process.env.PORT || 4000;
-const localIp = getLocalIp();
-const frontendEnvPath = path.join(__dirname, "../.env"); // Adapte le chemin si nécessaire
+app.post('/api/shops/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    
+    // Vérifier si l'email existe déjà
+    const existingShop = await Shop.findOne({ email });
+    if (existingShop) {
+      return res.status(400).json({ error: 'Cet email est déjà utilisé' });
+    }
+    
+    const shop = new Shop({ name, email, password });
+    await shop.save();
+    res.json(shop);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Cet email est déjà utilisé' });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
 
-fs.writeFileSync(frontendEnvPath, `API_URL=http://${localIp}:${PORT}\n`, { encoding: "utf8" });
+// Routes Produits
+app.get('/api/products/:shopId', async (req, res) => {
+  try {
+    const products = await Product.find({ shopId: req.params.shopId });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-console.log(`✅ Fichier .env mis à jour : API_URL=http://${localIp}:${PORT}`);
+app.post('/api/products', async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    await product.save();
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier uploadé' });
+    }
+    res.json({ imageUrl: `/uploads/${req.file.filename}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur :`);
-  console.log(`➡️  Local : http://localhost:${PORT}/playground`);
-  console.log(`🌍 Réseau : http://${localIp}:${PORT}/playground`);
+app.listen(3000, () => {
+  console.log('Serveur démarré sur le port 3000');
 });

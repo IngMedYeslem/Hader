@@ -1,17 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ImageBackground, Alert, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { useMutation } from '@apollo/client';
-import { ADD_PRODUCT } from '../graphql/addProduct';
-import { GET_PRODUCTS } from '../graphql/getProducts';
-import Navbar from './Navbar';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ImageBackground, Alert, Image, Platform } from 'react-native';
+import SimpleNavbar from './SimpleNavbar';
 import styles from './styles';
+import { useTranslation } from '../translations';
 
-function AddProduct({ onBack }) {
+function AddProduct({ onBack, onAdd }) {
   const [products, setProducts] = useState([{ name: '', price: '', images: null }]);
-  const [addProduct] = useMutation(ADD_PRODUCT, {
-    refetchQueries: [{ query: GET_PRODUCTS }]
-  });
+  const { t } = useTranslation();
 
   const addProductField = () => {
     setProducts([...products, { name: '', price: '', images: null }]);
@@ -23,52 +18,83 @@ function AddProduct({ onBack }) {
     setProducts(updated);
   };
 
+  const fileInputRefs = useRef([]);
+
   const selectImage = (index) => {
-    Alert.alert(
-      'Sélectionner une image',
-      'Choisissez une option',
-      [
-        { text: 'Galerie', onPress: () => pickFromGallery(index) },
-        { text: 'Appareil photo', onPress: () => pickFromCamera(index) },
-        { text: 'Annuler', style: 'cancel' }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // Pour ordinateur
+      if (fileInputRefs.current[index]) {
+        fileInputRefs.current[index].click();
+      }
+    } else {
+      // Pour smartphone
+      Alert.alert(
+        t('selectImage'),
+        t('chooseOption'),
+        [
+          { text: t('gallery'), onPress: () => pickFromGallery(index) },
+          { text: t('camera'), onPress: () => pickFromCamera(index) },
+          { text: t('cancel'), style: 'cancel' }
+        ]
+      );
+    }
+  };
+
+  const handleFileSelect = (index, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateProduct(index, 'images', e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const pickFromGallery = async (index) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission requise', 'Accès à la galerie nécessaire');
-      return;
-    }
+    try {
+      const ImagePicker = require('expo-image-picker');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('permissionRequired'), t('galleryAccess'));
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled) {
-      updateProduct(index, 'images', result.assets[0].uri);
+      if (!result.canceled) {
+        updateProduct(index, 'images', result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'accéder à la galerie');
     }
   };
 
   const pickFromCamera = async (index) => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission requise', 'Accès à l\'appareil photo nécessaire');
-      return;
-    }
+    try {
+      const ImagePicker = require('expo-image-picker');
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('permissionRequired'), t('cameraAccess'));
+        return;
+      }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled) {
-      updateProduct(index, 'images', result.assets[0].uri);
+      if (!result.canceled) {
+        updateProduct(index, 'images', result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'accéder à la caméra');
     }
   };
 
@@ -76,29 +102,28 @@ function AddProduct({ onBack }) {
     setProducts(products.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     try {
-      for (const product of products) {
-        if (product.name && product.price) {
-          await addProduct({
-            variables: {
-              name: product.name,
-              price: parseFloat(product.price),
-              images: product.images || null
-            }
+      products.forEach(product => {
+        if (product.name && product.price && onAdd) {
+          onAdd({
+            name: product.name,
+            price: parseFloat(product.price),
+            images: product.images
           });
         }
-      }
-      Alert.alert('Succès', 'Produits ajoutés avec succès');
+      });
+      Alert.alert(t('success'), t('productsAdded'));
       setProducts([{ name: '', price: '', images: null }]);
+      onBack();
     } catch (error) {
-      Alert.alert('Erreur', error.message);
+      Alert.alert(t('error'), error.message);
     }
   };
 
   return (
     <View style={styles.wrapper}>
-      <Navbar />
+      <SimpleNavbar />
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
@@ -107,14 +132,14 @@ function AddProduct({ onBack }) {
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.addProductContainer}>
             <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-              <Text style={styles.backBtnText}>← Retour</Text>
+              <Text style={styles.backBtnText}>{t('back')}</Text>
             </TouchableOpacity>
-            <Text style={styles.addProductTitle}>Ajouter des Produits</Text>
+            <Text style={styles.addProductTitle}>{t('addProducts')}</Text>
             
             {products.map((product, index) => (
               <View key={index} style={styles.productForm}>
                 <View style={styles.formHeader}>
-                  <Text style={styles.productNumber}>Produit {index + 1}</Text>
+                  <Text style={styles.productNumber}>{t('product')} {index + 1}</Text>
                   {products.length > 1 && (
                     <TouchableOpacity onPress={() => removeProduct(index)}>
                       <Text style={styles.removeBtn}>✕</Text>
@@ -124,7 +149,7 @@ function AddProduct({ onBack }) {
                 
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="Nom du produit"
+                  placeholder={t('productName')}
                   placeholderTextColor="#999"
                   value={product.name}
                   onChangeText={(text) => updateProduct(index, 'name', text)}
@@ -132,7 +157,7 @@ function AddProduct({ onBack }) {
                 
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="Prix (€)"
+                  placeholder={t('price')}
                   placeholderTextColor="#999"
                   keyboardType="numeric"
                   value={product.price}
@@ -144,9 +169,19 @@ function AddProduct({ onBack }) {
                   onPress={() => selectImage(index)}
                 >
                   <Text style={styles.imagePickerText}>
-                    {product.images ? '✓ Image sélectionnée' : '📷 Ajouter une image'}
+                    {product.images ? t('imageSelected') : t('addImage')}
                   </Text>
                 </TouchableOpacity>
+                
+                {Platform.OS === 'web' && (
+                  <input
+                    ref={el => fileInputRefs.current[index] = el}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleFileSelect(index, e)}
+                  />
+                )}
                 
                 {product.images && (
                   <Image 
@@ -158,11 +193,11 @@ function AddProduct({ onBack }) {
             ))}
             
             <TouchableOpacity style={styles.addMoreBtn} onPress={addProductField}>
-              <Text style={styles.addMoreText}>+ Ajouter un autre produit</Text>
+              <Text style={styles.addMoreText}>{t('addAnother')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-              <Text style={styles.submitText}>Enregistrer les Produits</Text>
+              <Text style={styles.submitText}>{t('saveProducts')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

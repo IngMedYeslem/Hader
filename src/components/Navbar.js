@@ -1,44 +1,31 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import { useMutation, gql } from "@apollo/client";
+import { getLanguage, setLanguage } from '../translations';
 import styles from "./styles";
 
-const UPDATE_PROFILE_IMAGE = gql`
-  mutation UpdateProfileImage($username: String!, $profileImage: String!) {
-    updateProfileImage(username: $username, profileImage: $profileImage) {
-      profileImage
-    }
-  }
-`;
+
 
 const Navbar = () => {
   const navigation = useNavigation();
-  const { i18n } = useTranslation();
+  const [currentLang, setCurrentLang] = useState(getLanguage());
 
-  const [language, setLanguage] = useState("fr");
+  const cycleLanguage = () => {
+    const languages = ['fr', 'en', 'ar'];
+    const currentIndex = languages.indexOf(currentLang);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    setLanguage(languages[nextIndex]);
+    setCurrentLang(languages[nextIndex]);
+  };
   const [user, setUser] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
 
 
   const role = user?.role || "";
 
-  const loadLanguage = useCallback(async () => {
-    const savedLang = await AsyncStorage.getItem("language");
-    if (savedLang) {
-      setLanguage(savedLang);
-      i18n.changeLanguage(savedLang);
-    }
-  }, [i18n]);
 
-  useEffect(() => {
-    loadLanguage();
-  }, [loadLanguage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -86,7 +73,9 @@ const Navbar = () => {
           />
         </TouchableOpacity>
 
-     
+      <TouchableOpacity style={styles.navItem} onPress={cycleLanguage}>
+        <Text style={styles.language}>{currentLang.toUpperCase()}</Text>
+      </TouchableOpacity>
 
 <TouchableOpacity
   style={{ marginLeft: 'auto' }}
