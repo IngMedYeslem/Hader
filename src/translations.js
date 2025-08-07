@@ -114,19 +114,26 @@ export const useTranslation = () => {
   
   const setLanguage = async (lang) => {
     if (translations[lang] && lang !== currentLanguage) {
+      console.log('Changement langue:', currentLanguage, '->', lang, 'Platform:', Platform.OS);
       currentLanguage = lang;
       
       try {
         if (Platform.OS === 'web') {
+          console.log('Web: Sauvegarde dans localStorage');
           localStorage.setItem('selectedLanguage', lang);
-          window.location.reload();
+          console.log('Web: Notification des listeners');
+          languageChangeListeners.forEach(listener => listener());
         } else {
+          console.log('Mobile: Sauvegarde dans AsyncStorage');
           await AsyncStorage.setItem('selectedLanguage', lang);
+          console.log('Mobile: Notification des listeners');
           languageChangeListeners.forEach(listener => listener());
         }
       } catch (error) {
         console.log('Erreur sauvegarde langue:', error);
       }
+    } else {
+      console.log('Pas de changement nécessaire ou langue invalide');
     }
   };
   
@@ -140,12 +147,15 @@ export const useTranslation = () => {
 export const t = (key) => translations[currentLanguage][key] || key;
 export const setLanguage = async (lang) => {
   if (translations[lang] && lang !== currentLanguage) {
+    console.log('Export setLanguage:', currentLanguage, '->', lang);
     currentLanguage = lang;
     
     try {
       if (Platform.OS === 'web') {
         localStorage.setItem('selectedLanguage', lang);
-        window.location.reload();
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       } else {
         await AsyncStorage.setItem('selectedLanguage', lang);
         languageChangeListeners.forEach(listener => listener());
