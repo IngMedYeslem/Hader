@@ -74,7 +74,6 @@ function ShopDashboard({ shop, onLogout }) {
           console.log('📱 Images avant traitement:', imageArray);
           const processedImages = await imageService.processImages(imageArray);
           console.log('✅ Images après traitement:', processedImages.length);
-          console.log('📊 Taille des images traitées:', processedImages.map(img => img.length));
           
           // Essayer l'API d'abord
           const product = await productAPI.create({ 
@@ -82,31 +81,31 @@ function ShopDashboard({ shop, onLogout }) {
             images: processedImages,
             shopId: shop._id 
           });
-          setProducts([...products, product]);
+          
+          // Mettre à jour la liste avec le nouveau produit
+          setProducts(prevProducts => [...prevProducts, product]);
+          
         } catch (error) {
           // Fallback local
           try {
-            // S'assurer que images est un tableau pour le stockage local aussi
             const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
-            
-            // Traiter les images pour le stockage local aussi
-            console.log('💾 Traitement images pour stockage local...');
             const processedImages = await imageService.processImages(imageArray);
-            console.log('💾 Images traitées pour local:', processedImages.length);
             
             const localProduct = {
-              _id: Date.now().toString(),
+              _id: Date.now().toString() + Math.random(),
               ...newProduct,
               images: processedImages,
               shopId: shop._id,
               createdAt: new Date().toISOString()
             };
             
-            const updatedProducts = [...products, localProduct];
-            setProducts(updatedProducts);
-            
-            // Sauvegarder localement
-            await AsyncStorage.setItem(`products_${shop._id}`, JSON.stringify(updatedProducts));
+            // Mettre à jour la liste avec le nouveau produit
+            setProducts(prevProducts => {
+              const updatedProducts = [...prevProducts, localProduct];
+              // Sauvegarder localement
+              AsyncStorage.setItem(`products_${shop._id}`, JSON.stringify(updatedProducts));
+              return updatedProducts;
+            });
             
             // Essayer de synchroniser immédiatement
             setTimeout(() => handleSync(), 1000);

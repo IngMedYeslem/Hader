@@ -8,14 +8,14 @@ const getApiUrl = () => {
 };
 
 export const imageService = {
-  // Convertir une image locale en base64
+  // Convertir une image locale en base64 avec compression
   convertToBase64: async (uri) => {
     try {
       console.log('🔄 Conversion image:', uri.substring(0, 50) + '...');
       
       if (Platform.OS === 'web') {
-        console.log('🌐 Web: Image déjà en base64');
-        return uri;
+        console.log('🌐 Web: Compression image...');
+        return await imageService.compressImage(uri);
       }
 
       if (!uri.startsWith('file://')) {
@@ -23,21 +23,56 @@ export const imageService = {
         return uri;
       }
 
-      // Pour mobile, lire le fichier local
+      // Pour mobile, utiliser ImageManipulator pour compresser
+      const ImageManipulator = require('expo-image-manipulator');
+      
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }], // Redimensionner à 800px de largeur max
+        { 
+          compress: 0.7, // Compression à 70%
+          format: ImageManipulator.SaveFormat.JPEG 
+        }
+      );
+      
       const FileSystem = require('expo-file-system');
-      const base64 = await FileSystem.readAsStringAsync(uri, {
+      const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
       
-      const mimeType = uri.toLowerCase().includes('.png') ? 'image/png' : 'image/jpeg';
-      const dataUri = `data:${mimeType};base64,${base64}`;
-      
-      console.log('✅ Conversion réussie:', dataUri.substring(0, 50) + '...');
+      const dataUri = `data:image/jpeg;base64,${base64}`;
+      console.log('✅ Conversion et compression réussies:', dataUri.substring(0, 50) + '...');
       return dataUri;
     } catch (error) {
       console.error('❌ Erreur conversion base64:', error);
       return uri;
     }
+  },
+
+  // Compresser une image web
+  compressImage: async (dataUri) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Redimensionner si trop grande
+        const maxWidth = 800;
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Compresser à 70%
+        const compressedDataUri = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedDataUri);
+      };
+      
+      img.src = dataUri;
+    });
   },
 
   // Traiter un tableau d'images

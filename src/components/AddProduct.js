@@ -113,17 +113,17 @@ function AddProduct({ onBack, onAdd }) {
     setProducts(products.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      products.forEach(product => {
+      for (const product of products) {
         if (product.name && product.price && onAdd) {
-          onAdd({
+          await onAdd({
             name: product.name,
             price: parseFloat(product.price),
             images: product.images
           });
         }
-      });
+      }
       Alert.alert(t('success'), t('productsAdded'));
       setProducts([{ name: '', price: '', images: [] }]);
       onBack();
