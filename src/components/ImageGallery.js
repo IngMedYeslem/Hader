@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
 import styles from './styles';
 
 const { width, height } = Dimensions.get('window');
@@ -38,32 +38,24 @@ function ImageGallery({ images, visible, onClose, productName }) {
         </View>
 
         <View style={styles.mainImageContainer}>
-          <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            scrollEventThrottle={16}
-            decelerationRate="fast"
-            snapToInterval={width}
-            snapToAlignment="center"
-            contentContainerStyle={styles.scrollContent}
-            style={styles.imageScrollView}
+          <TouchableOpacity 
+            style={styles.singleImageContainer}
+            onPress={() => {
+              if (images.length > 1) {
+                setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
+              }
+            }}
+            activeOpacity={0.9}
           >
-            {images.map((image, index) => (
-              <View key={`gallery-${index}`} style={[styles.imageSlide, { width, height: '100%' }]}>
-                <View style={styles.imageCenterContainer}>
-                  <Image 
-                    source={{ uri: image }} 
-                    style={styles.mainImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+            <Image 
+              source={{ uri: images[currentIndex] }} 
+              style={[
+                styles.mainImage,
+                Platform.OS === 'web' && styles.webMainImage
+              ]}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
           
           <View style={styles.imageIndicators}>
             {images.map((_, index) => (
@@ -97,7 +89,6 @@ function ImageGallery({ images, visible, onClose, productName }) {
               onPress={() => {
                 if (index !== currentIndex) {
                   setCurrentIndex(index);
-                  scrollViewRef.current?.scrollTo({ x: index * width, animated: true });
                 }
               }}
               style={[

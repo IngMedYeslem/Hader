@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 
 // Définir un fichier de styles commun pour toute l'application
 const styles = StyleSheet.create({
@@ -629,27 +629,46 @@ const styles = StyleSheet.create({
   mainImageContainer: {
     flex: 1,
     justifyContent: 'center',
-  },
-  imageScrollView: {
-    flex: 1,
-  },
-  scrollContent: {
     alignItems: 'center',
+    position: 'relative',
   },
-  imageCenterContainer: {
+  singleImageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     height: '100%',
   },
+
   imageSlide: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   mainImage: {
     width: '85%',
     height: '70%',
+  },
+
+  // Styles spécifiques pour web/ordinateur
+  webImageSlide: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+  },
+  webImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  webMainImage: {
+    width: '60%',
+    height: '60%',
+    maxWidth: '500px',
+    maxHeight: '400px',
   },
   imageCounter: {
     color: 'white',
