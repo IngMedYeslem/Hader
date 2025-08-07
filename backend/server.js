@@ -19,6 +19,21 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Route de débogage pour vérifier les produits en base
+app.get('/api/debug/products', async (req, res) => {
+  try {
+    const products = await Product.find().limit(10);
+    console.log('Produits en base:', products.length);
+    products.forEach(p => {
+      console.log(`Produit ${p.name}: ${p.images?.length || 0} images`);
+      console.log('Images:', p.images);
+    });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 mongoose.connect('mongodb://localhost:27017/ecommerce', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -34,7 +49,7 @@ const shopSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
   name: String,
   price: Number,
-  images: String,
+  images: [String], // Tableau d'images
   shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
   createdAt: { type: Date, default: Date.now }
 });
@@ -91,10 +106,39 @@ app.get('/api/products/:shopId', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const product = new Product(req.body);
-    await product.save();
-    res.json(product);
+    const { name, price, images, shopId } = req.body;
+    
+    console.log('=== Début création produit ===');
+    console.log('Données reçues:', { name, price, shopId });
+    console.log('Nombre d\'images reçues:', images?.length || 0);
+    
+    // S'assurer que images est un tableau
+    const imageArray = Array.isArray(images) ? images : (images ? [images] : []);
+    
+    // Vérifier le type des images
+    imageArray.forEach((img, index) => {
+      if (img.startsWith('data:')) {
+        console.log(`Image ${index + 1}: Base64 (${img.substring(0, 50)}...)`);
+      } else if (img.startsWith('file://')) {
+        console.log(`Image ${index + 1}: Fichier local (${img})`);
+      } else {
+        console.log(`Image ${index + 1}: URL (${img})`);
+      }
+    });
+    
+    const product = new Product({
+      name,
+      price,
+      images: imageArray,
+      shopId
+    });
+    
+    const savedProduct = await product.save();
+    console.log('Produit sauvegardé avec', savedProduct.images.length, 'images');
+    
+    res.json(savedProduct);
   } catch (error) {
+    console.error('Erreur sauvegarde produit:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -53,18 +53,42 @@ export const productAPI = {
   },
 
   create: async (product) => {
-    const response = await fetch(`${API_URL}/products`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
-      timeout: 5000
-    });
-    
-    if (!response.ok) {
-      throw new Error('Network error');
+    try {
+      console.log('=== Envoi produit ===');
+      console.log('URL API:', API_URL);
+      console.log('Produit:', { name: product.name, price: product.price, shopId: product.shopId });
+      console.log('Images à envoyer:', product.images?.length || 0);
+      
+      // Vérifier la taille des images
+      if (product.images) {
+        product.images.forEach((img, i) => {
+          console.log(`Image ${i + 1}: ${img.substring(0, 30)}... (${img.length} chars)`);
+        });
+      }
+      
+      const response = await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+      
+      console.log('Réponse status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erreur serveur:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('=== Produit créé ===');
+      console.log('ID:', result._id);
+      console.log('Images sauvegardées:', result.images?.length || 0);
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur création produit:', error);
+      throw error;
     }
-    
-    return response.json();
   },
 
   uploadImage: async (imageData) => {

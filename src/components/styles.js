@@ -547,12 +547,158 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   previewImage: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 8,
-    alignSelf: "center",
-    marginBottom: 10,
+    marginBottom: 5,
   },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  imageWrapper: {
+    position: 'relative',
+    margin: 5,
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeImageText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  imageCount: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  imageCountText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+
+  // Styles pour ImageGallery
+  galleryOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+  },
+  galleryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+  },
+  galleryTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeBtnText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  mainImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  imageScrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    alignItems: 'center',
+  },
+  imageCenterContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  imageSlide: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mainImage: {
+    width: '85%',
+    height: '70%',
+  },
+  imageCounter: {
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  imageIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    marginHorizontal: 4,
+  },
+  activeIndicator: {
+    backgroundColor: '#C8A55F',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  thumbnailContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+    maxHeight: 100,
+  },
+  thumbnail: {
+    width: 70,
+    height: 70,
+    marginRight: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  activeThumbnail: {
+    borderColor: '#C8A55F',
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+
   arabicText: {
     fontFamily: 'System',
     textAlign: 'right',

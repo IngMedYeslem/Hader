@@ -3,10 +3,12 @@ import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimen
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
+import ImageGallery from "./ImageGallery";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { productAPI } from '../services/api';
 import { syncService } from '../services/syncService';
+import { imageService } from '../services/imageService';
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
@@ -14,6 +16,8 @@ const itemWidth = (width - 60) / 2;
 function ShopDashboard({ shop, onLogout }) {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [products, setProducts] = useState([]);
+  const [galleryVisible, setGalleryVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -63,15 +67,37 @@ function ShopDashboard({ shop, onLogout }) {
       onBack={() => setShowAddProduct(false)} 
       onAdd={async (newProduct) => {
         try {
+          // S'assurer que images est un tableau
+          const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
+          
+          // Traiter les images locales (file://)
+          console.log('📱 Images avant traitement:', imageArray);
+          const processedImages = await imageService.processImages(imageArray);
+          console.log('✅ Images après traitement:', processedImages.length);
+          console.log('📊 Taille des images traitées:', processedImages.map(img => img.length));
+          
           // Essayer l'API d'abord
-          const product = await productAPI.create({ ...newProduct, shopId: shop._id });
+          const product = await productAPI.create({ 
+            ...newProduct, 
+            images: processedImages,
+            shopId: shop._id 
+          });
           setProducts([...products, product]);
         } catch (error) {
           // Fallback local
           try {
+            // S'assurer que images est un tableau pour le stockage local aussi
+            const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
+            
+            // Traiter les images pour le stockage local aussi
+            console.log('💾 Traitement images pour stockage local...');
+            const processedImages = await imageService.processImages(imageArray);
+            console.log('💾 Images traitées pour local:', processedImages.length);
+            
             const localProduct = {
               _id: Date.now().toString(),
               ...newProduct,
+              images: processedImages,
               shopId: shop._id,
               createdAt: new Date().toISOString()
             };
@@ -125,14 +151,30 @@ function ShopDashboard({ shop, onLogout }) {
               </View>
             ) : (
               products.map((product) => (
-                <TouchableOpacity key={product.id} style={[styles.alibabaCard, { width: itemWidth }]}>
+                <TouchableOpacity 
+                  key={product._id || product.id || `product-${Date.now()}-${Math.random()}`} 
+                  style={[styles.alibabaCard, { width: itemWidth }]}
+                  onPress={() => {
+                    if (product.images && product.images.length > 0) {
+                      setSelectedProduct(product);
+                      setGalleryVisible(true);
+                    }
+                  }}
+                >
                   <View style={styles.imageContainer}>
-                    {product.images ? (
-                      <Image 
-                        source={{ uri: product.images }} 
-                        style={styles.alibabaImage}
-                        resizeMode="cover"
-                      />
+                    {product.images && product.images.length > 0 ? (
+                      <>
+                        <Image 
+                          source={{ uri: Array.isArray(product.images) ? product.images[0] : product.images }} 
+                          style={styles.alibabaImage}
+                          resizeMode="cover"
+                        />
+                        {Array.isArray(product.images) && product.images.length > 1 && (
+                          <View style={styles.imageCount}>
+                            <Text style={styles.imageCountText}>+{product.images.length - 1}</Text>
+                          </View>
+                        )}
+                      </>
                     ) : (
                       <View style={styles.placeholderImage}>
                         <Text style={styles.placeholderText}>📷</Text>
@@ -155,6 +197,16 @@ function ShopDashboard({ shop, onLogout }) {
         >
           <Text style={styles.floatingBtnText}>+</Text>
         </TouchableOpacity>
+
+        <ImageGallery
+          visible={galleryVisible}
+          images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : [selectedProduct.images]) : []}
+          productName={selectedProduct?.name}
+          onClose={() => {
+            setGalleryVisible(false);
+            setSelectedProduct(null);
+          }}
+        />
       </ImageBackground>
     </View>
   );

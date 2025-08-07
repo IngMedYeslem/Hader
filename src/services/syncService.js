@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { shopAPI, productAPI } from './api';
-
+import { imageService } from './imageService';
 import { Platform } from 'react-native';
 
 // URL dynamique selon la plateforme
@@ -95,15 +95,23 @@ export const syncService = {
           
           for (const product of products) {
             try {
+              // S'assurer que images est un tableau
+              const imageArray = Array.isArray(product.images) ? product.images : (product.images ? [product.images] : []);
+              
+              // Traiter les images locales avant synchronisation
+              const processedImages = await imageService.processImages(imageArray);
+              console.log(`Traitement ${imageArray.length} images pour ${product.name}`);
+              
               await productAPI.create({
                 name: product.name,
                 price: product.price,
-                images: product.images,
+                images: processedImages,
                 shopId: shopId
               });
+              console.log(`Produit ${product.name} syncé avec ${processedImages.length} images`);
               syncedCount++;
             } catch (error) {
-              console.log(`Échec sync produit ${product.name}`);
+              console.log(`Échec sync produit ${product.name}:`, error);
             }
           }
           

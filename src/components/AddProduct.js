@@ -5,11 +5,11 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 
 function AddProduct({ onBack, onAdd }) {
-  const [products, setProducts] = useState([{ name: '', price: '', images: null }]);
+  const [products, setProducts] = useState([{ name: '', price: '', images: [] }]);
   const { t } = useTranslation();
 
   const addProductField = () => {
-    setProducts([...products, { name: '', price: '', images: null }]);
+    setProducts([...products, { name: '', price: '', images: [] }]);
   };
 
   const updateProduct = (index, field, value) => {
@@ -41,14 +41,18 @@ function AddProduct({ onBack, onAdd }) {
   };
 
   const handleFileSelect = (index, event) => {
-    const file = event.target.files[0];
-    if (file) {
+    const files = Array.from(event.target.files);
+    
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        updateProduct(index, 'images', e.target.result);
+        const updated = [...products];
+        if (!updated[index].images) updated[index].images = [];
+        updated[index].images.push(e.target.result);
+        setProducts(updated);
       };
       reader.readAsDataURL(file);
-    }
+    });
   };
 
   const pickFromGallery = async (index) => {
@@ -62,13 +66,17 @@ function AddProduct({ onBack, onAdd }) {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
+        allowsMultipleSelection: true,
         quality: 0.8,
       });
 
       if (!result.canceled) {
-        updateProduct(index, 'images', result.assets[0].uri);
+        const updated = [...products];
+        if (!updated[index].images) updated[index].images = [];
+        result.assets.forEach(asset => {
+          updated[index].images.push(asset.uri);
+        });
+        setProducts(updated);
       }
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'accéder à la galerie');
@@ -91,7 +99,10 @@ function AddProduct({ onBack, onAdd }) {
       });
 
       if (!result.canceled) {
-        updateProduct(index, 'images', result.assets[0].uri);
+        const updated = [...products];
+        if (!updated[index].images) updated[index].images = [];
+        updated[index].images.push(result.assets[0].uri);
+        setProducts(updated);
       }
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'accéder à la caméra');
@@ -114,7 +125,7 @@ function AddProduct({ onBack, onAdd }) {
         }
       });
       Alert.alert(t('success'), t('productsAdded'));
-      setProducts([{ name: '', price: '', images: null }]);
+      setProducts([{ name: '', price: '', images: [] }]);
       onBack();
     } catch (error) {
       Alert.alert(t('error'), error.message);
@@ -169,7 +180,9 @@ function AddProduct({ onBack, onAdd }) {
                   onPress={() => selectImage(index)}
                 >
                   <Text style={styles.imagePickerText}>
-                    {product.images ? t('imageSelected') : t('addImage')}
+                    {product.images && product.images.length > 0 
+                      ? `${product.images.length} ${t('imageSelected')}` 
+                      : t('addImage')}
                   </Text>
                 </TouchableOpacity>
                 
@@ -178,16 +191,33 @@ function AddProduct({ onBack, onAdd }) {
                     ref={el => fileInputRefs.current[index] = el}
                     type="file"
                     accept="image/*"
+                    multiple
                     style={{ display: 'none' }}
                     onChange={(e) => handleFileSelect(index, e)}
                   />
                 )}
                 
-                {product.images && (
-                  <Image 
-                    source={{ uri: product.images }} 
-                    style={styles.previewImage}
-                  />
+                {product.images && product.images.length > 0 && (
+                  <View style={styles.imageGrid}>
+                    {product.images.map((imageUri, imgIndex) => (
+                      <View key={`${index}-${imgIndex}-${Date.now()}`} style={styles.imageWrapper}>
+                        <Image 
+                          source={{ uri: imageUri }} 
+                          style={styles.previewImage}
+                        />
+                        <TouchableOpacity 
+                          style={styles.removeImageBtn}
+                          onPress={() => {
+                            const updated = [...products];
+                            updated[index].images.splice(imgIndex, 1);
+                            setProducts(updated);
+                          }}
+                        >
+                          <Text style={styles.removeImageText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
                 )}
               </View>
             ))}
