@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
          marginTop: 5,
       },
       language: {
-       color: "#005bb5"
+       color: "#FFD700"
       },
       rightContainer: {
         flexDirection: "row",
