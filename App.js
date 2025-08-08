@@ -35,6 +35,8 @@ export default function App() {
     setCurrentShop(null);
     if (Platform.OS === 'web') {
       localStorage.removeItem('currentShop');
+      localStorage.removeItem('currentPage');
+      localStorage.removeItem('pageData');
     }
   };
 

@@ -9,7 +9,34 @@ export const NavigationProvider = ({ children }) => {
   const navigateTo = (page, data = null) => {
     setCurrentPage(page);
     setPageData(data);
+    
+    // Sauvegarder l'état de navigation
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('currentPage', page);
+      if (data) {
+        localStorage.setItem('pageData', JSON.stringify(data));
+      }
+    }
   };
+
+  // Restaurer l'état de navigation au démarrage
+  React.useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      const savedPage = localStorage.getItem('currentPage');
+      const savedData = localStorage.getItem('pageData');
+      
+      if (savedPage && savedPage !== 'dashboard') {
+        setCurrentPage(savedPage);
+        if (savedData) {
+          try {
+            setPageData(JSON.parse(savedData));
+          } catch (error) {
+            console.log('Erreur parsing pageData:', error);
+          }
+        }
+      }
+    }
+  }, []);
 
   return (
     <NavigationContext.Provider value={{ 
