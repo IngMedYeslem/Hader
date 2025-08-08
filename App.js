@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
+import { NavigationProvider } from './src/NavigationContext';
 import ShopLogin from './src/components/ShopLogin';
 import ShopDashboard from './src/components/ShopDashboard';
 
@@ -37,14 +38,16 @@ export default function App() {
     }
   };
 
-  if (currentShop) {
-    return (
-      <ShopDashboard 
-        shop={currentShop} 
-        onLogout={handleLogout} 
-      />
-    );
-  }
-
-  return <ShopLogin onLogin={handleLogin} />;
+  return (
+    <NavigationProvider>
+      {currentShop ? (
+        <ShopDashboard 
+          shop={currentShop} 
+          onLogout={handleLogout} 
+        />
+      ) : (
+        <ShopLogin onLogin={handleLogin} />
+      )}
+    </NavigationProvider>
+  );
 }

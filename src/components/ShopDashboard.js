@@ -6,6 +6,7 @@ import AddProduct from "./AddProduct";
 import ImageGallery from "./ImageGallery";
 import styles from "./styles";
 import { useTranslation } from '../translations';
+import { useNavigation } from '../NavigationContext';
 import { productAPI } from '../services/api';
 import { syncService } from '../services/syncService';
 import { imageService } from '../services/imageService';
@@ -14,11 +15,13 @@ const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
 
 function ShopDashboard({ shop, onLogout }) {
-  const [showAddProduct, setShowAddProduct] = useState(false);
   const [products, setProducts] = useState([]);
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { t } = useTranslation();
+  const { currentPage, navigateTo } = useNavigation();
+  
+  const showAddProduct = currentPage === 'addProduct';
 
   useEffect(() => {
     loadProducts();
@@ -64,7 +67,7 @@ function ShopDashboard({ shop, onLogout }) {
 
   if (showAddProduct) {
     return <AddProduct 
-      onBack={() => setShowAddProduct(false)} 
+      onBack={() => navigateTo('dashboard')} 
       onAdd={async (newProduct) => {
         try {
           // S'assurer que images est un tableau
@@ -192,7 +195,7 @@ function ShopDashboard({ shop, onLogout }) {
         
         <TouchableOpacity 
           style={styles.floatingBtn} 
-          onPress={() => setShowAddProduct(true)}
+          onPress={() => navigateTo('addProduct')}
         >
           <Text style={styles.floatingBtnText}>+</Text>
         </TouchableOpacity>
