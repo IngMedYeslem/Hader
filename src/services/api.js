@@ -23,11 +23,11 @@ export const shopAPI = {
     return response.json();
   },
 
-  register: async (name, email, password) => {
+  register: async (shopData) => {
     const response = await fetch(`${API_URL}/shops/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(shopData),
       timeout: 5000
     });
     

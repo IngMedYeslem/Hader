@@ -5,6 +5,7 @@ import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
 import EditProduct from "./EditProduct";
+import ShopInfo from "./ShopInfo";
 import ProductThumbnail from "./ProductThumbnail";
 import styles from "./styles";
 import { useTranslation } from '../translations';
@@ -20,6 +21,7 @@ function ShopDashboard({ shop, onLogout }) {
   const [products, setProducts] = useState([]);
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
+  const [shopInfoVisible, setShopInfoVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { t } = useTranslation();
   const { currentPage, navigateTo } = useNavigation();
@@ -143,7 +145,9 @@ function ShopDashboard({ shop, onLogout }) {
         resizeMode="cover"
       >
         <View style={styles.shopHeader}>
-          <Text style={styles.shopTitle}>{shop.name}</Text>
+          <TouchableOpacity onPress={() => setShopInfoVisible(true)}>
+            <Text style={styles.shopTitle}>{shop.name} ℹ️</Text>
+          </TouchableOpacity>
           <View style={styles.headerButtons}>
             <TouchableOpacity style={styles.syncBtn} onPress={handleSync}>
               <Text style={styles.syncText}>↻</Text>
@@ -239,6 +243,12 @@ function ShopDashboard({ shop, onLogout }) {
             onProductUpdated={handleProductUpdated}
           />
         )}
+
+        <ShopInfo
+          shop={shop}
+          visible={shopInfoVisible}
+          onClose={() => setShopInfoVisible(false)}
+        />
       </ImageBackground>
     </View>
   );

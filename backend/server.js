@@ -44,6 +44,13 @@ const shopSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
+  address: { type: String, required: true },
+  phone: { type: String, required: true },
+  whatsapp: { type: String, required: true },
+  location: {
+    latitude: Number,
+    longitude: Number
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -76,7 +83,12 @@ app.post('/api/shops/login', async (req, res) => {
 
 app.post('/api/shops/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address, phone, whatsapp, location } = req.body;
+    
+    // Validation des champs obligatoires
+    if (!name || !email || !password || !address || !phone || !whatsapp) {
+      return res.status(400).json({ error: 'Tous les champs sont obligatoires sauf la localisation' });
+    }
     
     // Vérifier si l'email existe déjà
     const existingShop = await Shop.findOne({ email });
@@ -84,7 +96,12 @@ app.post('/api/shops/register', async (req, res) => {
       return res.status(400).json({ error: 'Cet email est déjà utilisé' });
     }
     
-    const shop = new Shop({ name, email, password });
+    const shopData = { name, email, password, address, phone, whatsapp };
+    if (location && location.latitude && location.longitude) {
+      shopData.location = location;
+    }
+    
+    const shop = new Shop(shopData);
     await shop.save();
     res.json(shop);
   } catch (error) {
