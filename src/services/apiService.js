@@ -30,6 +30,7 @@ export const fetchProductsWithShops = async () => {
           name: product.name,
           price: product.price,
           images: product.images || [],
+          videos: product.videos || [],
           shop: shop ? {
             id: shop._id,
             username: shop.name,

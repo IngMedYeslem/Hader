@@ -24,7 +24,7 @@ export default function ShopSummary({ products }) {
               {shopProducts.length} produit{shopProducts.length > 1 ? 's' : ''}
             </Text>
             <Text style={styles.shopSummaryPrice}>
-              À partir de {Math.min(...shopProducts.map(p => p.price))} DH
+              À partir de {Math.min(...shopProducts.map(p => p.price))} MRU
             </Text>
           </View>
         ))}

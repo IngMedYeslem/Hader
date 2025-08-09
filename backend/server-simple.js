@@ -35,9 +35,9 @@ const mockShops = [
 
 const mockProducts = [
   // TechStore Marrakech
-  { _id: '1', name: 'iPhone 15 Pro', price: 12000, images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300'], shopId: '1' },
-  { _id: '2', name: 'MacBook Air M2', price: 15000, images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300'], shopId: '1' },
-  { _id: '3', name: 'iPad Pro', price: 8500, images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300'], shopId: '1' },
+  { _id: '1', name: 'iPhone 15 Pro', price: 12000, images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300', 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300'], videos: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'], shopId: '1' },
+  { _id: '2', name: 'MacBook Air M2', price: 15000, images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300', 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300'], videos: [], shopId: '1' },
+  { _id: '3', name: 'iPad Pro', price: 8500, images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300'], videos: ['https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'], shopId: '1' },
   { _id: '4', name: 'AirPods Pro', price: 2200, images: ['https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300'], shopId: '1' },
   
   // Fashion Store Casablanca

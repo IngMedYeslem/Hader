@@ -1,16 +1,52 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform } from 'react-native';
-import { Video } from 'expo-av';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform, Linking, Alert } from 'react-native';
+import { Video, Audio } from 'expo-av';
 import styles from './styles';
 
 const { width } = Dimensions.get('window');
 
-function MediaGallery({ images = [], videos = [], visible, onClose, productName }) {
+function MediaGallery({ images = [], videos = [], visible, onClose, productName, productPrice, shop }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showControls, setShowControls] = useState(false);
+
+  const handleWhatsApp = () => {
+    if (shop?.whatsapp) {
+      const message = `Bonjour, je suis intéressé(e) par le produit: ${productName} (${productPrice} MRU)`;
+      const url = `whatsapp://send?phone=${shop.whatsapp}&text=${encodeURIComponent(message)}`;
+      Linking.openURL(url).catch(() => {
+        Alert.alert('Erreur', 'WhatsApp n\'est pas installé sur cet appareil');
+      });
+    }
+  };
+
+  const handleCall = () => {
+    if (shop?.phone) {
+      Linking.openURL(`tel:${shop.phone}`);
+    }
+  };
+
+  useEffect(() => {
+    const configureAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (error) {
+        console.log('Erreur configuration audio:', error);
+      }
+    };
+    
+    if (visible) {
+      configureAudio();
+    }
+  }, [visible]);
   
   // Combiner vidéos et images (vidéos en premier)
   const allMedia = [...videos.map(v => ({ type: 'video', uri: v })), ...images.map(i => ({ type: 'image', uri: i }))];
@@ -22,10 +58,28 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.galleryOverlay}>
-        <View style={styles.galleryHeader}>
-          <Text style={styles.galleryTitle}>{productName}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Text style={styles.closeBtnText}>✕</Text>
+        <View style={[styles.galleryHeader, { backgroundColor: 'rgba(44, 62, 80, 0.95)', paddingVertical: 20 }]}>
+          <View style={{ flex: 1 }}>
+            <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 15, alignSelf: 'flex-start', marginBottom: 8 }}>
+              <Text style={{ fontSize: 20, color: '#C8A55F', fontWeight: 'bold' }}>
+                {productName}
+              </Text>
+            </View>
+            {productPrice && (
+              <Text style={{ fontSize: 18, color: '#ff6b35', fontWeight: 'bold', marginBottom: 5 }}>
+                {productPrice} MRU
+              </Text>
+            )}
+            {shop && (
+              <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, alignSelf: 'flex-start' }}>
+                <Text style={{ fontSize: 14, color: '#C8A55F', fontWeight: '600' }}>
+                  🏦 {shop.username}
+                </Text>
+              </View>
+            )}
+          </View>
+          <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+            <Text style={[styles.closeBtnText, { color: 'white', fontSize: 18 }]}>✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -118,7 +172,7 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName 
                       resizeMode="contain"
                       shouldPlay={isPlaying && visible && videoLoaded}
                       isLooping={true}
-                      isMuted={!showControls}
+                      isMuted={false}
                       onPlaybackStatusUpdate={(status) => {
                         if (status.didJustFinish) {
                           setIsPlaying(false);
@@ -190,7 +244,7 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName 
                         resizeMode="contain"
                         shouldPlay={index === currentIndex && isPlaying && visible && videoLoaded}
                         isLooping={true}
-                        isMuted={!showControls}
+                        isMuted={false}
                         onLoad={() => setVideoLoaded(true)}
                         onError={() => setVideoError(true)}
                       />
@@ -212,8 +266,8 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName 
           </ScrollView>
         )}
 
-        <View style={{ position: 'absolute', bottom: 60, alignSelf: 'center', alignItems: 'center' }}>
-          <View style={[styles.imageIndicators, { backgroundColor: 'rgba(0,0,0,0.8)', borderRadius: 25, paddingHorizontal: 20, paddingVertical: 12, marginBottom: 10 }]}>
+        <View style={{ position: 'absolute', bottom: 90, alignSelf: 'center', alignItems: 'center' }}>
+          <View style={[styles.imageIndicators, { backgroundColor: 'rgba(0,0,0,0.8)', borderRadius: 25, paddingHorizontal: 20, paddingVertical: 12, marginBottom: 15 }]}>
             {allMedia.map((_, index) => (
               <TouchableOpacity
                 key={`dot-${index}`}
@@ -248,6 +302,29 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName 
           </Text>
         </View>
 
+        {shop && (
+          <View style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+              {shop.whatsapp && (
+                <TouchableOpacity 
+                  style={[styles.contactBtn, { flex: 1, maxWidth: 150 }]} 
+                  onPress={handleWhatsApp}
+                >
+                  <Text style={styles.contactBtnText}>📱 WhatsApp</Text>
+                </TouchableOpacity>
+              )}
+              
+              {shop.phone && (
+                <TouchableOpacity 
+                  style={[styles.contactBtn, styles.callBtn, { flex: 1, maxWidth: 150 }]} 
+                  onPress={handleCall}
+                >
+                  <Text style={styles.contactBtnText}>📞 Appeler</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
       </View>
     </Modal>

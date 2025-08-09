@@ -4,6 +4,8 @@ import GlobalNavbar from './GlobalNavbar';
 import SearchBar from './SearchBar';
 import ProductModal from './ProductModal';
 import ShopSummary from './ShopSummary';
+import ProductThumbnail from './ProductThumbnail';
+import MediaGallery from './MediaGallery';
 import { fetchProductsWithShops, checkServerHealth } from '../services/apiService';
 import { getMockProducts } from '../services/serverCheck';
 import styles from './styles';
@@ -16,6 +18,7 @@ export default function GlobalInterface({ onShopLogin }) {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [galleryVisible, setGalleryVisible] = useState(false);
   const [useRealData, setUseRealData] = useState(false);
   const [error, setError] = useState(null);
 
@@ -92,7 +95,11 @@ export default function GlobalInterface({ onShopLogin }) {
 
   const handleProductPress = (product) => {
     setSelectedProduct(product);
-    setModalVisible(true);
+    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
+      setGalleryVisible(true);
+    } else {
+      setModalVisible(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -155,17 +162,10 @@ export default function GlobalInterface({ onShopLogin }) {
               onPress={() => handleProductPress(product)}
             >
               <View style={styles.imageContainer}>
-                {product.images && product.images.length > 0 ? (
-                  <Image 
-                    source={{ uri: product.images[0] }} 
-                    style={styles.globalImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>📷</Text>
-                  </View>
-                )}
+                <ProductThumbnail 
+                  product={product} 
+                  style={{ width: '100%', height: '100%' }}
+                />
               </View>
               
               <View style={styles.productInfo}>
@@ -173,7 +173,7 @@ export default function GlobalInterface({ onShopLogin }) {
                   {product.name}
                 </Text>
                 <Text style={styles.globalPrice}>
-                  {product.price} DH
+                  {product.price} MRU
                 </Text>
                 <View style={styles.shopInfo}>
                   <Text style={styles.shopName}>
@@ -192,6 +192,19 @@ export default function GlobalInterface({ onShopLogin }) {
           </View>
         )}
       </ScrollView>
+      
+      <MediaGallery
+        visible={galleryVisible}
+        images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
+        videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
+        productName={selectedProduct?.name}
+        productPrice={selectedProduct?.price}
+        shop={selectedProduct?.shop}
+        onClose={() => {
+          setGalleryVisible(false);
+          setSelectedProduct(null);
+        }}
+      />
       
       <ProductModal 
         visible={modalVisible}

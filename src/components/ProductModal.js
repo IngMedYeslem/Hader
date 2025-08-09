@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Linking, Alert } from 'react-native';
+import MediaCarousel from './MediaCarousel';
 import styles from './styles';
 
 export default function ProductModal({ visible, product, onClose }) {
@@ -7,7 +8,7 @@ export default function ProductModal({ visible, product, onClose }) {
 
   const handleWhatsApp = () => {
     if (product.shop?.whatsapp) {
-      const message = `Bonjour, je suis intéressé(e) par le produit: ${product.name} (${product.price} DH)`;
+      const message = `Bonjour, je suis intéressé(e) par le produit: ${product.name} (${product.price} MRU)`;
       const url = `whatsapp://send?phone=${product.shop.whatsapp}&text=${encodeURIComponent(message)}`;
       Linking.openURL(url).catch(() => {
         Alert.alert('Erreur', 'WhatsApp n\'est pas installé sur cet appareil');
@@ -45,23 +46,14 @@ export default function ProductModal({ visible, product, onClose }) {
         </View>
         
         <ScrollView style={styles.modalContent}>
-          <View style={styles.productImageLarge}>
-            {product.images && product.images.length > 0 ? (
-              <Image 
-                source={{ uri: product.images[0] }} 
-                style={styles.modalImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.placeholderImageLarge}>
-                <Text style={styles.placeholderTextLarge}>📷</Text>
-              </View>
-            )}
-          </View>
+          <MediaCarousel 
+            images={product.images || []} 
+            videos={product.videos || []} 
+          />
           
           <View style={styles.productDetails}>
             <Text style={styles.productNameLarge}>{product.name}</Text>
-            <Text style={styles.productPriceLarge}>{product.price} DH</Text>
+            <Text style={styles.productPriceLarge}>{product.price} MRU</Text>
             
             <View style={styles.shopInfoLarge}>
               <Text style={styles.shopLabel}>Vendu par:</Text>

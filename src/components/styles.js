@@ -644,6 +644,102 @@ const styles = StyleSheet.create({
     color: "#C8A55F",
     fontWeight: "bold",
   },
+  mediaCounter: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  mediaCounterText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  mediaThumbnails: {
+    marginTop: 10,
+  },
+  thumbnailsContainer: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  thumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "transparent",
+    marginRight: 8,
+  },
+  thumbnailActive: {
+    borderColor: "#C8A55F",
+  },
+  thumbnailImage: {
+    width: "100%",
+    height: "100%",
+  },
+  mediaIndicator: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  mediaIndicatorText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  galleryOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+  },
+  galleryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 15,
+    backgroundColor: "rgba(44, 62, 80, 0.95)",
+  },
+  galleryTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#C8A55F",
+    textShadowColor: "rgba(0, 0, 0, 0.8)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  mainImageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  singleImageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mainImage: {
+    width: "100%",
+    height: "100%",
+  },
+  imageIndicators: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageCounter: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 
   // Styles pour AddProduct
   addProductContainer: {
