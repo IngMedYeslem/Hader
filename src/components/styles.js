@@ -841,6 +841,57 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  // Styles pour MediaManager
+  mediaManagerContainer: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  mediaManagerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#C8A55F',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  mediaSection: {
+    marginBottom: 25,
+  },
+  mediaSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 15,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#ff4444',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyMediaContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyMediaText: {
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
+  },
 });
 
 export default styles;

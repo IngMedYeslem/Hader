@@ -120,5 +120,19 @@ export const productAPI = {
       body: formData
     });
     return response.json();
+  },
+
+  deleteMedia: async (productId, mediaType, mediaIndex) => {
+    const response = await fetch(`${API_URL}/products/${productId}/media`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mediaType, mediaIndex })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Erreur lors de la suppression');
+    }
+    
+    return response.json();
   }
 };

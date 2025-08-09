@@ -170,6 +170,40 @@ app.post('/api/upload-video', upload.single('video'), (req, res) => {
   }
 });
 
+// Route pour supprimer un média d'un produit
+app.delete('/api/products/:productId/media', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { mediaType, mediaIndex } = req.body;
+    
+    console.log(`Suppression ${mediaType}[${mediaIndex}] du produit ${productId}`);
+    
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Produit non trouvé' });
+    }
+    
+    if (mediaType === 'images' && product.images && product.images[mediaIndex]) {
+      product.images.splice(mediaIndex, 1);
+    } else if (mediaType === 'videos' && product.videos && product.videos[mediaIndex]) {
+      product.videos.splice(mediaIndex, 1);
+    } else {
+      return res.status(400).json({ error: 'Média non trouvé' });
+    }
+    
+    await product.save();
+    console.log(`Média supprimé. Reste ${product.images?.length || 0} images et ${product.videos?.length || 0} vidéos`);
+    
+    res.json({ 
+      message: 'Média supprimé avec succès',
+      product: product
+    });
+  } catch (error) {
+    console.error('Erreur suppression média:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(3000, () => {
   console.log('Serveur démarré sur le port 3000');
 });

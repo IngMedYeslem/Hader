@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
+import EditProduct from "./EditProduct";
 import ProductThumbnail from "./ProductThumbnail";
 import styles from "./styles";
 import { useTranslation } from '../translations';
@@ -18,9 +19,21 @@ const itemWidth = (width - 60) / 2;
 function ShopDashboard({ shop, onLogout }) {
   const [products, setProducts] = useState([]);
   const [galleryVisible, setGalleryVisible] = useState(false);
+  const [editVisible, setEditVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { t } = useTranslation();
   const { currentPage, navigateTo } = useNavigation();
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setEditVisible(true);
+  };
+
+  const handleProductUpdated = (updatedProduct) => {
+    setProducts(products.map(p => 
+      p._id === updatedProduct._id ? updatedProduct : p
+    ));
+  };
   
   const showAddProduct = currentPage === 'addProduct';
 
@@ -163,11 +176,30 @@ function ShopDashboard({ shop, onLogout }) {
                       setGalleryVisible(true);
                     }
                   }}
+                  onLongPress={() => handleEditProduct(product)}
                 >
-                  <ProductThumbnail 
-                    product={product} 
-                    style={styles.imageContainer}
-                  />
+                  <View style={styles.imageContainer}>
+                    <ProductThumbnail 
+                      product={product} 
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                    <TouchableOpacity 
+                      style={{
+                        position: 'absolute',
+                        top: 5,
+                        right: 5,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        borderRadius: 12,
+                        width: 24,
+                        height: 24,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}
+                      onPress={() => handleEditProduct(product)}
+                    >
+                      <Text style={{ color: 'white', fontSize: 12 }}>✏️</Text>
+                    </TouchableOpacity>
+                  </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.alibabaProductName} numberOfLines={2}>{product.name}</Text>
                     <Text style={styles.alibabaPrice}>{product.price} €</Text>
@@ -195,6 +227,18 @@ function ShopDashboard({ shop, onLogout }) {
             setSelectedProduct(null);
           }}
         />
+
+        {selectedProduct && (
+          <EditProduct
+            product={selectedProduct}
+            visible={editVisible}
+            onClose={() => {
+              setEditVisible(false);
+              setSelectedProduct(null);
+            }}
+            onProductUpdated={handleProductUpdated}
+          />
+        )}
       </ImageBackground>
     </View>
   );
