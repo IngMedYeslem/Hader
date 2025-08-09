@@ -87,6 +87,28 @@ users: async () => {
 
   products: async () => await Product.find(),
 
+  productsWithShops: async () => {
+    const products = await Product.find();
+    const productsWithShops = [];
+    
+    for (const product of products) {
+      let shop = null;
+      if (product.shopId) {
+        shop = await User.findById(product.shopId).select('username profileImage');
+      }
+      
+      productsWithShops.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        images: product.images || [],
+        shop: shop
+      });
+    }
+    
+    return productsWithShops;
+  },
+
   addProduct: async ({ name, price, images }, context) => {
     if (!context.user) throw new Error("Accès refusé : Authentification requise.");
 

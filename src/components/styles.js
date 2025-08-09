@@ -356,15 +356,15 @@ const styles = StyleSheet.create({
     padding: 8,
   },
 
-  // Styles Alibaba Interface
-  alibabaGrid: {
+  // Styles Global Interface
+  globalGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     padding: 20,
     paddingBottom: 100,
   },
-  alibabaCard: {
+  globalCard: {
     backgroundColor: "white",
     borderRadius: 12,
     marginBottom: 15,
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: "#f5f5f5",
   },
-  alibabaImage: {
+  globalImage: {
     width: "100%",
     height: "100%",
   },
@@ -398,14 +398,14 @@ const styles = StyleSheet.create({
   productInfo: {
     padding: 12,
   },
-  alibabaProductName: {
+  globalProductName: {
     fontSize: 14,
     fontWeight: "600",
     color: "#333",
     marginBottom: 6,
     lineHeight: 18,
   },
-  alibabaPrice: {
+  globalPrice: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#ff6b35",
@@ -421,6 +421,228 @@ const styles = StyleSheet.create({
     marginTop: 50,
     fontSize: 16,
     color: "red",
+  },
+  shopInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  shopName: {
+    fontSize: 12,
+    color: "#666",
+    flex: 1,
+  },
+  shopAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginLeft: 5,
+  },
+  searchContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    margin: 15,
+    borderRadius: 10,
+    padding: 15,
+  },
+  searchInput: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 10,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterBtn: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    marginRight: 5,
+    marginBottom: 5,
+  },
+  filterBtnActive: {
+    backgroundColor: "#C8A55F",
+  },
+  filterText: {
+    fontSize: 12,
+    color: "#666",
+  },
+  filterTextActive: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#2C3E50",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#C8A55F",
+  },
+  closeBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "rgba(200, 165, 95, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeBtnText: {
+    fontSize: 16,
+    color: "#C8A55F",
+    fontWeight: "bold",
+  },
+  modalContent: {
+    flex: 1,
+  },
+  productImageLarge: {
+    height: 300,
+    backgroundColor: "#f5f5f5",
+  },
+  modalImage: {
+    width: "100%",
+    height: "100%",
+  },
+  placeholderImageLarge: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+  },
+  placeholderTextLarge: {
+    fontSize: 80,
+    color: "#ccc",
+  },
+  productDetails: {
+    padding: 20,
+  },
+  productNameLarge: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  productPriceLarge: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#ff6b35",
+    marginBottom: 20,
+  },
+  shopInfoLarge: {
+    backgroundColor: "#f9f9f9",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  shopLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  shopDetails: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  shopAvatarLarge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  shopNameLarge: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  shopAddress: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4,
+  },
+  shopContact: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+  },
+  actionButtons: {
+    marginTop: 20,
+    gap: 10,
+  },
+  contactBtn: {
+    backgroundColor: "#25D366",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  callBtn: {
+    backgroundColor: "#007AFF",
+  },
+  emailBtn: {
+    backgroundColor: "#FF6B35",
+  },
+  contactBtnText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  shopSummaryContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    margin: 15,
+    borderRadius: 10,
+    padding: 15,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    marginBottom: 10,
+  },
+  shopSummaryCard: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 8,
+    padding: 12,
+    marginRight: 10,
+    minWidth: 120,
+    borderLeftWidth: 3,
+    borderLeftColor: "#C8A55F",
+  },
+  shopSummaryName: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    marginBottom: 4,
+  },
+  shopSummaryCount: {
+    fontSize: 11,
+    color: "#666",
+    marginBottom: 2,
+  },
+  shopSummaryPrice: {
+    fontSize: 10,
+    color: "#C8A55F",
+    fontWeight: "bold",
   },
 
   // Styles pour AddProduct

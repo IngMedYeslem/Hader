@@ -53,18 +53,18 @@ function ProductList() {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.alibabaGrid}>
+          <View style={styles.globalGrid}>
             {products.map((product) => (
               <TouchableOpacity 
                 key={product.id} 
-                style={[styles.alibabaCard, { width: itemWidth }]}
+                style={[styles.globalCard, { width: itemWidth }]}
                 onLongPress={() => handleEditProduct(product)}
               >
                 <View style={styles.imageContainer}>
                   {product.images ? (
                     <Image 
                       source={{ uri: product.images }} 
-                      style={styles.alibabaImage}
+                      style={styles.globalImage}
                       resizeMode="cover"
                     />
                   ) : (
@@ -90,8 +90,8 @@ function ProductList() {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.productInfo}>
-                  <Text style={styles.alibabaProductName} numberOfLines={2}>{product.name}</Text>
-                  <Text style={styles.alibabaPrice}>{product.price} €</Text>
+                  <Text style={styles.globalProductName} numberOfLines={2}>{product.name}</Text>
+                  <Text style={styles.globalPrice}>{product.price} €</Text>
                 </View>
               </TouchableOpacity>
             ))}

@@ -23,7 +23,7 @@ app.get('/api/health', (req, res) => {
 // Route de débogage pour vérifier les produits en base
 app.get('/api/debug/products', async (req, res) => {
   try {
-    const products = await Product.find().limit(10);
+    const products = await Product.find();
     console.log('Produits en base:', products.length);
     products.forEach(p => {
       console.log(`Produit ${p.name}: ${p.images?.length || 0} images`);
@@ -67,6 +67,19 @@ const Shop = mongoose.model('Shop', shopSchema);
 const Product = mongoose.model('Product', productSchema);
 
 // Routes Boutiques
+app.get('/api/shops/:shopId', async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId);
+    if (shop) {
+      res.json(shop);
+    } else {
+      res.status(404).json({ error: 'Boutique non trouvée' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/shops/login', async (req, res) => {
   try {
     const { email, password } = req.body;

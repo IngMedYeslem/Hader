@@ -22,8 +22,17 @@ module.exports = buildSchema(`
     images: String
   }
 
+  type ProductWithShop {
+    id: ID!
+    name: String!
+    price: Float!
+    images: [String]
+    shop: User
+  }
+
   type Query {
     products: [Product]
+    productsWithShops: [ProductWithShop]
     roles: [Role]
     users: [User]
   }

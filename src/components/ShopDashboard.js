@@ -163,7 +163,7 @@ function ShopDashboard({ shop, onLogout }) {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.alibabaGrid}>
+          <View style={styles.globalGrid}>
             {products.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyText}>Aucun produit dans votre boutique</Text>
@@ -173,7 +173,7 @@ function ShopDashboard({ shop, onLogout }) {
               products.map((product) => (
                 <TouchableOpacity 
                   key={product._id || product.id || `product-${Date.now()}-${Math.random()}`} 
-                  style={[styles.alibabaCard, { width: itemWidth }]}
+                  style={[styles.globalCard, { width: itemWidth }]}
                   onPress={() => {
                     if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
                       setSelectedProduct(product);
@@ -205,8 +205,8 @@ function ShopDashboard({ shop, onLogout }) {
                     </TouchableOpacity>
                   </View>
                   <View style={styles.productInfo}>
-                    <Text style={styles.alibabaProductName} numberOfLines={2}>{product.name}</Text>
-                    <Text style={styles.alibabaPrice}>{product.price} €</Text>
+                    <Text style={styles.globalProductName} numberOfLines={2}>{product.name}</Text>
+                    <Text style={styles.globalPrice}>{product.price} €</Text>
                   </View>
                 </TouchableOpacity>
               ))
