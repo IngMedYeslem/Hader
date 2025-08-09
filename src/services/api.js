@@ -58,11 +58,17 @@ export const productAPI = {
       console.log('URL API:', API_URL);
       console.log('Produit:', { name: product.name, price: product.price, shopId: product.shopId });
       console.log('Images à envoyer:', product.images?.length || 0);
+      console.log('Vidéos à envoyer:', product.videos?.length || 0);
       
-      // Vérifier la taille des images
+      // Vérifier la taille des images et vidéos
       if (product.images) {
         product.images.forEach((img, i) => {
           console.log(`Image ${i + 1}: ${img.substring(0, 30)}... (${img.length} chars)`);
+        });
+      }
+      if (product.videos) {
+        product.videos.forEach((vid, i) => {
+          console.log(`Vidéo ${i + 1}: ${vid.substring(0, 30)}... (${vid.length} chars)`);
         });
       }
       
@@ -84,6 +90,7 @@ export const productAPI = {
       console.log('=== Produit créé ===');
       console.log('ID:', result._id);
       console.log('Images sauvegardées:', result.images?.length || 0);
+      console.log('Vidéos sauvegardées:', result.videos?.length || 0);
       return result;
     } catch (error) {
       console.error('❌ Erreur création produit:', error);
@@ -97,6 +104,18 @@ export const productAPI = {
     formData.append('image', blob, 'image.jpg');
     
     const response = await fetch(`${API_URL}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    return response.json();
+  },
+
+  uploadVideo: async (videoData) => {
+    const formData = new FormData();
+    const blob = await fetch(videoData).then(r => r.blob());
+    formData.append('video', blob, 'video.mp4');
+    
+    const response = await fetch(`${API_URL}/upload-video`, {
       method: 'POST',
       body: formData
     });

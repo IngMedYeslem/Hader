@@ -3,7 +3,8 @@ import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimen
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
-import ImageGallery from "./ImageGallery";
+import MediaGallery from "./MediaGallery";
+import ProductThumbnail from "./ProductThumbnail";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
@@ -157,32 +158,16 @@ function ShopDashboard({ shop, onLogout }) {
                   key={product._id || product.id || `product-${Date.now()}-${Math.random()}`} 
                   style={[styles.alibabaCard, { width: itemWidth }]}
                   onPress={() => {
-                    if (product.images && product.images.length > 0) {
+                    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
                       setSelectedProduct(product);
                       setGalleryVisible(true);
                     }
                   }}
                 >
-                  <View style={styles.imageContainer}>
-                    {product.images && product.images.length > 0 ? (
-                      <>
-                        <Image 
-                          source={{ uri: Array.isArray(product.images) ? product.images[0] : product.images }} 
-                          style={styles.alibabaImage}
-                          resizeMode="cover"
-                        />
-                        {Array.isArray(product.images) && product.images.length > 1 && (
-                          <View style={styles.imageCount}>
-                            <Text style={styles.imageCountText}>+{product.images.length - 1}</Text>
-                          </View>
-                        )}
-                      </>
-                    ) : (
-                      <View style={styles.placeholderImage}>
-                        <Text style={styles.placeholderText}>📷</Text>
-                      </View>
-                    )}
-                  </View>
+                  <ProductThumbnail 
+                    product={product} 
+                    style={styles.imageContainer}
+                  />
                   <View style={styles.productInfo}>
                     <Text style={styles.alibabaProductName} numberOfLines={2}>{product.name}</Text>
                     <Text style={styles.alibabaPrice}>{product.price} €</Text>
@@ -200,9 +185,10 @@ function ShopDashboard({ shop, onLogout }) {
           <Text style={styles.floatingBtnText}>+</Text>
         </TouchableOpacity>
 
-        <ImageGallery
+        <MediaGallery
           visible={galleryVisible}
-          images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : [selectedProduct.images]) : []}
+          images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
+          videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
           productName={selectedProduct?.name}
           onClose={() => {
             setGalleryVisible(false);

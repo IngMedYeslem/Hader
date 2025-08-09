@@ -10,16 +10,26 @@
   },
   "dependencies": {
     "@apollo/client": "^3.8.0",
-    "@react-native-async-storage/async-storage": "^1.19.3",
-    "expo": "~49.0.0",
-    "expo-file-system": "~15.4.4",
-    "expo-image-manipulator": "~11.3.0",
-    "expo-image-picker": "~14.3.2",
+    "@babel/runtime": "^7.28.2",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@types/react": "~19.0.10",
+    "expo": "~53.0.0",
+    "expo-file-system": "~18.1.11",
+    "expo-image-manipulator": "~13.1.7",
+    "expo-image-picker": "~16.1.4",
     "graphql": "^16.8.0",
-    "react": "18.2.0",
-    "react-native": "0.72.0"
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-web": "^0.20.0",
+    "typescript": "~5.8.3",
+    "with-router": "^1.0.1",
+    "@expo/metro-runtime": "~5.0.4",
+    "expo-av": "~15.1.7",
+    "expo-media-library": "~17.1.7"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "babel-preset-expo": "^13.2.3"
   }
 }

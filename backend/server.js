@@ -51,6 +51,7 @@ const productSchema = new mongoose.Schema({
   name: String,
   price: Number,
   images: [String], // Tableau d'images
+  videos: [String], // Tableau de vidéos
   shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
   createdAt: { type: Date, default: Date.now }
 });
@@ -107,14 +108,16 @@ app.get('/api/products/:shopId', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, price, images, shopId } = req.body;
+    const { name, price, images, videos, shopId } = req.body;
     
     console.log('=== Début création produit ===');
     console.log('Données reçues:', { name, price, shopId });
     console.log('Nombre d\'images reçues:', images?.length || 0);
+    console.log('Nombre de vidéos reçues:', videos?.length || 0);
     
-    // S'assurer que images est un tableau
+    // S'assurer que images et videos sont des tableaux
     const imageArray = Array.isArray(images) ? images : (images ? [images] : []);
+    const videoArray = Array.isArray(videos) ? videos : (videos ? [videos] : []);
     
     // Vérifier le type des images
     imageArray.forEach((img, index) => {
@@ -131,6 +134,7 @@ app.post('/api/products', async (req, res) => {
       name,
       price,
       images: imageArray,
+      videos: videoArray,
       shopId
     });
     
@@ -150,6 +154,17 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'Aucun fichier uploadé' });
     }
     res.json({ imageUrl: `/uploads/${req.file.filename}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/upload-video', upload.single('video'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucune vidéo uploadée' });
+    }
+    res.json({ videoUrl: `/uploads/${req.file.filename}` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -5,11 +5,11 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 
 function AddProduct({ onBack, onAdd }) {
-  const [products, setProducts] = useState([{ name: '', price: '', images: [] }]);
+  const [products, setProducts] = useState([{ name: '', price: '', images: [], videos: [] }]);
   const { t } = useTranslation();
 
   const addProductField = () => {
-    setProducts([...products, { name: '', price: '', images: [] }]);
+    setProducts([...products, { name: '', price: '', images: [], videos: [] }]);
   };
 
   const updateProduct = (index, field, value) => {
@@ -40,6 +40,18 @@ function AddProduct({ onBack, onAdd }) {
     }
   };
 
+  const selectVideo = (index) => {
+    if (Platform.OS === 'web') {
+      // Pour ordinateur
+      if (fileInputRefs.current[`video-${index}`]) {
+        fileInputRefs.current[`video-${index}`].click();
+      }
+    } else {
+      // Pour smartphone
+      pickVideoFromGallery(index);
+    }
+  };
+
   const handleFileSelect = (index, event) => {
     const files = Array.from(event.target.files);
     
@@ -49,6 +61,21 @@ function AddProduct({ onBack, onAdd }) {
         const updated = [...products];
         if (!updated[index].images) updated[index].images = [];
         updated[index].images.push(e.target.result);
+        setProducts(updated);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleVideoSelect = (index, event) => {
+    const files = Array.from(event.target.files);
+    
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const updated = [...products];
+        if (!updated[index].videos) updated[index].videos = [];
+        updated[index].videos.push(e.target.result);
         setProducts(updated);
       };
       reader.readAsDataURL(file);
@@ -80,6 +107,33 @@ function AddProduct({ onBack, onAdd }) {
       }
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'accéder à la galerie');
+    }
+  };
+
+  const pickVideoFromGallery = async (index) => {
+    try {
+      const ImagePicker = require('expo-image-picker');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('permissionRequired'), t('galleryAccess'));
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: true,
+        videoMaxDuration: 30,
+        quality: ImagePicker.UIImagePickerControllerQualityType.Medium,
+      });
+
+      if (!result.canceled) {
+        const updated = [...products];
+        if (!updated[index].videos) updated[index].videos = [];
+        updated[index].videos.push(result.assets[0].uri);
+        setProducts(updated);
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'accéder à la galerie vidéo');
     }
   };
 
@@ -120,12 +174,13 @@ function AddProduct({ onBack, onAdd }) {
           await onAdd({
             name: product.name,
             price: parseFloat(product.price),
-            images: product.images
+            images: product.images,
+            videos: product.videos
           });
         }
       }
       Alert.alert(t('success'), t('productsAdded'));
-      setProducts([{ name: '', price: '', images: [] }]);
+      setProducts([{ name: '', price: '', images: [], videos: [] }]);
       onBack();
     } catch (error) {
       Alert.alert(t('error'), error.message);
@@ -175,32 +230,56 @@ function AddProduct({ onBack, onAdd }) {
                   onChangeText={(text) => updateProduct(index, 'price', text)}
                 />
                 
-                <TouchableOpacity 
-                  style={styles.imagePickerBtn} 
-                  onPress={() => selectImage(index)}
-                >
-                  <Text style={styles.imagePickerText}>
-                    {product.images && product.images.length > 0 
-                      ? `${product.images.length} ${t('imageSelected')}` 
-                      : t('addImage')}
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <TouchableOpacity 
+                    style={[styles.imagePickerBtn, { flex: 1, marginRight: 5 }]} 
+                    onPress={() => selectImage(index)}
+                  >
+                    <Text style={styles.imagePickerText}>
+                      📷 {product.images && product.images.length > 0 
+                        ? `${product.images.length} photos` 
+                        : 'Ajouter photos'}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.imagePickerBtn, { flex: 1, marginLeft: 5 }]} 
+                    onPress={() => selectVideo(index)}
+                  >
+                    <Text style={styles.imagePickerText}>
+                      🎥 {product.videos && product.videos.length > 0 
+                        ? `${product.videos.length} vidéos` 
+                        : 'Ajouter vidéos'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 
                 {Platform.OS === 'web' && (
-                  <input
-                    ref={el => fileInputRefs.current[index] = el}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={(e) => handleFileSelect(index, e)}
-                  />
+                  <>
+                    <input
+                      ref={el => fileInputRefs.current[index] = el}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleFileSelect(index, e)}
+                    />
+                    <input
+                      ref={el => fileInputRefs.current[`video-${index}`] = el}
+                      type="file"
+                      accept="video/*"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleVideoSelect(index, e)}
+                    />
+                  </>
                 )}
                 
+                {/* Images */}
                 {product.images && product.images.length > 0 && (
                   <View style={styles.imageGrid}>
                     {product.images.map((imageUri, imgIndex) => (
-                      <View key={`${index}-${imgIndex}-${Date.now()}`} style={styles.imageWrapper}>
+                      <View key={`img-${index}-${imgIndex}`} style={styles.imageWrapper}>
                         <Image 
                           source={{ uri: imageUri }} 
                           style={styles.previewImage}
@@ -210,6 +289,29 @@ function AddProduct({ onBack, onAdd }) {
                           onPress={() => {
                             const updated = [...products];
                             updated[index].images.splice(imgIndex, 1);
+                            setProducts(updated);
+                          }}
+                        >
+                          <Text style={styles.removeImageText}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                
+                {/* Vidéos */}
+                {product.videos && product.videos.length > 0 && (
+                  <View style={styles.imageGrid}>
+                    {product.videos.map((videoUri, vidIndex) => (
+                      <View key={`vid-${index}-${vidIndex}`} style={styles.imageWrapper}>
+                        <View style={[styles.previewImage, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
+                          <Text style={{ color: 'white', fontSize: 20 }}>🎥</Text>
+                        </View>
+                        <TouchableOpacity 
+                          style={styles.removeImageBtn}
+                          onPress={() => {
+                            const updated = [...products];
+                            updated[index].videos.splice(vidIndex, 1);
                             setProducts(updated);
                           }}
                         >
