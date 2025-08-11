@@ -82,8 +82,8 @@ function ShopLogin({ onLogin }) {
   };
 
   const handleRegister = async () => {
-    if (!shopName || !email || !password || !address || !phone || !whatsapp) {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires sauf la localisation');
+    if (!shopName || !email || !password || !address || !phone || !whatsapp || !location.latitude || !location.longitude) {
+      Alert.alert('Erreur', 'Tous les champs sont obligatoires, y compris la localisation');
       return;
     }
     
@@ -94,15 +94,12 @@ function ShopLogin({ onLogin }) {
         password,
         address,
         phone,
-        whatsapp
-      };
-      
-      if (location.latitude && location.longitude) {
-        shopData.location = {
+        whatsapp,
+        location: {
           latitude: parseFloat(location.latitude),
           longitude: parseFloat(location.longitude)
-        };
-      }
+        }
+      };
       
       // Essayer l'API d'abord
       const shop = await shopAPI.register(shopData);
@@ -122,15 +119,12 @@ function ShopLogin({ onLogin }) {
           address,
           phone,
           whatsapp,
-          createdAt: new Date().toISOString()
-        };
-        
-        if (location.latitude && location.longitude) {
-          newShop.location = {
+          location: {
             latitude: parseFloat(location.latitude),
             longitude: parseFloat(location.longitude)
-          };
-        }
+          },
+          createdAt: new Date().toISOString()
+        };
           
         const localShops = await AsyncStorage.getItem('localShops');
         const shops = localShops ? JSON.parse(localShops) : [];
@@ -208,7 +202,7 @@ function ShopLogin({ onLogin }) {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <TextInput
                     style={[styles.addProductInput, { flex: 1, marginRight: 5 }]}
-                    placeholder="Latitude (facultatif)"
+                    placeholder="Latitude *"
                     placeholderTextColor="#999"
                     value={location.latitude}
                     onChangeText={(text) => setLocation({...location, latitude: text})}
@@ -216,7 +210,7 @@ function ShopLogin({ onLogin }) {
                   />
                   <TextInput
                     style={[styles.addProductInput, { flex: 1, marginLeft: 5 }]}
-                    placeholder="Longitude (facultatif)"
+                    placeholder="Longitude *"
                     placeholderTextColor="#999"
                     value={location.longitude}
                     onChangeText={(text) => setLocation({...location, longitude: text})}

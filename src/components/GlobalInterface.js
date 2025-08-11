@@ -6,6 +6,7 @@ import ProductModal from './ProductModal';
 import ShopSummary from './ShopSummary';
 import ProductThumbnail from './ProductThumbnail';
 import MediaGallery from './MediaGallery';
+import AdminInterface from './AdminInterface';
 import { fetchProductsWithShops, checkServerHealth } from '../services/apiService';
 import { getMockProducts } from '../services/serverCheck';
 import styles from './styles';
@@ -21,6 +22,7 @@ export default function GlobalInterface({ onShopLogin }) {
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [useRealData, setUseRealData] = useState(false);
   const [error, setError] = useState(null);
+  const [showAdminInterface, setShowAdminInterface] = useState(false);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -107,13 +109,21 @@ export default function GlobalInterface({ onShopLogin }) {
     setSelectedProduct(null);
   };
 
+  if (showAdminInterface) {
+    return <AdminInterface onBack={() => setShowAdminInterface(false)} />;
+  }
+
   if (loading) return (
     <ImageBackground 
       source={require('../../assets/b2.jpeg')} 
       style={styles.background}
       resizeMode="cover"
     >
-      <GlobalNavbar onShopLogin={onShopLogin} productCount={0} />
+      <GlobalNavbar 
+        onShopLogin={onShopLogin} 
+        onAdminAccess={() => setShowAdminInterface(true)}
+        productCount={0} 
+      />
       <Text style={styles.loadingText}>Chargement des produits...</Text>
     </ImageBackground>
   );
@@ -124,7 +134,12 @@ export default function GlobalInterface({ onShopLogin }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <GlobalNavbar onShopLogin={onShopLogin} productCount={filteredProducts.length} shopCount={shopCount} />
+      <GlobalNavbar 
+        onShopLogin={onShopLogin} 
+        onAdminAccess={() => setShowAdminInterface(true)}
+        productCount={filteredProducts.length} 
+        shopCount={shopCount} 
+      />
       
       {!useRealData && (
         <View style={{ backgroundColor: 'rgba(255,165,0,0.1)', margin: 10, padding: 10, borderRadius: 5 }}>

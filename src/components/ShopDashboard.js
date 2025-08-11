@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
@@ -82,6 +82,15 @@ function ShopDashboard({ shop, onLogout }) {
   };
 
   if (showAddProduct) {
+    if (!shop.isApproved) {
+      Alert.alert(
+        'Compte non approuvé',
+        'Votre compte est en attente d\'approbation par un administrateur. Vous ne pouvez pas ajouter de produits pour le moment.',
+        [{ text: 'OK', onPress: () => navigateTo('dashboard') }]
+      );
+      return null;
+    }
+    
     return <AddProduct 
       onBack={() => navigateTo('dashboard')} 
       onAdd={async (newProduct) => {
@@ -145,9 +154,13 @@ function ShopDashboard({ shop, onLogout }) {
         resizeMode="cover"
       >
         <View style={styles.shopHeader}>
-          <TouchableOpacity onPress={() => setShopInfoVisible(true)}>
-            <Text style={styles.shopTitle}>{shop.name} ℹ️</Text>
-          </TouchableOpacity>
+          {shop.isApproved ? (
+            <TouchableOpacity onPress={() => setShopInfoVisible(true)}>
+              <Text style={styles.shopTitle}>{shop.name} ℹ️</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.shopTitle}>{shop.name}</Text>
+          )}
           <View style={styles.headerButtons}>
             <TouchableOpacity style={styles.syncBtn} onPress={handleSync}>
               <Text style={styles.syncText}>↻</Text>
@@ -166,8 +179,58 @@ function ShopDashboard({ shop, onLogout }) {
           <View style={styles.globalGrid}>
             {products.length === 0 ? (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>Aucun produit dans votre boutique</Text>
-                <Text style={styles.emptySubText}>Appuyez sur + pour ajouter des produits</Text>
+                {shop.isApproved ? (
+                  <>
+                    <Text style={styles.emptyText}>Aucun produit dans votre boutique</Text>
+                    <Text style={styles.emptySubText}>Appuyez sur + pour ajouter des produits</Text>
+                  </>
+                ) : (
+                  <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 10 }}>
+                    <Text style={{ color: '#856404', textAlign: 'center', fontWeight: 'bold', marginBottom: 10 }}>
+                      ⏳ Compte en attente d'approbation
+                    </Text>
+                    <Text style={{ color: '#856404', textAlign: 'center', fontSize: 13, marginBottom: 10, fontWeight: '500' }}>
+                      Votre compte sera validé sous 24 heures
+                    </Text>
+                    <Text style={{ color: '#856404', textAlign: 'center', fontSize: 12, marginBottom: 15 }}>
+                      Si votre compte n'est pas validé après 24h, contactez l'administrateur
+                    </Text>
+                    
+                    <View style={{ backgroundColor: '#e3f2fd', padding: 12, borderRadius: 8, marginTop: 10 }}>
+                      <Text style={{ color: '#1976d2', textAlign: 'center', fontWeight: 'bold', marginBottom: 8 }}>
+                        📞 Contacter l'administrateur
+                      </Text>
+                      
+                      <TouchableOpacity 
+                        style={{ backgroundColor: '#25D366', padding: 10, borderRadius: 5, marginBottom: 8 }}
+                        onPress={() => {
+                          const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
+                          Linking.openURL(whatsappUrl).catch(() => {
+                            Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
+                          });
+                        }}
+                      >
+                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 12 }}>
+                          📱 Contacter via WhatsApp
+                        </Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={{ backgroundColor: '#007AFF', padding: 10, borderRadius: 5 }}
+                        onPress={() => {
+                          const phoneUrl = `tel:+22236251999`;
+                          Linking.openURL(phoneUrl).catch(() => {
+                            Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone');
+                          });
+                        }}
+                      >
+                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 12 }}>
+                          📞 Appeler l'administrateur
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </View>
             ) : (
               products.map((product) => (
@@ -214,12 +277,14 @@ function ShopDashboard({ shop, onLogout }) {
           </View>
         </ScrollView>
         
-        <TouchableOpacity 
-          style={styles.floatingBtn} 
-          onPress={() => navigateTo('addProduct')}
-        >
-          <Text style={styles.floatingBtnText}>+</Text>
-        </TouchableOpacity>
+        {shop.isApproved && (
+          <TouchableOpacity 
+            style={styles.floatingBtn} 
+            onPress={() => navigateTo('addProduct')}
+          >
+            <Text style={styles.floatingBtnText}>+</Text>
+          </TouchableOpacity>
+        )}
 
         <MediaGallery
           visible={galleryVisible}

@@ -77,14 +77,13 @@ export default function UserAdminScreen() {
       <Navbar />
       <ImageBackground source={require("../../assets/b2.jpeg")} style={styles.background} resizeMode="cover">
         <ScrollView contentContainerStyle={styles.container}>
-       
-       
-        {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backHistoryBtn}>
-        <Ionicons name="arrow-back" size={28} color="white" />
-       </TouchableOpacity>
-       </View> */}
-{/* <Text style={styles.title}>{t("Gestion des utilisateurs")}</Text> */}
+          
+          <TouchableOpacity 
+            style={[styles.contactBtn, { marginHorizontal: 20, marginBottom: 20, backgroundColor: '#C8A55F' }]}
+            onPress={() => navigation.navigate('AdminDashboard')}
+          >
+            <Text style={styles.contactBtnText}>🏪 Administration des boutiques</Text>
+          </TouchableOpacity>
 
           {data?.users.map((user) => (
             <Card key={user.id} style={styles.cardusergestion}>

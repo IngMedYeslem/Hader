@@ -139,6 +139,14 @@ export default function LoginScreen({ navigation }) {
             </Button>
 
             <Button
+              mode="outlined"
+              onPress={() => navigation.navigate("ShopRegisterScreen")}
+              style={{ marginTop: 5, borderColor: "#C8A55F" }}
+            >
+              <Text style={{ color: "#C8A55F" }}>🏪 Créer un compte boutique</Text>
+            </Button>
+
+            <Button
   mode="outlined"
   icon="whatsapp"
   onPress={openWhatsApp}

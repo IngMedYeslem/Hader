@@ -32,7 +32,8 @@ module.exports = {
       email,
       password: hashedPassword,
       profileImage,
-      roles: [userRole._id] // 🔹 Assignation automatique du rôle USER
+      roles: [userRole._id], // 🔹 Assignation automatique du rôle USER
+      isApproved: true // Les utilisateurs normaux sont approuvés automatiquement
     });
 
     await user.save();
@@ -49,16 +50,22 @@ module.exports = {
 
   login: async ({ username, password }) => {
     const user = await User.findOne({ username })
-      .populate({ path: "roles", select: "name" }) // 🔹 Sélectionner uniquement le champ "name"
+      .populate({ path: "roles", select: "name" })
+      .populate({ path: "approvedBy", select: "username" })
       .lean();
       
     if (!user) throw new Error("Utilisateur non trouvé.");
   
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Mot de passe incorrect.");
-  
-    // 🔹 Vérifier que "roles" est un tableau et s'assurer que "name" est bien accessible
+
+    // Vérifier si l'utilisateur a un rôle boutique et s'il est approuvé
     const roles = user.roles.map(role => role.name);
+    const isShop = roles.includes("AJOUT-PROD");
+    
+    if (isShop && !user.isApproved) {
+      throw new Error("Votre compte boutique est en attente d'approbation par un administrateur.");
+    }
   
     return {
       id: user._id,
@@ -66,20 +73,28 @@ module.exports = {
       email: user.email,
       token: generateToken(user),
       profileImage: user.profileImage,
-      roles
+      roles,
+      isApproved: user.isApproved,
+      approvedAt: user.approvedAt,
+      approvedBy: user.approvedBy?.username
     };
   },
  // 🔹 Ajout de la requête pour récupérer tous les utilisateurs
 users: async () => {
-  const users = await User.find().populate("roles", "name");
+  const users = await User.find()
+    .populate("roles", "name")
+    .populate("approvedBy", "username");
 
   return users.map(user => ({
     id: user.id,
     username: user.username,
     email: user.email,
     profileImage: user.profileImage,
-    roles: user.roles.map(role => role.name), // 🔹 Convertir en tableau de strings
-    token: user.token
+    roles: user.roles.map(role => role.name),
+    token: user.token,
+    isApproved: user.isApproved,
+    approvedAt: user.approvedAt,
+    approvedBy: user.approvedBy?.username
   }));
 },
 
@@ -190,5 +205,49 @@ users: async () => {
     await user.save();
 
     return user;
+  },
+
+  approveUser: async ({ userId }, context) => {
+    if (!context.user) throw new Error("Accès refusé : Authentification requise.");
+    
+    if (!context.user.roles.includes("ADMIN")) {
+      throw new Error("Accès refusé : Seuls les administrateurs peuvent approuver des comptes.");
+    }
+
+    const user = await User.findById(userId)
+      .populate("roles", "name")
+      .populate("approvedBy", "username");
+    
+    if (!user) throw new Error("Utilisateur non trouvé.");
+
+    user.isApproved = true;
+    user.approvedAt = new Date();
+    user.approvedBy = context.user.id;
+    await user.save();
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage,
+      roles: user.roles.map(role => role.name),
+      isApproved: user.isApproved,
+      approvedAt: user.approvedAt,
+      approvedBy: context.user.username
+    };
+  },
+
+  rejectUser: async ({ userId }, context) => {
+    if (!context.user) throw new Error("Accès refusé : Authentification requise.");
+    
+    if (!context.user.roles.includes("ADMIN")) {
+      throw new Error("Accès refusé : Seuls les administrateurs peuvent rejeter des comptes.");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("Utilisateur non trouvé.");
+
+    await User.findByIdAndDelete(userId);
+    return `Utilisateur ${user.username} supprimé avec succès.`;
   }
 };

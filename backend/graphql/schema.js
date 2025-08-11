@@ -12,7 +12,10 @@ module.exports = buildSchema(`
     email: String!
     profileImage: String
     roles: [String]!  
-    token: String    
+    token: String
+    isApproved: Boolean!
+    approvedAt: String
+    approvedBy: String
   }
 
   type Product {
@@ -46,7 +49,8 @@ module.exports = buildSchema(`
     addProduct(name: String!, price: Float!, images: String): Product
     updateUser(username: String!, email: String!, roles: [String]!): User  
     deleteUser(id: ID!): String
-   updateProfileImage(username: String!, profileImage: String!): User
-
+    updateProfileImage(username: String!, profileImage: String!): User
+    approveUser(userId: ID!): User
+    rejectUser(userId: ID!): String
   }
 `);
