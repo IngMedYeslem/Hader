@@ -9,9 +9,11 @@ import MediaGallery from './MediaGallery';
 import AdminInterface from './AdminInterface';
 import { fetchProductsWithShops, checkServerHealth } from '../services/apiService';
 import { getMockProducts } from '../services/serverCheck';
+import { useTranslation } from '../translations';
 import styles from './styles';
 
 export default function GlobalInterface({ onShopLogin }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -124,7 +126,7 @@ export default function GlobalInterface({ onShopLogin }) {
         onAdminAccess={() => setShowAdminInterface(true)}
         productCount={0} 
       />
-      <Text style={styles.loadingText}>Chargement des produits...</Text>
+      <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
     </ImageBackground>
   );
 

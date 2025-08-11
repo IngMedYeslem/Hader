@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { styles } from './styles';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground } from 'react-native';
+import styles from './styles';
+import { useTranslation } from '../translations';
 
 const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function CreateAdmin({ onBack, onAdminCreated }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -15,17 +17,17 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
 
   const handleCreateAdmin = async () => {
     if (!formData.username || !formData.email || !formData.password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      Alert.alert(t('error'), t('fillAllFields'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      Alert.alert(t('error'), t('passwordsDontMatch'));
       return;
     }
 
     if (formData.password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      Alert.alert(t('error'), t('passwordTooShort'));
       return;
     }
 
@@ -47,8 +49,8 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
       
       if (response.ok) {
         Alert.alert(
-          'Succès',
-          `Compte admin "${formData.username}" créé avec succès`,
+          t('success'),
+          `${t('adminCreated')}: "${formData.username}"`,
           [
             {
               text: 'OK',
@@ -60,46 +62,53 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
           ]
         );
       } else {
-        Alert.alert('Erreur', data.error || 'Erreur lors de la création');
+        Alert.alert(t('error'), data.error || t('error'));
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion au serveur');
+      Alert.alert(t('error'), t('connectionError'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+    <View style={styles.wrapper}>
+      <ImageBackground 
+        source={require('../../assets/b2.jpeg')} 
+        style={styles.background}
+        resizeMode="cover"
+      >
       <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
-            ← Retour
+          <Text style={styles.colorText}>
+            {t('back')}
           </Text>
         </TouchableOpacity>
-        <Text style={{ color: '#C8A55F', fontSize: 14, textAlign: 'center', fontWeight: 'bold', padding: 8 }}>
-          👨💼 Créer un Admin
+        <Text style={[styles.authTitle, { fontSize: 16, padding: 8 }]}>
+          👨💼 {t('createAdmin')}
         </Text>
         <View style={{ width: 50 }} />
       </View>
 
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <View style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: 30, borderRadius: 15, width: '100%', maxWidth: 400 }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 30, color: '#2C3E50' }}>
-            Nouveau Compte Admin
+        <View style={styles.card}>
+          <Text style={[styles.authTitle, { fontSize: 24, marginBottom: 30 }]}>
+            {t('newAdminAccount')}
           </Text>
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 15 }}
-            placeholder="Nom d'utilisateur"
+            style={styles.addProductInput}
+            placeholder={t('username')}
+            placeholderTextColor="#999"
             value={formData.username}
             onChangeText={(text) => setFormData({...formData, username: text})}
             autoCapitalize="none"
           />
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 15 }}
-            placeholder="Email"
+            style={styles.addProductInput}
+            placeholder={t('email')}
+            placeholderTextColor="#999"
             value={formData.email}
             onChangeText={(text) => setFormData({...formData, email: text})}
             keyboardType="email-address"
@@ -107,41 +116,44 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
           />
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 15 }}
-            placeholder="Mot de passe"
+            style={styles.addProductInput}
+            placeholder={t('password')}
+            placeholderTextColor="#999"
             value={formData.password}
             onChangeText={(text) => setFormData({...formData, password: text})}
             secureTextEntry
           />
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 30 }}
-            placeholder="Confirmer le mot de passe"
+            style={styles.addProductInput}
+            placeholder={t('confirmPassword')}
+            placeholderTextColor="#999"
             value={formData.confirmPassword}
             onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
             secureTextEntry
           />
 
           <TouchableOpacity
-            style={{ marginTop: 20, padding: 12, backgroundColor: '#C8A55F', borderRadius: 30, opacity: loading ? 0.7 : 1 }}
+            style={[styles.submitBtn, { opacity: loading ? 0.7 : 1 }]}
             onPress={handleCreateAdmin}
             disabled={loading}
           >
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>
-              {loading ? 'Création...' : 'Créer le compte admin'}
+            <Text style={styles.submitText}>
+              {loading ? t('creating') : t('createAdminAccount')}
             </Text>
           </TouchableOpacity>
 
-          <View style={{ backgroundColor: '#e3f2fd', padding: 15, borderRadius: 8, marginTop: 20 }}>
-            <Text style={{ color: '#1976d2', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
-              ⚠️ Important
+          <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 20 }}>
+            <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
+              ⚠️ {t('important')}
             </Text>
-            <Text style={{ color: '#1976d2', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
-              Le nouveau compte aura tous les droits d'administration
+            <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
+              {t('adminRights')}
             </Text>
           </View>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ImageBackground>
+    </View>
   );
 }

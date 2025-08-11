@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
-import { styles } from './styles';
+import styles from './styles';
+import { useTranslation } from '../translations';
 
 const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,16 +122,16 @@ export default function AdminDashboard() {
     const needsApproval = isShop && !item.isApproved;
 
     return (
-      <View style={[{ backgroundColor: 'white', borderRadius: 12, marginBottom: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, overflow: 'hidden' }, { marginHorizontal: 15 }]}>
+      <View style={[styles.card, { marginHorizontal: 15, marginBottom: 15 }]}>
         <View style={{ padding: 15 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 6 }}>{item.username}</Text>
-          <Text style={{ color: '#666', marginBottom: 5 }}>{item.email}</Text>
-          <Text style={{ color: '#666', marginBottom: 5 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#C8A55F', marginBottom: 6 }}>{item.username}</Text>
+          <Text style={{ color: '#C8A55F', marginBottom: 5 }}>{item.email}</Text>
+          <Text style={{ color: '#C8A55F', marginBottom: 5 }}>
             Rôles: {item.roles.join(', ')}
           </Text>
           
           {item.linkedShop && (
-            <Text style={{ color: '#007AFF', marginBottom: 5, fontSize: 12 }}>
+            <Text style={{ color: '#C8A55F', marginBottom: 5, fontSize: 12 }}>
               🏪 Lié à: {item.linkedShop.name}
             </Text>
           )}
@@ -155,34 +157,34 @@ export default function AdminDashboard() {
               </View>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <TouchableOpacity
-                  style={[{ backgroundColor: '#28a745', padding: 15, borderRadius: 10, alignItems: 'center', marginBottom: 10 }, { flex: 1 }]}
+                  style={[styles.submitBtn, { flex: 1, marginRight: 5, backgroundColor: '#4CAF50' }]}
                   onPress={() => handleApprove(item.id, item.username)}
                 >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Approuver</Text>
+                  <Text style={styles.submitText}>Approuver</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[{ backgroundColor: '#dc3545', padding: 15, borderRadius: 10, alignItems: 'center', marginBottom: 10 }, { flex: 1 }]}
+                  style={[styles.submitBtn, { flex: 1, marginLeft: 5, backgroundColor: '#f44336' }]}
                   onPress={() => handleReject(item.id, item.username)}
                 >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Rejeter</Text>
+                  <Text style={styles.submitText}>Rejeter</Text>
                 </TouchableOpacity>
               </View>
               
               {isShop && !item.linkedShop && shops.length > 0 && (
                 <View style={{ marginTop: 10 }}>
-                  <Text style={{ fontSize: 12, marginBottom: 5, color: '#666' }}>Boutiques disponibles: {shops.length}</Text>
+                  <Text style={{ fontSize: 12, marginBottom: 5, color: '#C8A55F' }}>Boutiques disponibles: {shops.length}</Text>
                 </View>
               )}
             </View>
           ) : (
             <View>
-              <View style={{ backgroundColor: '#e2e3e5', padding: 8, borderRadius: 5, marginBottom: 10 }}>
-                <Text style={{ color: '#6c757d' }}>Utilisateur standard</Text>
+              <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', padding: 8, borderRadius: 5, marginBottom: 10 }}>
+                <Text style={{ color: '#C8A55F' }}>Utilisateur standard</Text>
               </View>
               
               {item.linkedShop && (
                 <TouchableOpacity
-                  style={{ backgroundColor: '#dc3545', padding: 8, borderRadius: 5 }}
+                  style={{ backgroundColor: '#f44336', padding: 8, borderRadius: 5 }}
                   onPress={() => handleUnlinkShop(item.id, item.username)}
                 >
                   <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
@@ -197,32 +199,32 @@ export default function AdminDashboard() {
     );
   };
 
-  if (loading) return <Text style={{ textAlign: 'center', marginTop: 50, fontSize: 16, color: '#C8A55F' }}>Chargement...</Text>;
-  if (error) return <Text style={{ textAlign: 'center', marginTop: 50, fontSize: 16, color: 'red' }}>Erreur: {error.message}</Text>;
+  if (loading) return <Text style={styles.loadingText}>Chargement...</Text>;
+  if (error) return <Text style={styles.errorText}>Erreur: {error}</Text>;
 
   const pendingShops = users.filter(user => 
     user.roles.includes('AJOUT-PROD') && !user.isApproved
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+    <View style={styles.wrapper}>
       <View style={{ backgroundColor: '#2C3E50' }}>
-        <Text style={{ fontSize: 20, color: '#C8A55F', textAlign: 'center', fontWeight: 'bold', padding: 15 }}>
-          Administration - Validation des comptes
+        <Text style={[styles.authTitle, { fontSize: 20, padding: 15 }]}>
+          {t('administration')}
         </Text>
       </View>
       
       {pendingShops.length > 0 && (
         <View style={{ backgroundColor: '#fff3cd', padding: 10, margin: 15, borderRadius: 8 }}>
           <Text style={{ color: '#856404', fontWeight: 'bold', textAlign: 'center' }}>
-            {pendingShops.length} boutique(s) en attente d'approbation
+            {pendingShops.length} {t('shopsWaiting')}
           </Text>
         </View>
       )}
       
       <View style={{ flexDirection: 'row', margin: 15, gap: 10 }}>
         <TouchableOpacity
-          style={{ backgroundColor: '#28a745', padding: 15, borderRadius: 8, flex: 1 }}
+          style={[styles.submitBtn, { flex: 1, marginRight: 5, backgroundColor: '#4CAF50' }]}
           onPress={() => {
             // Navigation vers création admin
             Alert.prompt(
@@ -283,8 +285,8 @@ export default function AdminDashboard() {
             );
           }}
         >
-          <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-            👨💼 Créer Admin
+          <Text style={styles.submitText}>
+            👨💼 {t('createAdmin')}
           </Text>
         </TouchableOpacity>
         
@@ -292,7 +294,7 @@ export default function AdminDashboard() {
         
         {users.length === 0 && (
           <TouchableOpacity
-            style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8, flex: 1 }}
+            style={[styles.submitBtn, { flex: 1, marginLeft: 5 }]}
             onPress={async () => {
               try {
                 const response = await fetch(`${API_URL}/debug/create-test-users`, {
@@ -310,8 +312,8 @@ export default function AdminDashboard() {
               }
             }}
           >
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-              Comptes Test
+            <Text style={styles.submitText}>
+              {t('testAccounts')}
             </Text>
           </TouchableOpacity>
         )}

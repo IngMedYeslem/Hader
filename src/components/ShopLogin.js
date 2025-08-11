@@ -163,21 +163,21 @@ function ShopLogin({ onLogin }) {
         <View style={styles.centeredContainer}>
           <View style={styles.card}>
             <Text style={styles.authTitle}>
-              {isRegister ? 'Créer une Boutique' : 'Connexion Boutique'}
+              {isRegister ? t('createShop') : t('shopLogin')}
             </Text>
             
             {isRegister && (
               <>
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="Nom de la boutique *"
+                  placeholder={`${t('shopName')} *`}
                   placeholderTextColor="#999"
                   value={shopName}
                   onChangeText={setShopName}
                 />
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="Adresse réelle *"
+                  placeholder={`${t('address')} *`}
                   placeholderTextColor="#999"
                   value={address}
                   onChangeText={setAddress}
@@ -185,7 +185,7 @@ function ShopLogin({ onLogin }) {
                 />
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="Numéro de téléphone *"
+                  placeholder={`${t('phone')} *`}
                   placeholderTextColor="#999"
                   value={phone}
                   onChangeText={setPhone}
@@ -193,7 +193,7 @@ function ShopLogin({ onLogin }) {
                 />
                 <TextInput
                   style={styles.addProductInput}
-                  placeholder="WhatsApp *"
+                  placeholder={`${t('whatsapp')} *`}
                   placeholderTextColor="#999"
                   value={whatsapp}
                   onChangeText={setWhatsapp}
@@ -202,7 +202,7 @@ function ShopLogin({ onLogin }) {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <TextInput
                     style={[styles.addProductInput, { flex: 1, marginRight: 5 }]}
-                    placeholder="Latitude *"
+                    placeholder={`${t('latitude')} *`}
                     placeholderTextColor="#999"
                     value={location.latitude}
                     onChangeText={(text) => setLocation({...location, latitude: text})}
@@ -210,7 +210,7 @@ function ShopLogin({ onLogin }) {
                   />
                   <TextInput
                     style={[styles.addProductInput, { flex: 1, marginLeft: 5 }]}
-                    placeholder="Longitude *"
+                    placeholder={`${t('longitude')} *`}
                     placeholderTextColor="#999"
                     value={location.longitude}
                     onChangeText={(text) => setLocation({...location, longitude: text})}
@@ -221,14 +221,14 @@ function ShopLogin({ onLogin }) {
                   style={[styles.submitBtn, { backgroundColor: '#4CAF50', marginBottom: 10 }]} 
                   onPress={getCurrentLocation}
                 >
-                  <Text style={styles.submitText}>📍 Obtenir ma localisation</Text>
+                  <Text style={styles.submitText}>📍 {t('getLocation')}</Text>
                 </TouchableOpacity>
               </>
             )}
             
             <TextInput
               style={styles.addProductInput}
-              placeholder="Login"
+              placeholder={t('login')}
               placeholderTextColor="#999"
               value={email}
               onChangeText={setEmail}
@@ -237,7 +237,7 @@ function ShopLogin({ onLogin }) {
             
             <TextInput
               style={styles.addProductInput}
-              placeholder="Mot de passe"
+              placeholder={t('password')}
               placeholderTextColor="#999"
               value={password}
               onChangeText={setPassword}
@@ -249,7 +249,7 @@ function ShopLogin({ onLogin }) {
               onPress={isRegister ? handleRegister : handleLogin}
             >
               <Text style={styles.submitText}>
-                {isRegister ? 'Créer' : 'Se connecter'}
+                {isRegister ? t('create') : t('connect')}
               </Text>
             </TouchableOpacity>
             
@@ -258,7 +258,7 @@ function ShopLogin({ onLogin }) {
               onPress={() => setIsRegister(!isRegister)}
             >
               <Text style={styles.colorText}>
-                {isRegister ? 'Déjà un compte ?' : 'Créer une boutique'}
+                {isRegister ? t('alreadyAccount') : t('createShopAccount')}
               </Text>
             </TouchableOpacity>
           </View>

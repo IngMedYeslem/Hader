@@ -3,12 +3,14 @@ import { Platform, View, TouchableOpacity, Text } from 'react-native';
 import { ApolloProvider } from '@apollo/client';
 import client from './src/apolloClientSimple';
 import { NavigationProvider } from './src/NavigationContext';
+import { useTranslation } from './src/translations';
 import ShopLogin from './src/components/ShopLogin';
 import ShopDashboard from './src/components/ShopDashboard';
 import GlobalInterface from './src/components/GlobalInterface';
 import styles from './src/components/styles';
 
 export default function App() {
+  const { t } = useTranslation();
   const [currentShop, setCurrentShop] = useState(null);
   const [showGlobalInterface, setShowGlobalInterface] = useState(true);
   
@@ -73,10 +75,10 @@ export default function App() {
             onPress={() => setShowGlobalInterface(true)}
           >
             <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
-              ← Retour au Marketplace
+              ← {t('backToMarketplace')}
             </Text>
           </TouchableOpacity>
-          <Text style={styles.textcoprit}>Connexion Boutique</Text>
+          <Text style={styles.textcoprit}>{t('shopLogin')}</Text>
         </View>
         <ShopLogin onLogin={handleLogin} />
       </View>

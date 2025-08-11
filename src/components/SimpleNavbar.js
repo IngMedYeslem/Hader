@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { getLanguage, setLanguage } from '../translations';
+import { getLanguage, setLanguage, useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
 import styles from './styles';
 
 const SimpleNavbar = () => {
+  const { t } = useTranslation();
   const [currentLang, setCurrentLang] = useState(getLanguage());
   const { navigateTo } = useNavigation();
 

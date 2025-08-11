@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Linking, Alert, Modal } from 'react-native';
+import { useTranslation } from '../translations';
 import styles from './styles';
 
 const ShopInfo = ({ shop, visible, onClose }) => {
+  const { t } = useTranslation();
   const handleCall = (number) => {
     Linking.openURL(`tel:${number}`);
   };
@@ -16,7 +18,7 @@ const ShopInfo = ({ shop, visible, onClose }) => {
       const url = `https://maps.google.com/?q=${shop.location.latitude},${shop.location.longitude}`;
       Linking.openURL(url);
     } else {
-      Alert.alert('Info', 'Localisation non disponible');
+      Alert.alert(t('info'), t('locationNotAvailable'));
     }
   };
 
@@ -27,24 +29,24 @@ const ShopInfo = ({ shop, visible, onClose }) => {
       <Text style={styles.shopInfoTitle}>{shop.name}</Text>
       
       <View style={styles.shopInfoItem}>
-        <Text style={styles.shopInfoLabel}>👤 Login:</Text>
+        <Text style={styles.shopInfoLabel}>👤 {t('loginLabel')}:</Text>
         <Text style={styles.shopInfoValue}>{shop.email}</Text>
       </View>
       
       <View style={styles.shopInfoItem}>
-        <Text style={styles.shopInfoLabel}>📍 Adresse:</Text>
+        <Text style={styles.shopInfoLabel}>📍 {t('addressLabel')}:</Text>
         <Text style={styles.shopInfoValue}>{shop.address}</Text>
       </View>
       
       <View style={styles.shopInfoItem}>
-        <Text style={styles.shopInfoLabel}>📞 Téléphone:</Text>
+        <Text style={styles.shopInfoLabel}>📞 {t('phoneLabel')}:</Text>
         <TouchableOpacity onPress={() => handleCall(shop.phone)}>
           <Text style={[styles.shopInfoValue, { color: '#007AFF' }]}>{shop.phone}</Text>
         </TouchableOpacity>
       </View>
       
       <View style={styles.shopInfoItem}>
-        <Text style={styles.shopInfoLabel}>💬 WhatsApp:</Text>
+        <Text style={styles.shopInfoLabel}>💬 {t('whatsappLabel')}:</Text>
         <TouchableOpacity onPress={() => handleWhatsApp(shop.whatsapp)}>
           <Text style={[styles.shopInfoValue, { color: '#25D366' }]}>{shop.whatsapp}</Text>
         </TouchableOpacity>
@@ -52,12 +54,12 @@ const ShopInfo = ({ shop, visible, onClose }) => {
       
       {shop.location?.latitude && shop.location?.longitude && (
         <TouchableOpacity style={styles.locationBtn} onPress={handleLocation}>
-          <Text style={styles.locationBtnText}>🗺️ Voir sur la carte</Text>
+          <Text style={styles.locationBtnText}>🗺️ {t('viewOnMap')}</Text>
         </TouchableOpacity>
       )}
       
       <TouchableOpacity style={styles.closeInfoBtn} onPress={onClose}>
-        <Text style={styles.closeInfoBtnText}>Fermer</Text>
+        <Text style={styles.closeInfoBtnText}>{t('close')}</Text>
       </TouchableOpacity>
         </View>
       </View>

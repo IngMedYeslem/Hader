@@ -4,8 +4,10 @@ import AdminDashboard from './AdminDashboard';
 import AdminLogin from './AdminLogin';
 import CreateAdmin from './CreateAdmin';
 import styles from './styles';
+import { useTranslation } from '../translations';
 
 export default function AdminInterface({ onBack }) {
+  const { t } = useTranslation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
   const [currentView, setCurrentView] = useState('dashboard');
@@ -41,36 +43,36 @@ export default function AdminInterface({ onBack }) {
   return (
     <ImageBackground 
       source={require('../../assets/b2.jpeg')} 
-      style={{ flex: 1 }}
+      style={styles.background}
       resizeMode="cover"
     >
       <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
-            ← Retour
+          <Text style={styles.colorText}>
+            {t('back')}
           </Text>
         </TouchableOpacity>
-        <Text style={{ color: '#C8A55F', fontSize: 14, textAlign: 'center', fontWeight: 'bold', padding: 8 }}>👨💼 Admin - {adminUser?.username}</Text>
+        <Text style={[styles.authTitle, { fontSize: 16, padding: 8 }]}>👨💼 Admin - {adminUser?.username}</Text>
         <TouchableOpacity onPress={handleLogout}>
           <Text style={{ color: '#ff6b6b', fontSize: 12, fontWeight: 'bold' }}>
-            Déconnexion
+            {t('logout')}
           </Text>
         </TouchableOpacity>
       </View>
       
       <View style={{ flexDirection: 'row', justifyContent: 'center', padding: 10, gap: 10 }}>
         <TouchableOpacity
-          style={{ backgroundColor: currentView === 'dashboard' ? '#C8A55F' : '#f0f0f0', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 }}
+          style={[styles.filterBtn, currentView === 'dashboard' && styles.filterBtnActive]}
           onPress={() => setCurrentView('dashboard')}
         >
-          <Text style={{ color: currentView === 'dashboard' ? 'white' : '#666', fontSize: 12, fontWeight: 'bold' }}>Validation Comptes</Text>
+          <Text style={[styles.filterText, currentView === 'dashboard' && styles.filterTextActive]}>{t('accountValidation')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={{ backgroundColor: currentView === 'createAdmin' ? '#C8A55F' : '#f0f0f0', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 }}
+          style={[styles.filterBtn, currentView === 'createAdmin' && styles.filterBtnActive]}
           onPress={() => setCurrentView('createAdmin')}
         >
-          <Text style={{ color: currentView === 'createAdmin' ? 'white' : '#666', fontSize: 12, fontWeight: 'bold' }}>Créer Admin</Text>
+          <Text style={[styles.filterText, currentView === 'createAdmin' && styles.filterTextActive]}>{t('createAdmin')}</Text>
         </TouchableOpacity>
       </View>
       

@@ -3,12 +3,13 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
-import { getLanguage, setLanguage } from '../translations';
+import { getLanguage, setLanguage, useTranslation } from '../translations';
 import styles from "./styles";
 
 
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const [currentLang, setCurrentLang] = useState(getLanguage());
 

@@ -166,7 +166,7 @@ function ShopDashboard({ shop, onLogout }) {
               <Text style={styles.syncText}>↻</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-              <Text style={styles.logoutText}>Déconnexion</Text>
+              <Text style={styles.logoutText}>{t('logout')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -178,57 +178,55 @@ function ShopDashboard({ shop, onLogout }) {
         >
           <View style={styles.globalGrid}>
             {products.length === 0 ? (
-              <View style={styles.emptyState}>
+              <View style={styles.centeredContainer}>
                 {shop.isApproved ? (
                   <>
-                    <Text style={styles.emptyText}>Aucun produit dans votre boutique</Text>
-                    <Text style={styles.emptySubText}>Appuyez sur + pour ajouter des produits</Text>
+                    <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
+                    <Text style={styles.emptySubText}>{t('tapPlusToAdd')}</Text>
                   </>
                 ) : (
-                  <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 10 }}>
-                    <Text style={{ color: '#856404', textAlign: 'center', fontWeight: 'bold', marginBottom: 10 }}>
-                      ⏳ Compte en attente d'approbation
+                  <View style={styles.card}>
+                    <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20 }]}>
+                      ⏳ {t('accountWaitingApproval')}
                     </Text>
-                    <Text style={{ color: '#856404', textAlign: 'center', fontSize: 13, marginBottom: 10, fontWeight: '500' }}>
-                      Votre compte sera validé sous 24 heures
+                    <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
+                      {t('accountValidatedIn24h')}
                     </Text>
-                    <Text style={{ color: '#856404', textAlign: 'center', fontSize: 12, marginBottom: 15 }}>
-                      Si votre compte n'est pas validé après 24h, contactez l'administrateur
+                    <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 20 }]}>
+                      {t('contactAdminAfter24h')}
                     </Text>
                     
-                    <View style={{ backgroundColor: '#e3f2fd', padding: 12, borderRadius: 8, marginTop: 10 }}>
-                      <Text style={{ color: '#1976d2', textAlign: 'center', fontWeight: 'bold', marginBottom: 8 }}>
-                        📞 Contacter l'administrateur
+                    <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 15 }]}>
+                      📞 {t('contactAdmin')}
+                    </Text>
+                    
+                    <TouchableOpacity 
+                      style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
+                      onPress={() => {
+                        const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
+                        Linking.openURL(whatsappUrl).catch(() => {
+                          Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
+                        });
+                      }}
+                    >
+                      <Text style={styles.submitText}>
+                        📱 {t('contactWhatsApp')}
                       </Text>
-                      
-                      <TouchableOpacity 
-                        style={{ backgroundColor: '#25D366', padding: 10, borderRadius: 5, marginBottom: 8 }}
-                        onPress={() => {
-                          const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
-                          Linking.openURL(whatsappUrl).catch(() => {
-                            Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
-                          });
-                        }}
-                      >
-                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 12 }}>
-                          📱 Contacter via WhatsApp
-                        </Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        style={{ backgroundColor: '#007AFF', padding: 10, borderRadius: 5 }}
-                        onPress={() => {
-                          const phoneUrl = `tel:+22236251999`;
-                          Linking.openURL(phoneUrl).catch(() => {
-                            Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone');
-                          });
-                        }}
-                      >
-                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 12 }}>
-                          📞 Appeler l'administrateur
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.submitBtn, { backgroundColor: '#007AFF' }]}
+                      onPress={() => {
+                        const phoneUrl = `tel:+22236251999`;
+                        Linking.openURL(phoneUrl).catch(() => {
+                          Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone');
+                        });
+                      }}
+                    >
+                      <Text style={styles.submitText}>
+                        📞 {t('callAdmin')}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>

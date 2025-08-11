@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground } from 'react-native';
 import { useQuery } from '@apollo/client';
 import { GET_ALL_PRODUCTS_WITH_SHOPS } from '../graphql/getAllProductsWithShops';
+import { useTranslation } from '../translations';
 import GlobalNavbar from './GlobalNavbar';
 import styles from './styles';
 
 export default function GlobalInterfaceWithAPI({ onShopLogin }) {
+  const { t } = useTranslation();
   const { loading, error, data } = useQuery(GET_ALL_PRODUCTS_WITH_SHOPS, {
     errorPolicy: 'all',
     fetchPolicy: 'cache-and-network'
@@ -38,7 +40,7 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
       resizeMode="cover"
     >
       <GlobalNavbar onShopLogin={onShopLogin} />
-      <Text style={styles.loadingText}>Chargement des produits...</Text>
+      <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
     </ImageBackground>
   );
 
