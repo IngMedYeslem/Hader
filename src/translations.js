@@ -104,7 +104,17 @@ const translations = {
     noShop: 'Sans boutique',
     // Search
     searchProduct: 'Rechercher un produit...',
-    all: 'Toutes'
+    all: 'Toutes',
+    // Admin Dashboard
+    userAndShopManagement: 'Gestion des utilisateurs et boutiques',
+    users: 'Utilisateurs',
+    validated: 'Validées',
+    pending: 'En attente',
+    // Admin Login
+    adminLogin: 'Connexion Admin',
+    incorrectCredentials: 'Identifiants incorrects',
+    connecting: 'Connexion...',
+    adminLoginInfo: 'Connectez-vous avec votre compte administrateur'
   },
   en: {
     loading: 'Loading...',
@@ -211,7 +221,17 @@ const translations = {
     noShop: 'No shop',
     // Search
     searchProduct: 'Search for a product...',
-    all: 'All'
+    all: 'All',
+    // Admin Dashboard
+    userAndShopManagement: 'User and shop management',
+    users: 'Users',
+    validated: 'Validated',
+    pending: 'Pending',
+    // Admin Login
+    adminLogin: 'Admin Login',
+    incorrectCredentials: 'Incorrect credentials',
+    connecting: 'Connecting...',
+    adminLoginInfo: 'Login with your administrator account'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -318,7 +338,17 @@ const translations = {
     noShop: 'بدون متجر',
     // Search
     searchProduct: 'ابحث عن منتج...',
-    all: 'الكل'
+    all: 'الكل',
+    // Admin Dashboard
+    userAndShopManagement: 'إدارة المستخدمين والمتاجر',
+    users: 'المستخدمون',
+    validated: 'مصدق عليها',
+    pending: 'في الانتظار',
+    // Admin Login
+    adminLogin: 'تسجيل دخول المدير',
+    incorrectCredentials: 'بيانات اعتماد غير صحيحة',
+    connecting: 'جاري الاتصال...',
+    adminLoginInfo: 'قم بتسجيل الدخول بحساب المدير'
   }
 };
 

@@ -46,35 +46,39 @@ export default function AdminInterface({ onBack }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
-        <TouchableOpacity onPress={onBack}>
-          <Text style={styles.colorText}>
-            {t('back')}
-          </Text>
-        </TouchableOpacity>
-        <Text style={[styles.authTitle, { fontSize: 16, padding: 8 }]}>👨💼 Admin - {adminUser?.username}</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={{ color: '#ff6b6b', fontSize: 12, fontWeight: 'bold' }}>
-            {t('logout')}
-          </Text>
-        </TouchableOpacity>
+      <View style={{ backgroundColor: '#2C3E50', paddingVertical: 12, paddingHorizontal: 15 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <TouchableOpacity onPress={onBack} style={{ minWidth: 60 }}>
+            <Text style={[styles.colorText, { fontSize: 14 }]}>
+              ← {t('back')}
+            </Text>
+          </TouchableOpacity>
+          
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontSize: 14, color: '#C8A55F', fontWeight: 'bold' }}>
+              {adminUser?.username}
+            </Text>
+          </View>
+          
+          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', minWidth: 60, justifyContent: 'flex-end' }}>
+            <TouchableOpacity 
+              onPress={() => setCurrentView('createAdmin')}
+              style={{ backgroundColor: '#4CAF50', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6 }}
+            >
+              <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                + {t('admin')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleLogout}>
+              <Text style={{ color: '#ff6b6b', fontSize: 11, fontWeight: 'bold' }}>
+                {t('logout')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
       
-      <View style={{ flexDirection: 'row', justifyContent: 'center', padding: 10, gap: 10 }}>
-        <TouchableOpacity
-          style={[styles.filterBtn, currentView === 'dashboard' && styles.filterBtnActive]}
-          onPress={() => setCurrentView('dashboard')}
-        >
-          <Text style={[styles.filterText, currentView === 'dashboard' && styles.filterTextActive]}>{t('accountValidation')}</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.filterBtn, currentView === 'createAdmin' && styles.filterBtnActive]}
-          onPress={() => setCurrentView('createAdmin')}
-        >
-          <Text style={[styles.filterText, currentView === 'createAdmin' && styles.filterTextActive]}>{t('createAdmin')}</Text>
-        </TouchableOpacity>
-      </View>
+
       
       <AdminDashboard />
     </ImageBackground>

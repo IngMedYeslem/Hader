@@ -5,8 +5,17 @@ import { useTranslation } from '../translations';
 import styles from './styles';
 
 export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount = 0, shopCount = 0 }) {
-  const { t } = useTranslation();
+  const { t, setLanguage, currentLanguage } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
+  
+  const handleLanguageChange = () => {
+    const nextLang = currentLanguage === 'fr' ? 'en' : currentLanguage === 'en' ? 'ar' : 'fr';
+    setLanguage(nextLang);
+  };
+  
+  const getLanguageFlag = () => {
+    return currentLanguage === 'fr' ? '🇫🇷' : currentLanguage === 'en' ? '🇬🇧' : '🇲🇷';
+  };
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -31,7 +40,15 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
           {productCount} {t('products')} • {shopCount} {t('shops')}
         </Text>
       </View>
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <TouchableOpacity 
+          onPress={handleLanguageChange}
+          style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', padding: 6, borderRadius: 12 }}
+        >
+          <Text style={{ fontSize: 16 }}>
+            {getLanguageFlag()}
+          </Text>
+        </TouchableOpacity>
         {true && (
           <TouchableOpacity 
             onPress={onAdminAccess} 

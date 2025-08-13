@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 
 // URL dynamique selon la plateforme
 const API_BASE = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.100.121:3000/api'  // IP locale pour smartphone
+  ? 'http://192.168.1.123:3000/api'  // IP locale pour smartphone
   : 'http://localhost:3000/api';
 
 // Vérifier la connectivité réseau

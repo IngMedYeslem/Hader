@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground } from 'react-native';
-import { styles } from './styles';
+import { useTranslation } from '../translations';
+import styles from './styles';
 
-const API_URL = 'http://192.168.100.121:3000/api';
+const API_URL = 'http://192.168.1.123:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
+  const { t } = useTranslation();
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -13,7 +15,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
 
   const handleLogin = async () => {
     if (!credentials.username || !credentials.password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      Alert.alert(t('error'), t('fillAllFields'));
       return;
     }
 
@@ -32,10 +34,10 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       if (response.ok && data.success) {
         onLoginSuccess(data.user);
       } else {
-        Alert.alert('Erreur', data.error || 'Identifiants incorrects');
+        Alert.alert(t('error'), data.error || t('incorrectCredentials'));
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion au serveur');
+      Alert.alert(t('error'), t('connectionError'));
     } finally {
       setLoading(false);
     }
@@ -47,51 +49,53 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
+      <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }]}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
-            ← Retour
+          <Text style={styles.colorText}>
+            ← {t('back')}
           </Text>
         </TouchableOpacity>
-        <Text style={{ color: '#C8A55F', fontSize: 14, textAlign: 'center', fontWeight: 'bold', padding: 8 }}>👨💼 Connexion Admin</Text>
+        <Text style={[styles.textcoprit, { fontSize: 16 }]}>👨💼 {t('adminLogin')}</Text>
         <View style={{ width: 50 }} />
       </View>
 
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <View style={{ backgroundColor: 'rgba(255,255,255,0.9)', padding: 30, borderRadius: 15, width: '90%', maxWidth: 400 }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 30, color: '#2C3E50' }}>
-            Administration
+      <View style={styles.centeredContainer}>
+        <View style={[styles.card, { width: '90%', maxWidth: 400 }]}>
+          <Text style={[styles.authTitle, { fontSize: 22, marginBottom: 25 }]}>
+            🛠️ {t('administration')}
           </Text>
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 20 }}
-            placeholder="Nom d'utilisateur"
+            style={[styles.addProductInput, { color: '#2C3E50' }]}
+            placeholder={t('username')}
+            placeholderTextColor="#666"
             value={credentials.username}
             onChangeText={(text) => setCredentials({...credentials, username: text})}
             autoCapitalize="none"
           />
 
           <TextInput
-            style={{ backgroundColor: 'white', borderRadius: 8, padding: 12, fontSize: 16, borderWidth: 1, borderColor: '#ddd', marginBottom: 30 }}
-            placeholder="Mot de passe"
+            style={[styles.addProductInput, { color: '#2C3E50' }]}
+            placeholder={t('password')}
+            placeholderTextColor="#666"
             value={credentials.password}
             onChangeText={(text) => setCredentials({...credentials, password: text})}
             secureTextEntry
           />
 
           <TouchableOpacity
-            style={{ marginTop: 20, padding: 12, backgroundColor: '#C8A55F', borderRadius: 30, opacity: loading ? 0.7 : 1 }}
+            style={[styles.submitBtn, { opacity: loading ? 0.7 : 1, marginTop: 10 }]}
             onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>
-              {loading ? 'Connexion...' : 'Se connecter'}
+            <Text style={styles.submitText}>
+              {loading ? t('connecting') : t('connect')}
             </Text>
           </TouchableOpacity>
 
-          <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 20 }}>
-            <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center' }}>
-              Connectez-vous avec votre compte administrateur
+          <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 12, borderRadius: 8, marginTop: 15 }}>
+            <Text style={{ color: '#C8A55F', fontSize: 12, textAlign: 'center' }}>
+              {t('adminLoginInfo')}
             </Text>
           </View>
         </View>
