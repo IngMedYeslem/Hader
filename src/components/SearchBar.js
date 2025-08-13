@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { useTranslation } from '../translations';
 import styles from './styles';
 
@@ -15,9 +15,14 @@ export default function SearchBar({ searchText, onSearchChange, selectedShop, on
         onChangeText={onSearchChange}
       />
       
-      <View style={styles.filterContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 5 }}
+        style={{ flexDirection: 'row' }}
+      >
         <TouchableOpacity 
-          style={[styles.filterBtn, !selectedShop && styles.filterBtnActive]}
+          style={[styles.filterBtn, !selectedShop && styles.filterBtnActive, { marginRight: 8 }]}
           onPress={() => onShopFilter(null)}
         >
           <Text style={[styles.filterText, !selectedShop && styles.filterTextActive]}>
@@ -28,7 +33,7 @@ export default function SearchBar({ searchText, onSearchChange, selectedShop, on
         {shops.map((shop) => (
           <TouchableOpacity 
             key={shop}
-            style={[styles.filterBtn, selectedShop === shop && styles.filterBtnActive]}
+            style={[styles.filterBtn, selectedShop === shop && styles.filterBtnActive, { marginRight: 8 }]}
             onPress={() => onShopFilter(shop)}
           >
             <Text style={[styles.filterText, selectedShop === shop && styles.filterTextActive]}>
@@ -36,7 +41,7 @@ export default function SearchBar({ searchText, onSearchChange, selectedShop, on
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 }

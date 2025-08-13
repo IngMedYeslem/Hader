@@ -76,7 +76,7 @@ const translations = {
     contactWhatsApp: 'Contacter via WhatsApp',
     callAdmin: 'Appeler l\'administrateur',
     // Navbar
-    globalMarketplace: 'Marketplace Global',
+    globalMarketplace: 'Okaadh',
     products: 'produits',
     shops: 'boutiques',
     admin: 'Admin',
@@ -114,7 +114,16 @@ const translations = {
     adminLogin: 'Connexion Admin',
     incorrectCredentials: 'Identifiants incorrects',
     connecting: 'Connexion...',
-    adminLoginInfo: 'Connectez-vous avec votre compte administrateur'
+    adminLoginInfo: 'Connectez-vous avec votre compte administrateur',
+    // Product Modal
+    productDetails: 'Détails du produit',
+    soldBy: 'Vendu par',
+    shopNotSpecified: 'Boutique non spécifiée',
+    call: 'Appeler',
+    whatsappNotInstalled: 'WhatsApp n\'est pas installé sur cet appareil',
+    emailSubject: 'Demande d\'information',
+    emailBody: 'Bonjour, je suis intéressé(e) par le produit. Merci de me contacter.',
+    whatsappMessage: 'Bonjour, je suis intéressé(e) par le produit:'
   },
   en: {
     loading: 'Loading...',
@@ -193,7 +202,7 @@ const translations = {
     contactWhatsApp: 'Contact via WhatsApp',
     callAdmin: 'Call administrator',
     // Navbar
-    globalMarketplace: 'Global Marketplace',
+    globalMarketplace: 'Okaadh',
     products: 'products',
     shops: 'shops',
     admin: 'Admin',
@@ -231,7 +240,16 @@ const translations = {
     adminLogin: 'Admin Login',
     incorrectCredentials: 'Incorrect credentials',
     connecting: 'Connecting...',
-    adminLoginInfo: 'Login with your administrator account'
+    adminLoginInfo: 'Login with your administrator account',
+    // Product Modal
+    productDetails: 'Product Details',
+    soldBy: 'Sold by',
+    shopNotSpecified: 'Shop not specified',
+    call: 'Call',
+    whatsappNotInstalled: 'WhatsApp is not installed on this device',
+    emailSubject: 'Information request',
+    emailBody: 'Hello, I am interested in the product. Please contact me.',
+    whatsappMessage: 'Hello, I am interested in the product:'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -310,7 +328,7 @@ const translations = {
     contactWhatsApp: 'اتصل عبر واتساب',
     callAdmin: 'اتصل بالمدير',
     // Navbar
-    globalMarketplace: 'السوق العالمي',
+    globalMarketplace: 'عُكَاظ',
     products: 'منتجات',
     shops: 'متاجر',
     admin: 'مدير',
@@ -348,7 +366,16 @@ const translations = {
     adminLogin: 'تسجيل دخول المدير',
     incorrectCredentials: 'بيانات اعتماد غير صحيحة',
     connecting: 'جاري الاتصال...',
-    adminLoginInfo: 'قم بتسجيل الدخول بحساب المدير'
+    adminLoginInfo: 'قم بتسجيل الدخول بحساب المدير',
+    // Product Modal
+    productDetails: 'تفاصيل المنتج',
+    soldBy: 'يباع من قبل',
+    shopNotSpecified: 'متجر غير محدد',
+    call: 'اتصال',
+    whatsappNotInstalled: 'واتساب غير مثبت على هذا الجهاز',
+    emailSubject: 'طلب معلومات',
+    emailBody: 'مرحبا، أنا مهتم بالمنتج. يرجى التواصل معي.',
+    whatsappMessage: 'مرحبا، أنا مهتم بالمنتج:'
   }
 };
 

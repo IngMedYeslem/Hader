@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackgr
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.1.123:3000/api';
+const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function CreateShop({ onBack, onShopCreated }) {
   const { t } = useTranslation();

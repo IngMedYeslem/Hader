@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Platform } from 'react-native';
 import GlobalNavbar from './GlobalNavbar';
 import SearchBar from './SearchBar';
 import ProductModal from './ProductModal';
@@ -25,6 +25,8 @@ export default function GlobalInterface({ onShopLogin }) {
   const [useRealData, setUseRealData] = useState(false);
   const [error, setError] = useState(null);
   const [showAdminInterface, setShowAdminInterface] = useState(false);
+  const [showShopSummary, setShowShopSummary] = useState(true);
+  const [summaryPosition, setSummaryPosition] = useState('top'); // 'top' ou 'bottom'
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -32,21 +34,30 @@ export default function GlobalInterface({ onShopLogin }) {
         setLoading(true);
         setError(null);
         
-        // Vérifier si le serveur est disponible
-        const serverAvailable = await checkServerHealth();
-        
-        if (serverAvailable) {
-          console.log('Serveur disponible, chargement des données réelles...');
-          const realProducts = await fetchProductsWithShops();
-          setProducts(realProducts);
-          setFilteredProducts(realProducts);
-          setUseRealData(true);
-        } else {
-          console.log('Serveur non disponible, utilisation des données de test...');
+        // Forcer les données de test sur Android pour éviter OOM
+        if (Platform.OS === 'android') {
+          console.log('Android détecté, utilisation des données de test...');
           const mockProducts = getMockProducts();
           setProducts(mockProducts);
           setFilteredProducts(mockProducts);
           setUseRealData(false);
+        } else {
+          // Vérifier si le serveur est disponible pour les autres plateformes
+          const serverAvailable = await checkServerHealth();
+          
+          if (serverAvailable) {
+            console.log('Serveur disponible, chargement des données réelles...');
+            const realProducts = await fetchProductsWithShops();
+            setProducts(realProducts);
+            setFilteredProducts(realProducts);
+            setUseRealData(true);
+          } else {
+            console.log('Serveur non disponible, utilisation des données de test...');
+            const mockProducts = getMockProducts();
+            setProducts(mockProducts);
+            setFilteredProducts(mockProducts);
+            setUseRealData(false);
+          }
         }
       } catch (error) {
         console.error('Erreur chargement produits:', error);
@@ -99,6 +110,7 @@ export default function GlobalInterface({ onShopLogin }) {
 
   const handleProductPress = (product) => {
     setSelectedProduct(product);
+    setShowShopSummary(false); // Masquer le résumé lors de la navigation
     if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
       setGalleryVisible(true);
     } else {
@@ -109,6 +121,17 @@ export default function GlobalInterface({ onShopLogin }) {
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedProduct(null);
+    setShowShopSummary(true); // Réafficher le résumé après fermeture
+  };
+  
+  const handleCloseGallery = () => {
+    setGalleryVisible(false);
+    setSelectedProduct(null);
+    setShowShopSummary(true); // Réafficher le résumé après fermeture
+  };
+  
+  const toggleSummaryPosition = () => {
+    setSummaryPosition(prev => prev === 'top' ? 'bottom' : 'top');
   };
 
   if (showAdminInterface) {
@@ -153,8 +176,6 @@ export default function GlobalInterface({ onShopLogin }) {
       
 
       
-      <ShopSummary products={products} />
-      
       <SearchBar 
         searchText={searchText}
         onSearchChange={handleSearchChange}
@@ -163,7 +184,23 @@ export default function GlobalInterface({ onShopLogin }) {
         shops={shops}
       />
       
+      {showShopSummary && summaryPosition === 'top' && (
+        <View>
+          <ShopSummary products={products} />
+          <TouchableOpacity 
+            onPress={toggleSummaryPosition}
+            style={{ alignSelf: 'center', backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginHorizontal: 15, marginBottom: 5 }}
+          >
+            <Text style={{ color: '#C8A55F', fontSize: 10 }}>Déplacer en bas</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
       <ScrollView style={styles.wrapper} contentContainerStyle={styles.contentContainer}>
+        {showShopSummary && summaryPosition === 'bottom' && (
+          <ShopSummary products={products} />
+        )}
+        
         {filteredProducts.length === 0 ? (
           <View style={{ padding: 20, alignItems: 'center' }}>
             <Text style={{ color: '#C8A55F', fontSize: 16, textAlign: 'center' }}>
@@ -217,10 +254,7 @@ export default function GlobalInterface({ onShopLogin }) {
         productName={selectedProduct?.name}
         productPrice={selectedProduct?.price}
         shop={selectedProduct?.shop}
-        onClose={() => {
-          setGalleryVisible(false);
-          setSelectedProduct(null);
-        }}
+        onClose={handleCloseGallery}
       />
       
       <ProductModal 

@@ -10,9 +10,12 @@ export const fetchProductsWithShops = async () => {
     
     const products = await productsResponse.json();
     
+    // Limiter le nombre de produits pour éviter OOM
+    const limitedProducts = products.slice(0, 20);
+    
     // Pour chaque produit, récupérer les infos de la boutique
     const productsWithShops = await Promise.all(
-      products.map(async (product) => {
+      limitedProducts.map(async (product) => {
         let shop = null;
         if (product.shopId) {
           try {
@@ -29,8 +32,8 @@ export const fetchProductsWithShops = async () => {
           id: product._id,
           name: product.name,
           price: product.price,
-          images: product.images || [],
-          videos: product.videos || [],
+          images: (product.images || []).slice(0, 3), // Limiter à 3 images max
+          videos: (product.videos || []).slice(0, 1), // Limiter à 1 vidéo max
           shop: shop ? {
             id: shop._id,
             username: shop.name,

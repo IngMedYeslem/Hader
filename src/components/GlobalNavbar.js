@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from '../translations';
 import styles from './styles';
@@ -33,35 +33,45 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
   }, []);
 
   return (
-    <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }]}>
-      <View>
-        <Text style={styles.textcoprit}>🛍️ {t('globalMarketplace')}</Text>
-        <Text style={{ color: '#C8A55F', fontSize: 12, opacity: 0.8 }}>
+    <View style={[styles.headerGlobal, { 
+      flexDirection: 'row', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      padding: 10,
+      paddingTop: Platform.OS === 'ios' ? 50 : 10
+    }]}>
+      <View style={{ flex: 1, marginRight: 8 }}>
+        <Text style={[styles.textcoprit, { fontSize: 14 }]}>🛍️ {t('globalMarketplace')}</Text>
+        <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
           {productCount} {t('products')} • {shopCount} {t('shops')}
         </Text>
       </View>
-      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+      
+      <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', flexShrink: 0 }}>
         <TouchableOpacity 
           onPress={handleLanguageChange}
-          style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', padding: 6, borderRadius: 12 }}
+          style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', padding: 3, borderRadius: 6 }}
         >
-          <Text style={{ fontSize: 16 }}>
+          <Text style={{ fontSize: 11 }}>
             {getLanguageFlag()}
           </Text>
         </TouchableOpacity>
-        {true && (
-          <TouchableOpacity 
-            onPress={onAdminAccess} 
-            style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', padding: 8, borderRadius: 15 }}
-          >
-            <Text style={{ color: '#dc3545', fontSize: 12, fontWeight: 'bold' }}>
-              👨💼 {t('admin')}
-            </Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={onShopLogin} style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', padding: 8, borderRadius: 15 }}>
-          <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
-            {t('shopSpace')} →
+        
+        <TouchableOpacity 
+          onPress={onAdminAccess} 
+          style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 4, paddingVertical: 3, borderRadius: 6 }}
+        >
+          <Text style={{ color: '#dc3545', fontSize: 8, fontWeight: 'bold' }}>
+            👨💼
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          onPress={onShopLogin} 
+          style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
+        >
+          <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
+            🏪 {t('shopSpace')}
           </Text>
         </TouchableOpacity>
       </View>

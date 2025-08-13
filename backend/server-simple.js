@@ -87,8 +87,8 @@ app.get('/api/shops/:shopId', (req, res) => {
 const PORT = 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌟 Serveur simple démarré sur http://0.0.0.0:${PORT}`);
-  console.log(`📊 API disponible sur http://192.168.1.123:${PORT}/api`);
-  console.log(`🔍 Debug produits: http://192.168.1.123:${PORT}/api/debug/products`);
+  console.log(`📊 API disponible sur http://192.168.100.121:${PORT}/api`);
+  console.log(`🔍 Debug produits: http://192.168.100.121:${PORT}/api/debug/products`);
   console.log(`📦 ${mockProducts.length} produits disponibles`);
   console.log(`🏪 ${mockShops.length} boutiques disponibles`);
 });

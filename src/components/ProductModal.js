@@ -1,17 +1,22 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Linking, Alert } from 'react-native';
 import MediaCarousel from './MediaCarousel';
+import { useTranslation } from '../translations';
 import styles from './styles';
 
 export default function ProductModal({ visible, product, onClose }) {
+  const { t } = useTranslation();
   if (!product) return null;
 
   const handleWhatsApp = () => {
     if (product.shop?.whatsapp) {
-      const message = `Bonjour, je suis intéressé(e) par le produit: ${product.name} (${product.price} MRU)`;
+      const { currentLanguage } = useTranslation();
+      console.log('Langue actuelle:', currentLanguage);
+      console.log('Message WhatsApp:', t('whatsappMessage'));
+      const message = `${t('whatsappMessage')} ${product.name} (${product.price} MRU)`;
       const url = `whatsapp://send?phone=${product.shop.whatsapp}&text=${encodeURIComponent(message)}`;
       Linking.openURL(url).catch(() => {
-        Alert.alert('Erreur', 'WhatsApp n\'est pas installé sur cet appareil');
+        Alert.alert(t('error'), t('whatsappNotInstalled'));
       });
     }
   };
@@ -24,8 +29,8 @@ export default function ProductModal({ visible, product, onClose }) {
 
   const handleEmail = () => {
     if (product.shop?.email) {
-      const subject = `Demande d'information - ${product.name}`;
-      const body = `Bonjour,\n\nJe suis intéressé(e) par le produit: ${product.name} (${product.price} DH).\n\nMerci de me contacter.`;
+      const subject = `${t('emailSubject')} - ${product.name}`;
+      const body = `${t('emailBody')} ${product.name} (${product.price} MRU)`;
       Linking.openURL(`mailto:${product.shop.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
     }
   };
@@ -39,7 +44,7 @@ export default function ProductModal({ visible, product, onClose }) {
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Détails du produit</Text>
+          <Text style={styles.modalTitle}>{t('productDetails')}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <Text style={styles.closeBtnText}>✕</Text>
           </TouchableOpacity>
@@ -56,7 +61,7 @@ export default function ProductModal({ visible, product, onClose }) {
             <Text style={styles.productPriceLarge}>{product.price} MRU</Text>
             
             <View style={styles.shopInfoLarge}>
-              <Text style={styles.shopLabel}>Vendu par:</Text>
+              <Text style={styles.shopLabel}>{t('soldBy')}:</Text>
               <View style={styles.shopDetails}>
                 {product.shop?.profileImage && (
                   <Image 
@@ -66,7 +71,7 @@ export default function ProductModal({ visible, product, onClose }) {
                 )}
                 <View>
                   <Text style={styles.shopNameLarge}>
-                    {product.shop?.username || 'Boutique non spécifiée'}
+                    {product.shop?.username || t('shopNotSpecified')}
                   </Text>
                   {product.shop?.address && (
                     <Text style={styles.shopAddress}>
@@ -85,13 +90,13 @@ export default function ProductModal({ visible, product, onClose }) {
             <View style={styles.actionButtons}>
               {product.shop?.whatsapp && (
                 <TouchableOpacity style={styles.contactBtn} onPress={handleWhatsApp}>
-                  <Text style={styles.contactBtnText}>📱 WhatsApp</Text>
+                  <Text style={styles.contactBtnText}>📱 {t('whatsapp')}</Text>
                 </TouchableOpacity>
               )}
               
               {product.shop?.phone && (
                 <TouchableOpacity style={[styles.contactBtn, styles.callBtn]} onPress={handleCall}>
-                  <Text style={styles.contactBtnText}>📞 Appeler</Text>
+                  <Text style={styles.contactBtnText}>📞 {t('call')}</Text>
                 </TouchableOpacity>
               )}
               

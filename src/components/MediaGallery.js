@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform, Linking, Alert } from 'react-native';
 import { Video, Audio } from 'expo-av';
+import { useTranslation } from '../translations';
 import styles from './styles';
 
 const { width } = Dimensions.get('window');
 
 function MediaGallery({ images = [], videos = [], visible, onClose, productName, productPrice, shop }) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -14,10 +16,10 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
 
   const handleWhatsApp = () => {
     if (shop?.whatsapp) {
-      const message = `Bonjour, je suis intéressé(e) par le produit: ${productName} (${productPrice} MRU)`;
+      const message = `${t('whatsappMessage')} ${productName} (${productPrice} MRU)`;
       const url = `whatsapp://send?phone=${shop.whatsapp}&text=${encodeURIComponent(message)}`;
       Linking.openURL(url).catch(() => {
-        Alert.alert('Erreur', 'WhatsApp n\'est pas installé sur cet appareil');
+        Alert.alert(t('error'), t('whatsappNotInstalled'));
       });
     }
   };

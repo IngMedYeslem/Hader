@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking 
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.1.123:3000/api';
+const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
       console.log('Récupération des boutiques...');
       
       // Récupérer toutes les boutiques depuis l'API simple
-      const shopsResponse = await fetch('http://192.168.1.123:3000/api/debug/products');
+      const shopsResponse = await fetch('http://192.168.100.121:3000/api/debug/products');
       if (!shopsResponse.ok) {
         throw new Error('Erreur API produits');
       }
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
       const shopsData = await Promise.all(
         shopIds.map(async (shopId) => {
           try {
-            const shopResponse = await fetch(`http://192.168.1.123:3000/api/shops/${shopId}`);
+            const shopResponse = await fetch(`http://192.168.100.121:3000/api/shops/${shopId}`);
             if (!shopResponse.ok) {
               console.log(`Erreur boutique ${shopId}:`, shopResponse.status);
               return null;
