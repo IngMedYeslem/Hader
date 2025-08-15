@@ -167,15 +167,47 @@ function AddProduct({ onBack, onAdd }) {
     setProducts(products.filter((_, i) => i !== index));
   };
 
+  const convertToBase64 = async (uri, isVideo = false) => {
+    if (Platform.OS === 'web' || uri.startsWith('data:')) {
+      return uri; // Déjà en base64 sur web
+    }
+    
+    try {
+      const FileSystem = require('expo-file-system');
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
+      return `data:${mimeType};base64,${base64}`;
+    } catch (error) {
+      console.log('Erreur conversion:', error);
+      return uri;
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       for (const product of products) {
         if (product.name && product.price && onAdd) {
+          // Convertir TOUTES les images en base64
+          const convertedImages = [];
+          for (const img of product.images || []) {
+            const base64Img = await convertToBase64(img, false);
+            convertedImages.push(base64Img);
+          }
+          
+          // Convertir TOUTES les vidéos en base64
+          const convertedVideos = [];
+          for (const vid of product.videos || []) {
+            const base64Vid = await convertToBase64(vid, true);
+            convertedVideos.push(base64Vid);
+          }
+          
           await onAdd({
             name: product.name,
             price: parseFloat(product.price),
-            images: product.images,
-            videos: product.videos
+            images: convertedImages,
+            videos: convertedVideos
           });
         }
       }

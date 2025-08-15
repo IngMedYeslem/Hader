@@ -2,23 +2,30 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { shopAPI, productAPI } from './api';
 import { imageService } from './imageService';
 import { Platform } from 'react-native';
+import { API_CONFIG } from '../config/api';
+import { clearProductsCache } from './apiService';
 
-// URL dynamique selon la plateforme
-const API_BASE = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.100.121:3000/api'  // IP locale pour smartphone
-  : 'http://localhost:3000/api';
-
-// Vérifier la connectivité réseau
+// Vérifier la connectivité réseau avec fallback
 const checkConnectivity = async () => {
   try {
-    const response = await fetch(`${API_BASE}/health`, {
+    // Essayer l'URL principale
+    const response = await fetch(`${API_CONFIG.BASE_URL}/health`, {
       method: 'GET',
       timeout: 3000
     });
-    return response.ok;
+    if (response.ok) return API_CONFIG.BASE_URL;
+    
+    // Essayer l'URL de fallback
+    const fallbackResponse = await fetch(`${API_CONFIG.FALLBACK_URL}/health`, {
+      method: 'GET',
+      timeout: 3000
+    });
+    if (fallbackResponse.ok) return API_CONFIG.FALLBACK_URL;
+    
+    return null;
   } catch (error) {
     console.log('Pas de connexion serveur:', error.message);
-    return false;
+    return null;
   }
 };
 
@@ -29,8 +36,8 @@ export const syncService = {
       console.log('🔄 Début synchronisation boutiques...');
       
       // Vérifier la connectivité
-      const isConnected = await checkConnectivity();
-      if (!isConnected) {
+      const activeApiUrl = await checkConnectivity();
+      if (!activeApiUrl) {
         console.log('❌ Pas de connexion serveur');
         return 0;
       }
@@ -82,16 +89,50 @@ export const syncService = {
   // Synchroniser les produits locaux vers MongoDB
   syncProducts: async () => {
     try {
+      console.log('🔄 Début synchronisation produits...');
+      
+      // Vérifier la connectivité
+      const activeApiUrl = await checkConnectivity();
+      if (!activeApiUrl) {
+        console.log('❌ Pas de connexion serveur pour sync produits');
+        return 0;
+      }
+      
       const keys = await AsyncStorage.getAllKeys();
-      const productKeys = keys.filter(key => key.startsWith('products_'));
+      const productKeys = keys.filter(key => 
+        key.startsWith('products_') && 
+        !key.includes('cache') && 
+        !key.includes('timestamp')
+      );
       let syncedCount = 0;
+      
+      console.log(`📊 ${productKeys.length} clés produits trouvées`);
 
       for (const key of productKeys) {
         const shopId = key.replace('products_', '');
+        
+        // Vérifier que shopId est un ObjectId valide
+        if (!shopId || shopId.length !== 24 || !/^[0-9a-fA-F]{24}$/.test(shopId)) {
+          console.log(`⚠️ ShopId invalide ignoré: ${shopId}`);
+          continue;
+        }
+        
         const localProducts = await AsyncStorage.getItem(key);
         
         if (localProducts) {
-          const products = JSON.parse(localProducts);
+          let products;
+          try {
+            products = JSON.parse(localProducts);
+            if (!Array.isArray(products)) {
+              console.log(`⚠️ Données invalides pour ${shopId}, ignoré`);
+              continue;
+            }
+          } catch (error) {
+            console.log(`❌ Erreur parsing JSON pour ${shopId}:`, error);
+            continue;
+          }
+          
+          console.log(`📦 ${products.length} produits à synchroniser pour boutique ${shopId}`);
           
           for (const product of products) {
             try {
@@ -108,16 +149,23 @@ export const syncService = {
                 images: processedImages,
                 shopId: shopId
               });
-              console.log(`Produit ${product.name} syncé avec ${processedImages.length} images`);
+              console.log(`✅ Produit ${product.name} syncé avec ${processedImages.length} images`);
               syncedCount++;
             } catch (error) {
-              console.log(`Échec sync produit ${product.name}:`, error);
+              console.log(`❌ Échec sync produit ${product.name}:`, error);
             }
           }
           
           // Vider les produits locaux après sync
           await AsyncStorage.removeItem(key);
+          console.log(`🗑️ Produits locaux supprimés pour ${shopId}`);
         }
+      }
+      
+      // Vider le cache des produits pour forcer le rechargement
+      if (syncedCount > 0) {
+        await clearProductsCache();
+        console.log('🔄 Cache produits vidé après synchronisation');
       }
 
       return syncedCount;
@@ -133,11 +181,32 @@ export const syncService = {
     const shopsCount = await syncService.syncShops();
     const productsCount = await syncService.syncProducts();
     
+    // Vider le cache pour s'assurer que les nouvelles données sont chargées
+    await clearProductsCache();
+    
     console.log(`🎉 Synchronisation terminée: ${shopsCount} boutiques, ${productsCount} produits`);
     return {
       shops: shopsCount,
       products: productsCount
     };
+  },
+  
+  // Forcer la synchronisation des produits depuis le serveur
+  forceRefreshProducts: async () => {
+    try {
+      console.log('🔄 Forçage actualisation produits...');
+      await clearProductsCache();
+      
+      // Importer dynamiquement pour éviter les dépendances circulaires
+      const { fetchProductsWithShops } = await import('./apiService');
+      const products = await fetchProductsWithShops(true);
+      
+      console.log(`✅ ${products.length} produits actualisés`);
+      return products;
+    } catch (error) {
+      console.error('Erreur actualisation produits:', error);
+      return [];
+    }
   }
 };
 

@@ -1,17 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, RefreshControl } from 'react-native';
 import { useQuery } from '@apollo/client';
 import { GET_ALL_PRODUCTS_WITH_SHOPS } from '../graphql/getAllProductsWithShops';
-import { useTranslation } from '../translations';
+import { useTranslation, formatPrice } from '../translations';
+import { fetchProductsWithShops } from '../services/apiService';
 import GlobalNavbar from './GlobalNavbar';
 import styles from './styles';
 
 export default function GlobalInterfaceWithAPI({ onShopLogin }) {
   const { t } = useTranslation();
+  const [apiProducts, setApiProducts] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const { loading, error, data } = useQuery(GET_ALL_PRODUCTS_WITH_SHOPS, {
     errorPolicy: 'all',
     fetchPolicy: 'cache-and-network'
   });
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const products = await fetchProductsWithShops();
+      setApiProducts(products);
+    } catch (error) {
+      console.log('Erreur chargement produits:', error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadProducts();
+    setRefreshing(false);
+  };
 
   // Données de fallback si l'API n'est pas disponible
   const mockProducts = [
@@ -31,7 +53,7 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
     }
   ];
 
-  const products = data?.productsWithShops || (error ? mockProducts : []);
+  const products = apiProducts.length > 0 ? apiProducts : (data?.productsWithShops || mockProducts);
 
   if (loading && !data) return (
     <ImageBackground 
@@ -60,7 +82,13 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
         </View>
       )}
       
-      <ScrollView style={styles.wrapper} contentContainerStyle={styles.contentContainer}>
+      <ScrollView 
+        style={styles.wrapper} 
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.globalGrid}>
           {products.map((product) => (
             <View key={product.id} style={[styles.globalCard, { width: '48%' }]}>
@@ -83,7 +111,7 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
                   {product.name}
                 </Text>
                 <Text style={styles.globalPrice}>
-                  {product.price} DH
+                  {formatPrice(product.price)}
                 </Text>
                 <View style={styles.shopInfo}>
                   <Text style={styles.shopName}>

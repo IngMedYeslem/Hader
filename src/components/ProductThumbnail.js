@@ -1,33 +1,67 @@
 import React from 'react';
-import { View, Image, Text } from 'react-native';
+import { View, Image, Text, Platform } from 'react-native';
 import { Video } from 'expo-av';
 import styles from './styles';
 
 const ProductThumbnail = ({ product, style }) => {
-  // Priorité : vidéo en premier, puis images
-  const hasVideos = product.videos && product.videos.length > 0;
-  const hasImages = product.images && product.images.length > 0;
+  // Vérifier et nettoyer les données
+  const videos = Array.isArray(product.videos) ? product.videos.filter(v => v && v.trim()) : [];
+  const images = Array.isArray(product.images) ? product.images.filter(i => i && i.trim()) : [];
   
-  const totalMedia = (product.videos?.length || 0) + (product.images?.length || 0);
+  const hasVideos = videos.length > 0;
+  const hasImages = images.length > 0;
+  const totalMedia = videos.length + images.length;
 
-  if (hasVideos) {
+  console.log('ProductThumbnail:', {
+    productName: product.name,
+    hasVideos,
+    hasImages,
+    videosCount: videos.length,
+    imagesCount: images.length,
+    firstVideo: videos[0]?.substring(0, 50),
+    firstImage: images[0]?.substring(0, 50),
+    isLocalFile: images[0]?.startsWith('file://') || videos[0]?.startsWith('file://')
+  });
+  
+  // Filtrer les URLs locales non converties
+  const validImages = images.filter(img => !img.startsWith('file://'));
+  const validVideos = videos.filter(vid => !vid.startsWith('file://'));
+  
+  const hasValidVideos = validVideos.length > 0;
+  const hasValidImages = validImages.length > 0;
+
+  if (hasValidVideos) {
+    const videoUri = validVideos[0];
+    
+
+    
     return (
       <View style={style}>
         <View style={styles.alibabaImage}>
-          <Video
-            source={{ uri: product.videos[0] }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-            shouldPlay={false}
-            isMuted={true}
-            useNativeControls={false}
-            pointerEvents="none"
-            paused={true}
-          />
+          {Platform.OS === 'web' ? (
+            <video
+              src={videoUri}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              muted
+              playsInline
+              onError={(error) => console.log('Erreur vidéo web:', error)}
+            />
+          ) : (
+            <Video
+              source={{ uri: videoUri }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+              shouldPlay={false}
+              isMuted={true}
+              useNativeControls={false}
+              pointerEvents="none"
+              onError={(error) => console.log('Erreur vidéo mobile:', error)}
+            />
+          )}
         </View>
-        {totalMedia > 1 && (
+        {(validVideos.length + validImages.length) > 1 && (
           <View style={styles.imageCount}>
-            <Text style={styles.imageCountText}>+{totalMedia - 1}</Text>
+            <Text style={styles.imageCountText}>+{(validVideos.length + validImages.length) - 1}</Text>
           </View>
         )}
         <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
@@ -37,17 +71,23 @@ const ProductThumbnail = ({ product, style }) => {
     );
   }
   
-  if (hasImages) {
+  if (hasValidImages) {
+    const imageUri = validImages[0];
     return (
       <View style={style}>
         <Image 
-          source={{ uri: Array.isArray(product.images) ? product.images[0] : product.images }} 
+          source={{ uri: imageUri }} 
           style={styles.alibabaImage}
           resizeMode="cover"
+          onError={(error) => {
+            console.log('Erreur image:', error);
+            console.log('URI problématique:', imageUri);
+          }}
+          onLoad={() => console.log('Image chargée:', imageUri.substring(0, 50))}
         />
-        {Array.isArray(product.images) && product.images.length > 1 && (
+        {validImages.length > 1 && (
           <View style={styles.imageCount}>
-            <Text style={styles.imageCountText}>+{product.images.length - 1}</Text>
+            <Text style={styles.imageCountText}>+{validImages.length - 1}</Text>
           </View>
         )}
       </View>

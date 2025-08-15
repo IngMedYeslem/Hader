@@ -22,6 +22,8 @@ export const imageService = {
         console.log('ℹ️ Pas une image locale, retour direct');
         return uri;
       }
+      
+      console.log('📱 Traitement image locale mobile...');
 
       // Pour mobile, utiliser ImageManipulator pour compresser
       const ImageManipulator = require('expo-image-manipulator');
@@ -79,19 +81,32 @@ export const imageService = {
   processImages: async (images) => {
     if (!images || images.length === 0) return [];
     
+    console.log('🔄 Traitement de', images.length, 'images');
     const processedImages = [];
     
-    for (const image of images) {
+    for (let i = 0; i < images.length; i++) {
+      const image = images[i];
+      console.log(`Image ${i + 1}:`, image.substring(0, 50) + '...');
+      
       if (image.startsWith('file://')) {
-        // Convertir les images locales
+        console.log('📱 Conversion image locale nécessaire');
         const base64Image = await imageService.convertToBase64(image);
-        processedImages.push(base64Image);
-      } else {
-        // Garder les images déjà traitées
+        if (base64Image && base64Image.startsWith('data:')) {
+          processedImages.push(base64Image);
+          console.log('✅ Image convertie en base64');
+        } else {
+          console.log('❌ Échec conversion, image ignorée');
+        }
+      } else if (image.startsWith('data:') || image.startsWith('http')) {
+        // Images déjà en base64 ou URLs web
         processedImages.push(image);
+        console.log('✅ Image déjà compatible');
+      } else {
+        console.log('⚠️ Format image non reconnu, ignorée');
       }
     }
     
+    console.log('✅ Traitement terminé:', processedImages.length, 'images valides');
     return processedImages;
   },
 

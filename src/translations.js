@@ -1,3 +1,12 @@
+// Configuration des devises
+const CURRENCIES = {
+  MRU: 'MRU',
+  EUR: 'EUR',
+  USD: 'USD'
+};
+
+let currentCurrency = CURRENCIES.MRU; // Devise par défaut MRU
+
 const translations = {
   fr: {
     loading: 'Chargement...',
@@ -5,7 +14,7 @@ const translations = {
     addProducts: 'Ajouter des Produits',
     product: 'Produit',
     productName: 'Nom du produit',
-    price: 'Prix (MRU)',
+    price: 'Prix',
     addImage: '📷 Ajouter une image',
     imageSelected: '✓ Image sélectionnée',
     addAnother: '+ Ajouter un autre produit',
@@ -131,7 +140,7 @@ const translations = {
     addProducts: 'Add Products',
     product: 'Product',
     productName: 'Product name',
-    price: 'Price (MRU)',
+    price: 'Price',
     addImage: '📷 Add image',
     imageSelected: '✓ Image selected',
     addAnother: '+ Add another product',
@@ -257,7 +266,7 @@ const translations = {
     addProducts: 'إضافة المنتجات',
     product: 'المنتج',
     productName: 'اسم المنتج',
-    price: 'السعر (MRU)',
+    price: 'السعر',
     addImage: '📷 إضافة صورة',
     imageSelected: '✓ تم اختيار الصورة',
     addAnother: '+ إضافة منتج آخر',
@@ -328,7 +337,7 @@ const translations = {
     contactWhatsApp: 'اتصل عبر واتساب',
     callAdmin: 'اتصل بالمدير',
     // Navbar
-    globalMarketplace: 'عُكَاظ',
+    globalMarketplace: 'عُكَـــــــاظْ',
     products: 'منتجات',
     shops: 'متاجر',
     admin: 'مدير',
@@ -390,7 +399,7 @@ export const useTranslation = () => {
   const [, forceUpdate] = useState({});
   
   useEffect(() => {
-    loadSavedLanguage();
+    loadSavedSettings();
     
     const listener = () => forceUpdate({});
     languageChangeListeners.push(listener);
@@ -400,46 +409,60 @@ export const useTranslation = () => {
     };
   }, []);
   
-  const loadSavedLanguage = async () => {
+  const loadSavedSettings = async () => {
     try {
-      let savedLang;
+      let savedLang, savedCurrency;
       if (Platform.OS === 'web') {
         savedLang = localStorage.getItem('selectedLanguage');
+        savedCurrency = localStorage.getItem('selectedCurrency');
       } else {
         savedLang = await AsyncStorage.getItem('selectedLanguage');
+        savedCurrency = await AsyncStorage.getItem('selectedCurrency');
       }
       
       if (savedLang && savedLang !== currentLanguage) {
         currentLanguage = savedLang;
-        forceUpdate({});
       }
+      if (savedCurrency && savedCurrency !== currentCurrency) {
+        currentCurrency = savedCurrency;
+      }
+      forceUpdate({});
     } catch (error) {
-      console.log('Erreur chargement langue:', error);
+      console.log('Erreur chargement paramètres:', error);
     }
   };
   
   const setLanguage = async (lang) => {
     if (translations[lang] && lang !== currentLanguage) {
-      console.log('Changement langue:', currentLanguage, '->', lang, 'Platform:', Platform.OS);
       currentLanguage = lang;
       
       try {
         if (Platform.OS === 'web') {
-          console.log('Web: Sauvegarde dans localStorage');
           localStorage.setItem('selectedLanguage', lang);
-          console.log('Web: Notification des listeners');
-          languageChangeListeners.forEach(listener => listener());
         } else {
-          console.log('Mobile: Sauvegarde dans AsyncStorage');
           await AsyncStorage.setItem('selectedLanguage', lang);
-          console.log('Mobile: Notification des listeners');
-          languageChangeListeners.forEach(listener => listener());
         }
+        languageChangeListeners.forEach(listener => listener());
       } catch (error) {
         console.log('Erreur sauvegarde langue:', error);
       }
-    } else {
-      console.log('Pas de changement nécessaire ou langue invalide');
+    }
+  };
+  
+  const setCurrency = async (currency) => {
+    if (CURRENCIES[currency] && currency !== currentCurrency) {
+      currentCurrency = currency;
+      
+      try {
+        if (Platform.OS === 'web') {
+          localStorage.setItem('selectedCurrency', currency);
+        } else {
+          await AsyncStorage.setItem('selectedCurrency', currency);
+        }
+        languageChangeListeners.forEach(listener => listener());
+      } catch (error) {
+        console.log('Erreur sauvegarde devise:', error);
+      }
     }
   };
   
@@ -447,28 +470,47 @@ export const useTranslation = () => {
     return translations[currentLanguage]?.[key] || key;
   };
   
-  return { t, setLanguage, currentLanguage };
+  const formatPrice = (price) => {
+    return `${price} ${currentCurrency}`;
+  };
+  
+  return { t, setLanguage, setCurrency, currentLanguage, currentCurrency, formatPrice };
 };
 
-export const t = (key) => translations[currentLanguage][key] || key;
+export const t = (key) => translations[currentLanguage]?.[key] || key;
 export const setLanguage = async (lang) => {
   if (translations[lang] && lang !== currentLanguage) {
-    console.log('Export setLanguage:', currentLanguage, '->', lang);
     currentLanguage = lang;
     
     try {
       if (Platform.OS === 'web') {
         localStorage.setItem('selectedLanguage', lang);
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
       } else {
         await AsyncStorage.setItem('selectedLanguage', lang);
-        languageChangeListeners.forEach(listener => listener());
       }
+      languageChangeListeners.forEach(listener => listener());
     } catch (error) {
       console.log('Erreur sauvegarde langue:', error);
     }
   }
 };
+export const setCurrency = async (currency) => {
+  if (CURRENCIES[currency] && currency !== currentCurrency) {
+    currentCurrency = currency;
+    
+    try {
+      if (Platform.OS === 'web') {
+        localStorage.setItem('selectedCurrency', currency);
+      } else {
+        await AsyncStorage.setItem('selectedCurrency', currency);
+      }
+      languageChangeListeners.forEach(listener => listener());
+    } catch (error) {
+      console.log('Erreur sauvegarde devise:', error);
+    }
+  }
+};
 export const getLanguage = () => currentLanguage;
+export const getCurrency = () => currentCurrency;
+export const formatPrice = (price) => `${price} ${currentCurrency}`;
+export { CURRENCIES };

@@ -45,14 +45,23 @@ function ShopDashboard({ shop, onLogout }) {
 
   const loadProducts = async () => {
     try {
+      console.log('🔄 Chargement produits pour boutique:', shop._id);
+      
       // Essayer l'API d'abord
       const shopProducts = await productAPI.getByShop(shop._id);
+      console.log('✅ API: Récupéré', shopProducts.length, 'produits');
       setProducts(shopProducts);
+      
+      // Sauvegarder en local pour cache
+      await AsyncStorage.setItem(`products_${shop._id}`, JSON.stringify(shopProducts));
     } catch (error) {
+      console.log('❌ API indisponible, utilisation cache local');
+      
       // Fallback local
       try {
         const localProducts = await AsyncStorage.getItem(`products_${shop._id}`);
         const products = localProducts ? JSON.parse(localProducts) : [];
+        console.log('💾 Local: Récupéré', products.length, 'produits');
         setProducts(products);
       } catch (localError) {
         console.error('Erreur chargement produits locaux:', localError);
@@ -71,9 +80,12 @@ function ShopDashboard({ shop, onLogout }) {
           'Synchronisation réussie', 
           `${result.shops} boutiques et ${result.products} produits synchronisés avec MongoDB`
         );
-        loadProducts(); // Recharger les produits
+        // Recharger les produits après synchronisation
+        setTimeout(() => loadProducts(), 1000);
       } else {
         Alert.alert('Synchronisation', 'Aucune donnée locale à synchroniser');
+        // Recharger quand même pour récupérer les nouveaux produits du serveur
+        setTimeout(() => loadProducts(), 500);
       }
     } catch (error) {
       console.error('❌ Synchronisation échouée:', error);
@@ -98,9 +110,19 @@ function ShopDashboard({ shop, onLogout }) {
           // S'assurer que images est un tableau
           const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
           
-          // Traiter les images locales (file://)
+          // FORCER la conversion des images locales
           console.log('📱 Images avant traitement:', imageArray);
-          const processedImages = await imageService.processImages(imageArray);
+          const processedImages = [];
+          for (const img of imageArray) {
+            if (img.startsWith('file://')) {
+              const base64 = await imageService.convertToBase64(img);
+              if (base64.startsWith('data:')) {
+                processedImages.push(base64);
+              }
+            } else {
+              processedImages.push(img);
+            }
+          }
           console.log('✅ Images après traitement:', processedImages.length);
           
           // Essayer l'API d'abord
@@ -117,7 +139,19 @@ function ShopDashboard({ shop, onLogout }) {
           // Fallback local
           try {
             const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
-            const processedImages = await imageService.processImages(imageArray);
+            
+            // FORCER la conversion pour le stockage local aussi
+            const processedImages = [];
+            for (const img of imageArray) {
+              if (img.startsWith('file://')) {
+                const base64 = await imageService.convertToBase64(img);
+                if (base64.startsWith('data:')) {
+                  processedImages.push(base64);
+                }
+              } else {
+                processedImages.push(img);
+              }
+            }
             
             const localProduct = {
               _id: Date.now().toString() + Math.random(),
@@ -267,7 +301,7 @@ function ShopDashboard({ shop, onLogout }) {
                   </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.globalProductName} numberOfLines={2}>{product.name}</Text>
-                    <Text style={styles.globalPrice}>{product.price} €</Text>
+                    <Text style={styles.globalPrice}>{product.price} MRU</Text>
                   </View>
                 </TouchableOpacity>
               ))
