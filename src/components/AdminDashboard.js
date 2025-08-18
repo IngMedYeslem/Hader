@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
+import { showPendingShops, clearLocalShops } from '../services/api';
 
 const API_URL = 'http://192.168.100.121:3000/api';
 
@@ -9,6 +10,7 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [shops, setShops] = useState([]);
+  const [pendingLocalShops, setPendingLocalShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,54 +31,51 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchPendingLocalShops = async () => {
+    try {
+      const localShops = await showPendingShops();
+      setPendingLocalShops(localShops);
+    } catch (error) {
+      console.log('Erreur récupération boutiques locales:', error);
+      setPendingLocalShops([]);
+    }
+  };
+
   const fetchShops = async () => {
     try {
-      console.log('Récupération des boutiques...');
+      console.log('Récupération des boutiques depuis la vraie API...');
       
-      // Récupérer toutes les boutiques depuis l'API simple
-      const shopsResponse = await fetch('http://192.168.100.121:3000/api/debug/products');
+      // Récupérer toutes les boutiques depuis la vraie API
+      const shopsResponse = await fetch(`${API_URL}/shops`);
       if (!shopsResponse.ok) {
-        throw new Error('Erreur API produits');
+        console.log('Erreur API boutiques:', shopsResponse.status);
+        setShops([]);
+        return;
       }
       
-      const products = await shopsResponse.json();
-      console.log('Produits récupérés:', products.length);
+      const shops = await shopsResponse.json();
+      console.log('Boutiques récupérées:', shops.length);
       
-      // Extraire les IDs uniques des boutiques
-      const shopIds = [...new Set(products.map(p => p.shopId).filter(Boolean))];
-      console.log('IDs boutiques trouvés:', shopIds);
+      // Récupérer les utilisateurs pour obtenir le statut d'approbation
+      const usersResponse = await fetch(`${API_URL}/users`);
+      const users = usersResponse.ok ? await usersResponse.json() : [];
       
-      // Récupérer les détails de chaque boutique
-      const shopsData = await Promise.all(
-        shopIds.map(async (shopId) => {
-          try {
-            const shopResponse = await fetch(`http://192.168.100.121:3000/api/shops/${shopId}`);
-            if (!shopResponse.ok) {
-              console.log(`Erreur boutique ${shopId}:`, shopResponse.status);
-              return null;
-            }
-            
-            const shop = await shopResponse.json();
-            
-            // Compter les produits de cette boutique
-            const productCount = products.filter(p => p.shopId === shopId).length;
-            
-            return {
-              ...shop,
-              productCount,
-              products: products.filter(p => p.shopId === shopId),
-              isValidated: Math.random() > 0.5 // Simulation - à remplacer par vraie logique
-            };
-          } catch (error) {
-            console.log(`Erreur détail boutique ${shopId}:`, error);
-            return null;
-          }
-        })
-      );
+      // Récupérer les produits pour compter ceux de chaque boutique
+      const productsResponse = await fetch(`${API_URL}/debug/products`);
+      const products = productsResponse.ok ? await productsResponse.json() : [];
       
-      const validShops = shopsData.filter(Boolean);
-      console.log('Boutiques valides:', validShops.length);
-      setShops(validShops);
+      // Enrichir les boutiques avec le statut d'approbation et le nombre de produits
+      const enrichedShops = shops.map(shop => {
+        const linkedUser = users.find(user => user.linkedShop && user.linkedShop.id === shop._id);
+        const productCount = products.filter(p => p.shopId === shop._id).length;
+        return {
+          ...shop,
+          productCount,
+          isValidated: linkedUser ? linkedUser.isApproved === true : false
+        };
+      });
+      
+      setShops(enrichedShops);
     } catch (error) {
       console.log('Erreur récupération boutiques:', error);
       setShops([]);
@@ -86,12 +85,14 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchUsers();
     fetchShops();
+    fetchPendingLocalShops();
   }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchUsers();
     await fetchShops();
+    await fetchPendingLocalShops();
     setRefreshing(false);
   };
 
@@ -165,50 +166,85 @@ export default function AdminDashboard() {
   };
 
   const handleValidateShop = async (shopId, shopName) => {
-    Alert.alert(
-      'Valider la boutique',
-      `Êtes-vous sûr de vouloir valider la boutique "${shopName}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Valider',
-          onPress: async () => {
-            try {
-              // Simuler la validation (à adapter selon votre API)
-              console.log(`Validation boutique ${shopId}`);
-              Alert.alert('Succès', `Boutique "${shopName}" validée`);
-              fetchShops(); // Rafraîchir la liste
-            } catch (error) {
-              Alert.alert('Erreur', 'Erreur de connexion');
-            }
-          }
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Êtes-vous sûr de vouloir valider la boutique "${shopName}" ?`)) return;
+    } else {
+      const confirmed = await new Promise(resolve => {
+        Alert.alert(
+          'Valider la boutique',
+          `Êtes-vous sûr de vouloir valider la boutique "${shopName}" ?`,
+          [
+            { text: 'Annuler', onPress: () => resolve(false) },
+            { text: 'Valider', onPress: () => resolve(true) }
+          ]
+        );
+      });
+      if (!confirmed) return;
+    }
+    
+    try {
+      const linkedUser = users.find(user => {
+        return user.linkedShop && (user.linkedShop.id === shopId || user.linkedShop._id === shopId);
+      });
+      
+      if (linkedUser) {
+        const response = await fetch(`${API_URL}/users/${linkedUser.id}/approve`, {
+          method: 'POST'
+        });
+        if (response.ok) {
+          Platform.OS === 'web' ? alert(`Boutique "${shopName}" validée`) : Alert.alert('Succès', `Boutique "${shopName}" validée`);
+          fetchUsers();
+          fetchShops();
+        } else {
+          Platform.OS === 'web' ? alert('Erreur lors de la validation') : Alert.alert('Erreur', 'Erreur lors de la validation');
         }
-      ]
-    );
+      } else {
+        Platform.OS === 'web' ? alert('Utilisateur lié non trouvé') : Alert.alert('Erreur', 'Utilisateur lié non trouvé');
+      }
+    } catch (error) {
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+    }
   };
 
   const handleRejectShop = async (shopId, shopName) => {
-    Alert.alert(
-      'Rejeter la boutique',
-      `Êtes-vous sûr de vouloir rejeter la boutique "${shopName}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Rejeter',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Simuler le rejet (à adapter selon votre API)
-              console.log(`Rejet boutique ${shopId}`);
-              Alert.alert('Succès', `Boutique "${shopName}" rejetée`);
-              fetchShops(); // Rafraîchir la liste
-            } catch (error) {
-              Alert.alert('Erreur', 'Erreur de connexion');
-            }
-          }
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Êtes-vous sûr de vouloir rejeter la boutique "${shopName}" ?`)) return;
+    } else {
+      const confirmed = await new Promise(resolve => {
+        Alert.alert(
+          'Rejeter la boutique',
+          `Êtes-vous sûr de vouloir rejeter la boutique "${shopName}" ?`,
+          [
+            { text: 'Annuler', onPress: () => resolve(false) },
+            { text: 'Rejeter', style: 'destructive', onPress: () => resolve(true) }
+          ]
+        );
+      });
+      if (!confirmed) return;
+    }
+    
+    try {
+      const linkedUser = users.find(user => {
+        return user.linkedShop && (user.linkedShop.id === shopId || user.linkedShop._id === shopId);
+      });
+      
+      if (linkedUser) {
+        const response = await fetch(`${API_URL}/users/${linkedUser.id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          Platform.OS === 'web' ? alert(`Boutique "${shopName}" rejetée`) : Alert.alert('Succès', `Boutique "${shopName}" rejetée`);
+          fetchUsers();
+          fetchShops();
+        } else {
+          Platform.OS === 'web' ? alert('Erreur lors du rejet') : Alert.alert('Erreur', 'Erreur lors du rejet');
         }
-      ]
-    );
+      } else {
+        Platform.OS === 'web' ? alert('Utilisateur lié non trouvé') : Alert.alert('Erreur', 'Utilisateur lié non trouvé');
+      }
+    } catch (error) {
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+    }
   };
 
   const renderUser = ({ item }) => {
@@ -295,18 +331,19 @@ export default function AdminDashboard() {
   };
 
   const renderShop = ({ item }) => {
-    const isValidated = item.isValidated !== false;
+    const isValidated = item.isValidated === true;
+    const isLocal = item.isLocal || false;
     
     return (
       <View style={[styles.card, { marginHorizontal: 10, marginBottom: 12, borderLeftWidth: 4, borderLeftColor: isValidated ? '#4CAF50' : '#ff9800' }]}>
         <View style={{ padding: 12 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#C8A55F', flex: 1 }} numberOfLines={1}>
-              🏪 {item.name}
+              🏪 {item.name} {isLocal && '📱'}
             </Text>
             <View style={{ backgroundColor: isValidated ? '#d4edda' : '#fff3cd', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
               <Text style={{ fontSize: 11, fontWeight: 'bold', color: isValidated ? '#155724' : '#856404' }}>
-                {isValidated ? '✅ Validée' : '⏳ Attente'}
+                {isValidated ? '✅ Validée' : isLocal ? '📱 Locale' : '⏳ Attente'}
               </Text>
             </View>
           </View>
@@ -357,13 +394,21 @@ export default function AdminDashboard() {
   console.log('AdminDashboard - Rendu:', { activeTab, usersCount: users.length, shopsCount: shops.length });
   
   const getFilteredShops = () => {
+    const localShopsWithStatus = pendingLocalShops.map(shop => ({
+      ...shop,
+      _id: `local_${shop.email}`,
+      isValidated: false,
+      productCount: 0,
+      isLocal: true
+    }));
+    
     switch (shopFilter) {
       case 'validated':
         return shops.filter(shop => shop.isValidated !== false);
       case 'pending':
-        return shops.filter(shop => shop.isValidated === false);
+        return [...shops.filter(shop => shop.isValidated === false), ...localShopsWithStatus];
       default:
-        return shops;
+        return [...shops, ...localShopsWithStatus];
     }
   };
   
@@ -418,7 +463,7 @@ export default function AdminDashboard() {
           onPress={() => setActiveTab('shops')}
         >
           <Text style={[styles.filterText, { textAlign: 'center', fontSize: 14, fontWeight: '600' }, activeTab === 'shops' && styles.filterTextActive]}>
-            🏪 {t('shops')} ({shops.length})
+            🏪 {t('shops')} ({shops.length + pendingLocalShops.length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -430,7 +475,7 @@ export default function AdminDashboard() {
             onPress={() => setShopFilter('all')}
           >
             <Text style={[styles.filterText, { textAlign: 'center', fontSize: 12, fontWeight: '500' }, shopFilter === 'all' && styles.filterTextActive]}>
-              {t('all')} ({shops.length})
+              {t('all')} ({shops.length + pendingLocalShops.length})
             </Text>
           </TouchableOpacity>
           
@@ -448,7 +493,7 @@ export default function AdminDashboard() {
             onPress={() => setShopFilter('pending')}
           >
             <Text style={[styles.filterText, { textAlign: 'center', fontSize: 12, fontWeight: '500' }, shopFilter === 'pending' && styles.filterTextActive]}>
-              ⏳ {t('pending')} ({shops.filter(s => s.isValidated === false).length})
+              ⏳ {t('pending')} ({shops.filter(s => s.isValidated === false).length + pendingLocalShops.length})
             </Text>
           </TouchableOpacity>
         </View>

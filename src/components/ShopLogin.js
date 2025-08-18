@@ -86,6 +86,19 @@ function ShopLogin({ onLogin }) {
       Alert.alert('Erreur', 'Tous les champs sont obligatoires, y compris la localisation');
       return;
     }
+    // Vérification du format du numéro de téléphone international (ex: +33..., +225..., etc.)
+    // ou format local de la Mauritanie (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)
+    const internationalPhoneRegex = /^\+\d{7,15}$/;
+    const mauritaniaLocalRegex = /^[234]\d{7}$/;
+    if (!internationalPhoneRegex.test(phone) && !mauritaniaLocalRegex.test(phone)) {
+      Alert.alert('Erreur', 'Le numéro de téléphone doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
+      return;
+    }
+    if (!internationalPhoneRegex.test(whatsapp) && !mauritaniaLocalRegex.test(whatsapp)) {
+      Alert.alert('Erreur', 'Le numéro WhatsApp doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
+      return;
+    }
+    
     
     try {
       const shopData = {

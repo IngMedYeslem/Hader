@@ -1,9 +1,41 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utiliser l'IP locale pour les smartphones
 const API_URL = __DEV__ && Platform.OS !== 'web' 
   ? 'http://192.168.100.121:3000/api'  // Remplacez par votre IP locale
   : 'http://localhost:3000/api';
+
+// Nettoyer les boutiques locales fantômes
+export const clearLocalShops = async () => {
+  try {
+    await AsyncStorage.removeItem('localShops');
+    console.log('✅ Boutiques locales supprimées');
+  } catch (error) {
+    console.error('❌ Erreur nettoyage:', error);
+  }
+};
+
+// Afficher boutiques en attente sans produits
+export const showPendingShops = async () => {
+  const localShops = await AsyncStorage.getItem('localShops');
+  if (!localShops) {
+    console.log('Aucune boutique en attente');
+    return [];
+  }
+  
+  const shops = JSON.parse(localShops);
+  
+  // Nettoyer automatiquement si des boutiques fantômes détectées
+  if (shops.length > 0) {
+    console.log(`⚠️ ${shops.length} boutiques fantômes détectées, nettoyage automatique...`);
+    await AsyncStorage.removeItem('localShops');
+    console.log('✅ Boutiques fantômes supprimées automatiquement');
+    return [];
+  }
+  
+  return shops;
+};
 
 console.log('API_URL:', API_URL);
 
