@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 // URL API dynamique
 const getApiUrl = () => {
   return __DEV__ && Platform.OS !== 'web' 
-    ? 'http://172.20.10.6:3000/api'
+    ? 'http://192.168.100.121:3000/api'
     : 'http://localhost:3000/api';
 };
 
