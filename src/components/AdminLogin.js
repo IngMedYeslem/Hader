@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform } from 'react-native';
 import { useTranslation } from '../translations';
 import styles from './styles';
 
-const API_URL = 'http://192.168.100.121:3000/api';
+const API_URL = 'http://172.20.10.6:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
 
   const handleLogin = async () => {
     if (!credentials.username || !credentials.password) {
-      Alert.alert(t('error'), t('fillAllFields'));
+      Platform.OS === 'web' ? alert(t('fillAllFields')) : Alert.alert(t('error'), t('fillAllFields'));
       return;
     }
 
@@ -34,10 +34,10 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       if (response.ok && data.success) {
         onLoginSuccess(data.user);
       } else {
-        Alert.alert(t('error'), data.error || t('incorrectCredentials'));
+        Platform.OS === 'web' ? alert(data.error || t('incorrectCredentials')) : Alert.alert(t('error'), data.error || t('incorrectCredentials'));
       }
     } catch (error) {
-      Alert.alert(t('error'), t('connectionError'));
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     } finally {
       setLoading(false);
     }
@@ -49,14 +49,24 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }]}>
-        <TouchableOpacity onPress={onBack}>
+      <View style={[styles.headerGlobal, { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: 10,
+        paddingTop: Platform.OS === 'ios' ? 50 : 10
+      }]}>
+        <TouchableOpacity onPress={onBack} style={{ marginRight: 10 }}>
           <Text style={styles.colorText}>
             ← {t('back')}
           </Text>
         </TouchableOpacity>
-        <Text style={[styles.textcoprit, { fontSize: 16 }]}>👨💼 {t('adminLogin')}</Text>
-        <View style={{ width: 50 }} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.textcoprit, { fontSize: 14 }]}>👨💼 {t('adminLogin')}</Text>
+          <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+            {t('administration')}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.centeredContainer}>

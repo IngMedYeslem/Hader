@@ -70,15 +70,15 @@ export default function App() {
     
     return (
       <View style={{ flex: 1 }}>
-        <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }]}>
+        <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 15, paddingTop: Platform.OS === 'ios' ? 45 : 15 }]}>
           <TouchableOpacity 
             onPress={() => setShowGlobalInterface(true)}
           >
-            <Text style={{ color: '#C8A55F', fontSize: 14, fontWeight: 'bold' }}>
+            <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold', textShadowColor: 'rgba(0, 0, 0, 0.8)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 }}>
               ← {t('backToMarketplace')}
             </Text>
           </TouchableOpacity>
-          <Text style={styles.textcoprit}>{t('shopLogin')}</Text>
+          <View />
         </View>
         <ShopLogin onLogin={handleLogin} />
       </View>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking, Platform } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 
-const API_URL = 'http://192.168.100.121:3000/api';
+const API_URL = 'http://172.20.10.6:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -102,39 +102,42 @@ export default function AdminDashboard() {
         method: 'POST'
       });
       if (response.ok) {
-        Alert.alert('Succès', `Compte de ${username} approuvé`);
+        Platform.OS === 'web' ? alert(`Compte de ${username} approuvé`) : Alert.alert('Succès', `Compte de ${username} approuvé`);
         fetchUsers();
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
     }
   };
 
   const handleReject = async (userId, username) => {
-    Alert.alert(
-      'Confirmer la suppression',
-      `Êtes-vous sûr de vouloir supprimer le compte de ${username} ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const response = await fetch(`${API_URL}/users/${userId}`, {
-                method: 'DELETE'
-              });
-              if (response.ok) {
-                Alert.alert('Succès', `Compte de ${username} supprimé`);
-                fetchUsers();
-              }
-            } catch (error) {
-              Alert.alert('Erreur', 'Erreur de connexion');
-            }
-          }
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${username} ?`)) return;
+    } else {
+      const confirmed = await new Promise(resolve => {
+        Alert.alert(
+          'Confirmer la suppression',
+          `Êtes-vous sûr de vouloir supprimer le compte de ${username} ?`,
+          [
+            { text: 'Annuler', onPress: () => resolve(false) },
+            { text: 'Supprimer', style: 'destructive', onPress: () => resolve(true) }
+          ]
+        );
+      });
+      if (!confirmed) return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        Platform.OS === 'web' ? alert(`Compte de ${username} supprimé`) : Alert.alert('Succès', `Compte de ${username} supprimé`);
+        fetchUsers();
+      }
+    } catch (error) {
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+    }
   };
 
   const handleLinkShop = async (userId, shopId, username) => {
@@ -143,11 +146,11 @@ export default function AdminDashboard() {
         method: 'POST'
       });
       if (response.ok) {
-        Alert.alert('Succès', `Boutique liée à ${username}`);
+        Platform.OS === 'web' ? alert(`Boutique liée à ${username}`) : Alert.alert('Succès', `Boutique liée à ${username}`);
         fetchUsers();
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
     }
   };
 
@@ -157,11 +160,11 @@ export default function AdminDashboard() {
         method: 'DELETE'
       });
       if (response.ok) {
-        Alert.alert('Succès', `Boutique déliée de ${username}`);
+        Platform.OS === 'web' ? alert(`Boutique déliée de ${username}`) : Alert.alert('Succès', `Boutique déliée de ${username}`);
         fetchUsers();
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
     }
   };
 
@@ -429,13 +432,19 @@ export default function AdminDashboard() {
 
   return (
     <View style={styles.wrapper}>
-      <View style={{ backgroundColor: '#2C3E50', paddingVertical: 15, paddingHorizontal: 20 }}>
-        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#C8A55F', textAlign: 'center' }}>
-          🛠️ {t('administration')}
-        </Text>
-        <Text style={{ fontSize: 14, color: 'rgba(200, 165, 95, 0.8)', textAlign: 'center', marginTop: 4 }}>
-          {t('userAndShopManagement')}
-        </Text>
+      <View style={[styles.headerGlobal, { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: 10,
+        paddingTop: Platform.OS === 'ios' ? 50 : 10
+      }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.textcoprit, { fontSize: 14 }]}>🛠️ {t('administration')}</Text>
+          <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+            {users.length} {t('users')} • {shops.length} {t('shops')}
+          </Text>
+        </View>
       </View>
       
       {pendingShops.length > 0 && (

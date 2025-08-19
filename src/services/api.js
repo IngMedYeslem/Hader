@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utiliser l'IP locale pour les smartphones
 const API_URL = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.100.121:3000/api'  // Remplacez par votre IP locale
+  ? 'http://172.20.10.6:3000/api'  // Remplacez par votre IP locale
   : 'http://localhost:3000/api';
 
 // Nettoyer les boutiques locales fantômes

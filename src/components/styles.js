@@ -135,6 +135,9 @@ const styles = StyleSheet.create({
       },
       colorText: {
         color: "#C8A55F",
+        fontSize: 16,
+        fontWeight: '500',
+        textAlign: 'center',
       },
 
       input: {
@@ -176,15 +179,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   card: {
-    padding: 20, 
+    padding: 25, 
     borderRadius: 20, 
     backgroundColor: "#2C3E50",
-    elevation: 5,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     borderWidth: 0,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
 
   cardusergestion: {
@@ -204,10 +210,23 @@ const styles = StyleSheet.create({
   titleContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
   englishTitle: { fontSize: 30, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: 'white', textShadowRadius: 5, },
   arabicTitle: { fontSize: 24, fontWeight: 'bold', color: 'white', marginLeft: 5 },
-  authTitle: { fontSize: 20, 
-     textAlign: 'center', marginBottom: 20, color: '#C8A55F' },
+  authTitle: { 
+    fontSize: 22, 
+    textAlign: 'center', 
+    marginBottom: 25, 
+    color: '#C8A55F',
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
   buttonlogin: { marginTop: 20, padding: 8, backgroundColor: "#C8A55F", borderRadius: 30 },
-  registerButton: { marginTop: 10, alignSelf: "center",  color: '#C8A55F'  },
+  registerButton: { 
+    marginVertical: 20, 
+    alignSelf: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
   productImage: { width: 70, height: 70, alignSelf: "center", marginBottom: 8, borderRadius: 40 },
   wrapper: {
     flex: 1, 
@@ -284,6 +303,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    minHeight: '100%',
   },
   
   logoImage: {
@@ -336,17 +356,15 @@ const styles = StyleSheet.create({
   },  
 
   headerGlobal: {
-   
     backgroundColor: "#2C3E50",
-
     fontSize: 18,
-        color: "#C8A55F",
-        // marginBottom: 20,
-        textAlign: "center",
-        fontWeight: "bold",
-        textShadowColor: "rgba(0, 0, 0, 0.9)",
-        textShadowOffset: { width: 3, height: 3 },
-        textShadowRadius: 5,
+    color: "#C8A55F",
+    textAlign: "center",
+    fontWeight: "bold",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 5,
+    minHeight: 50,
   },  
   textcoprit: { 
     color: "#C8A55F", 
@@ -787,10 +805,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
+    padding: 8,
+    marginBottom: 8,
     backgroundColor: "white",
-    fontSize: 16,
+    fontSize: 14,
+    minHeight: 40,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
   },
   addMoreBtn: {
     backgroundColor: "#C8A55F",
@@ -806,14 +830,23 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     backgroundColor: "#2C3E50",
-    padding: 15,
-    borderRadius: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    minHeight: 55,
+    justifyContent: 'center',
   },
   submitText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+    textAlign: 'center',
   },
   floatingBtn: {
     position: "absolute",
@@ -1274,6 +1307,41 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  // Styles pour ShopLogin responsive
+  shopLoginContainer: {
+    flex: 1,
+  },
+  shopLoginHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingTop: Platform.OS === 'ios' ? 45 : 15,
+    paddingBottom: 10,
+    backgroundColor: 'rgba(44, 62, 80, 0.9)',
+  },
+  shopLoginScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    paddingBottom: 30,
+  },
+  shopLoginFormCard: {
+    backgroundColor: 'rgba(44, 62, 80, 0.95)',
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    maxWidth: 400,
+    alignSelf: 'center',
+    width: '100%',
   },
 });
 

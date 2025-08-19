@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking } from 'react-native';
+import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
 import EditProduct from "./EditProduct";
@@ -181,29 +180,44 @@ function ShopDashboard({ shop, onLogout }) {
 
   return (
     <View style={styles.wrapper}>
-      <SimpleNavbar />
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={styles.shopHeader}>
-          {shop.isApproved ? (
-            <TouchableOpacity onPress={() => setShopInfoVisible(true)}>
-              <Text style={styles.shopTitle}>{shop.name} ℹ️</Text>
+        <View style={[styles.headerGlobal, { 
+          flexDirection: 'row', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: 10,
+          paddingTop: Platform.OS === 'ios' ? 50 : 10
+        }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.textcoprit, { fontSize: 14 }]}>🏠 {shop.name}</Text>
+            <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+              {products.length} {t('products')} • {shop.isApproved ? t('approved') : t('pending')}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+            <TouchableOpacity 
+              onPress={handleSync}
+              style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
+            >
+              <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
+                ↻ {t('sync')}
+              </Text>
             </TouchableOpacity>
-          ) : (
-            <Text style={styles.shopTitle}>{shop.name}</Text>
-          )}
-          <View style={styles.headerButtons}>
-            <TouchableOpacity style={styles.syncBtn} onPress={handleSync}>
-              <Text style={styles.syncText}>↻</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-              <Text style={styles.logoutText}>{t('logout')}</Text>
+            <TouchableOpacity 
+              onPress={onLogout}
+              style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
+            >
+              <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
+                {t('logout')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
+
         
         <ScrollView 
           style={styles.scrollContainer} 

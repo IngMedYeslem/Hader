@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import SimpleNavbar from './SimpleNavbar';
@@ -7,6 +7,8 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { shopAPI } from '../services/api';
 import { syncService, markShopForSync } from '../services/syncService';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 function ShopLogin({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -28,7 +30,7 @@ function ShopLogin({ onLogin }) {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission refusée', 'Permission de localisation requise');
+        Platform.OS === 'web' ? alert('Permission de localisation requise') : Alert.alert('Permission refusée', 'Permission de localisation requise');
         return;
       }
 
@@ -37,9 +39,9 @@ function ShopLogin({ onLogin }) {
         latitude: location.coords.latitude.toString(),
         longitude: location.coords.longitude.toString()
       });
-      Alert.alert('Succès', 'Localisation obtenue automatiquement');
+      Platform.OS === 'web' ? alert('Localisation obtenue automatiquement') : Alert.alert('Succès', 'Localisation obtenue automatiquement');
     } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'obtenir la localisation');
+      Platform.OS === 'web' ? alert('Impossible d\'obtenir la localisation') : Alert.alert('Erreur', 'Impossible d\'obtenir la localisation');
     }
   };
 
@@ -59,7 +61,7 @@ function ShopLogin({ onLogin }) {
       // Essayer l'API d'abord
       const shop = await shopAPI.login(email, password);
       if (shop.error) {
-        Alert.alert('Erreur', shop.error);
+        Platform.OS === 'web' ? alert(shop.error) : Alert.alert('Erreur', shop.error);
       } else {
         onLogin(shop);
       }
@@ -73,17 +75,17 @@ function ShopLogin({ onLogin }) {
         if (shop) {
           onLogin(shop);
         } else {
-          Alert.alert('Erreur', 'Email ou mot de passe incorrect');
+          Platform.OS === 'web' ? alert('Email ou mot de passe incorrect') : Alert.alert('Erreur', 'Email ou mot de passe incorrect');
         }
       } catch (localError) {
-        Alert.alert('Erreur', 'Problème de connexion');
+        Platform.OS === 'web' ? alert('Problème de connexion') : Alert.alert('Erreur', 'Problème de connexion');
       }
     }
   };
 
   const handleRegister = async () => {
     if (!shopName || !email || !password || !address || !phone || !whatsapp || !location.latitude || !location.longitude) {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires, y compris la localisation');
+      Platform.OS === 'web' ? alert('Tous les champs sont obligatoires, y compris la localisation') : Alert.alert('Erreur', 'Tous les champs sont obligatoires, y compris la localisation');
       return;
     }
     // Vérification du format du numéro de téléphone international (ex: +33..., +225..., etc.)
@@ -91,11 +93,11 @@ function ShopLogin({ onLogin }) {
     const internationalPhoneRegex = /^\+\d{7,15}$/;
     const mauritaniaLocalRegex = /^[234]\d{7}$/;
     if (!internationalPhoneRegex.test(phone) && !mauritaniaLocalRegex.test(phone)) {
-      Alert.alert('Erreur', 'Le numéro de téléphone doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
+      Platform.OS === 'web' ? alert('Le numéro de téléphone doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)') : Alert.alert('Erreur', 'Le numéro de téléphone doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
       return;
     }
     if (!internationalPhoneRegex.test(whatsapp) && !mauritaniaLocalRegex.test(whatsapp)) {
-      Alert.alert('Erreur', 'Le numéro WhatsApp doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
+      Platform.OS === 'web' ? alert('Le numéro WhatsApp doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)') : Alert.alert('Erreur', 'Le numéro WhatsApp doit être au format international (ex: +225xxxxxxxx) ou au format local mauritanien (ex: 2xxxxxxx, 3xxxxxxx, 4xxxxxxx)');
       return;
     }
     
@@ -117,7 +119,7 @@ function ShopLogin({ onLogin }) {
       // Essayer l'API d'abord
       const shop = await shopAPI.register(shopData);
       if (shop.error) {
-        Alert.alert('Erreur', shop.error);
+        Platform.OS === 'web' ? alert(shop.error) : Alert.alert('Erreur', shop.error);
       } else {
         onLogin(shop);
       }
@@ -144,14 +146,14 @@ function ShopLogin({ onLogin }) {
         
         // Vérifier si l'email existe déjà
         if (shops.find(s => s.email === email)) {
-          Alert.alert('Erreur', 'Cet email est déjà utilisé');
+          Platform.OS === 'web' ? alert('Cet email est déjà utilisé') : Alert.alert('Erreur', 'Cet email est déjà utilisé');
           return;
         }
         
         // Utiliser la fonction dédiée pour marquer la boutique
         await markShopForSync(newShop);
         
-        Alert.alert('Succès', 'Boutique créée en mode local');
+        Platform.OS === 'web' ? alert('Boutique créée en mode local') : Alert.alert('Succès', 'Boutique créée en mode local');
         onLogin(newShop);
         
         // Essayer de synchroniser immédiatement
@@ -160,122 +162,217 @@ function ShopLogin({ onLogin }) {
           syncLocalData();
         }, 2000);
       } catch (localError) {
-        Alert.alert('Erreur', 'Impossible de créer la boutique');
+        Platform.OS === 'web' ? alert('Impossible de créer la boutique') : Alert.alert('Erreur', 'Impossible de créer la boutique');
       }
     }
   };
 
+  const locationRowStyle = {
+    flexDirection: screenWidth > 350 ? 'row' : 'column',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  };
+  
+  const locationInputStyle = {
+    flex: screenWidth > 350 ? 1 : undefined,
+    marginRight: screenWidth > 350 ? 5 : 0,
+    marginLeft: screenWidth > 350 ? 5 : 0,
+    marginBottom: screenWidth > 350 ? 0 : 10,
+  };
+
   return (
-    <View style={styles.wrapper}>
-      <SimpleNavbar />
+    <View style={[styles.wrapper, styles.shopLoginContainer, { minHeight: screenHeight }]}>
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={styles.centeredContainer}>
-          <View style={styles.card}>
-            <Text style={styles.authTitle}>
-              {isRegister ? t('createShop') : t('shopLogin')}
-            </Text>
-            
-            {isRegister && (
-              <>
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={`${t('shopName')} *`}
-                  placeholderTextColor="#999"
-                  value={shopName}
-                  onChangeText={setShopName}
-                />
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={`${t('address')} *`}
-                  placeholderTextColor="#999"
-                  value={address}
-                  onChangeText={setAddress}
-                  multiline
-                />
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={`${t('phone')} *`}
-                  placeholderTextColor="#999"
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                />
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={`${t('whatsapp')} *`}
-                  placeholderTextColor="#999"
-                  value={whatsapp}
-                  onChangeText={setWhatsapp}
-                  keyboardType="phone-pad"
-                />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          {/* Scrollable Form */}
+          <ScrollView 
+            contentContainerStyle={[styles.shopLoginScrollContent, { justifyContent: isRegister ? 'flex-start' : 'center' }]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.shopLoginFormCard}>
+              <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15 }]}>
+                {isRegister ? t('createShop') : t('shopLogin')}
+              </Text>
+              
+              {isRegister && (
+                <>
+                  {/* Section Informations générales */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <TextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      placeholder={`${t('shopName')} *`}
+                      placeholderTextColor="#999"
+                      value={shopName}
+                      onChangeText={setShopName}
+                      autoCapitalize="words"
+                    />
+                    
+                    <TextInput
+                      style={[styles.addProductInput, { 
+                        fontSize: 16, 
+                        paddingVertical: 15,
+                        minHeight: 60,
+                        textAlignVertical: 'top',
+                        marginBottom: 0
+                      }]}
+                      placeholder={`${t('address')} * (${t('maxCharacters')})`}
+                      placeholderTextColor="#999"
+                      value={address}
+                      onChangeText={(text) => setAddress(text.slice(0, 200))}
+                      multiline
+                      maxLength={200}
+                      numberOfLines={3}
+                    />
+                  </View>
+                  
+                  {/* Section Contact */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <TextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      placeholder={`${t('phone')} *`}
+                      placeholderTextColor="#999"
+                      value={phone}
+                      onChangeText={setPhone}
+                      keyboardType="phone-pad"
+                      autoCompleteType="tel"
+                    />
+                    
+                    <TextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                      placeholder={`${t('whatsapp')} *`}
+                      placeholderTextColor="#999"
+                      value={whatsapp}
+                      onChangeText={setWhatsapp}
+                      keyboardType="phone-pad"
+                      autoCompleteType="tel"
+                    />
+                  </View>
+                  
+                  {/* Section Localisation */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <View style={locationRowStyle}>
+                      <TextInput
+                        style={[styles.addProductInput, locationInputStyle, { 
+                          fontSize: 16, 
+                          paddingVertical: 15 
+                        }]}
+                        placeholder={`${t('latitude')} *`}
+                        placeholderTextColor="#999"
+                        value={location.latitude}
+                        onChangeText={(text) => setLocation({...location, latitude: text})}
+                        keyboardType="numeric"
+                      />
+                      <TextInput
+                        style={[styles.addProductInput, locationInputStyle, { 
+                          fontSize: 16, 
+                          paddingVertical: 15 
+                        }]}
+                        placeholder={`${t('longitude')} *`}
+                        placeholderTextColor="#999"
+                        value={location.longitude}
+                        onChangeText={(text) => setLocation({...location, longitude: text})}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    
+                    <TouchableOpacity 
+                      style={[styles.submitBtn, { 
+                        backgroundColor: '#4CAF50', 
+                        marginTop: 10,
+                        marginBottom: 0,
+                        paddingVertical: 15,
+                        borderRadius: 12
+                      }]} 
+                      onPress={getCurrentLocation}
+                    >
+                      <Text style={[styles.submitText, { fontSize: 16 }]}>📍 {t('getLocation')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  {/* Section Connexion */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <TextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      placeholder={t('login')}
+                      placeholderTextColor="#999"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCompleteType="email"
+                    />
+                    
+                    <TextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                      placeholder={t('password')}
+                      placeholderTextColor="#999"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      autoCompleteType="password"
+                    />
+                  </View>
+                </>
+              )}
+              
+              {!isRegister && (
+                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                   <TextInput
-                    style={[styles.addProductInput, { flex: 1, marginRight: 5 }]}
-                    placeholder={`${t('latitude')} *`}
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                    placeholder={t('login')}
                     placeholderTextColor="#999"
-                    value={location.latitude}
-                    onChangeText={(text) => setLocation({...location, latitude: text})}
-                    keyboardType="numeric"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCompleteType="email"
                   />
+                  
                   <TextInput
-                    style={[styles.addProductInput, { flex: 1, marginLeft: 5 }]}
-                    placeholder={`${t('longitude')} *`}
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                    placeholder={t('password')}
                     placeholderTextColor="#999"
-                    value={location.longitude}
-                    onChangeText={(text) => setLocation({...location, longitude: text})}
-                    keyboardType="numeric"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoCompleteType="password"
                   />
                 </View>
-                <TouchableOpacity 
-                  style={[styles.submitBtn, { backgroundColor: '#4CAF50', marginBottom: 10 }]} 
-                  onPress={getCurrentLocation}
-                >
-                  <Text style={styles.submitText}>📍 {t('getLocation')}</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            
-            <TextInput
-              style={styles.addProductInput}
-              placeholder={t('login')}
-              placeholderTextColor="#999"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
-            
-            <TextInput
-              style={styles.addProductInput}
-              placeholder={t('password')}
-              placeholderTextColor="#999"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            
-            <TouchableOpacity 
-              style={styles.submitBtn} 
-              onPress={isRegister ? handleRegister : handleLogin}
-            >
-              <Text style={styles.submitText}>
-                {isRegister ? t('create') : t('connect')}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.registerButton} 
-              onPress={() => setIsRegister(!isRegister)}
-            >
-              <Text style={styles.colorText}>
-                {isRegister ? t('alreadyAccount') : t('createShopAccount')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              )}
+              
+              <TouchableOpacity 
+                style={[styles.submitBtn, { 
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  marginTop: 8
+                }]} 
+                onPress={isRegister ? handleRegister : handleLogin}
+              >
+                <Text style={[styles.submitText, { fontSize: 18 }]}>
+                  {isRegister ? t('create') : t('connect')}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.registerButton, { marginVertical: 15 }]} 
+                onPress={() => setIsRegister(!isRegister)}
+              >
+                <Text style={[styles.colorText, { fontSize: 16, textAlign: 'center' }]}>
+                  {isRegister ? t('alreadyAccount') : t('createShopAccount')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ImageBackground>
     </View>
   );

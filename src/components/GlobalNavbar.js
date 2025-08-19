@@ -47,16 +47,16 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
         </Text>
       </View>
       
-      <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', flexShrink: 0 }}>
-        <TouchableOpacity 
-          onPress={handleLanguageChange}
-          style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', padding: 3, borderRadius: 6 }}
-        >
-          <Text style={{ fontSize: 11 }}>
-            {getLanguageFlag()}
-          </Text>
-        </TouchableOpacity>
-        
+      <TouchableOpacity 
+        onPress={handleLanguageChange}
+        style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', padding: 3, borderRadius: 6 }}
+      >
+        <Text style={{ fontSize: 11 }}>
+          {getLanguageFlag()}
+        </Text>
+      </TouchableOpacity>
+      
+      <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', justifyContent: 'flex-end', marginTop: 8 }}>
         <TouchableOpacity 
           onPress={onAdminAccess} 
           style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 4, paddingVertical: 3, borderRadius: 6 }}

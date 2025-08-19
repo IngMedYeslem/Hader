@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground, Platform } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 
@@ -20,25 +20,30 @@ export default function ShopRegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     if (!formData.username || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude) {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
+      Platform.OS === 'web' ? alert('Tous les champs sont obligatoires') : Alert.alert('Erreur', 'Tous les champs sont obligatoires');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      Platform.OS === 'web' ? alert('Les mots de passe ne correspondent pas') : Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
       return;
     }
 
-    Alert.alert(
-      'Demande enregistrée',
-      'Votre demande de création de compte boutique a été enregistrée. Un administrateur va l\'examiner.',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack()
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      alert('Votre demande de création de compte boutique a été enregistrée. Un administrateur va l\'examiner.');
+      navigation.goBack();
+    } else {
+      Alert.alert(
+        'Demande enregistrée',
+        'Votre demande de création de compte boutique a été enregistrée. Un administrateur va l\'examiner.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
+    }
   };
 
   return (

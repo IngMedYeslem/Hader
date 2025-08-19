@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground, Platform } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.100.121:3000/api';
+const API_URL = 'http://172.20.10.6:3000/api';
 
 export default function CreateShop({ onBack, onShopCreated }) {
   const { t } = useTranslation();
@@ -23,18 +23,35 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const handleCreateShop = async () => {
     // Validation - tous les champs sont obligatoires
     if (!formData.name || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude) {
-      Alert.alert('Erreur', 'Tous les champs sont obligatoires');
+      Platform.OS === 'web' ? alert('Tous les champs sont obligatoires') : Alert.alert('Erreur', 'Tous les champs sont obligatoires');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      Platform.OS === 'web' ? alert('Les mots de passe ne correspondent pas') : Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
       return;
     }
 
     if (formData.password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      Platform.OS === 'web' ? alert('Le mot de passe doit contenir au moins 6 caractères') : Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
       return;
+    }
+
+    // Confirmation avant création
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Confirmer la création de la boutique "${formData.name}" ?`)) return;
+    } else {
+      const confirmed = await new Promise(resolve => {
+        Alert.alert(
+          'Confirmer',
+          `Confirmer la création de la boutique "${formData.name}" ?`,
+          [
+            { text: 'Annuler', onPress: () => resolve(false) },
+            { text: 'Créer', onPress: () => resolve(true) }
+          ]
+        );
+      });
+      if (!confirmed) return;
     }
 
     setLoading(true);
@@ -61,34 +78,50 @@ export default function CreateShop({ onBack, onShopCreated }) {
       const data = await response.json();
       
       if (response.ok) {
-        Alert.alert(
-          'Succès',
-          `Boutique "${formData.name}" créée avec succès`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setFormData({ 
-                  name: '', 
-                  email: '', 
-                  password: '', 
-                  confirmPassword: '', 
-                  address: '', 
-                  phone: '', 
-                  whatsapp: '',
-                  latitude: '',
-                  longitude: ''
-                });
-                onShopCreated && onShopCreated();
+        if (Platform.OS === 'web') {
+          alert(`Boutique "${formData.name}" créée avec succès`);
+          setFormData({ 
+            name: '', 
+            email: '', 
+            password: '', 
+            confirmPassword: '', 
+            address: '', 
+            phone: '', 
+            whatsapp: '',
+            latitude: '',
+            longitude: ''
+          });
+          onShopCreated && onShopCreated();
+        } else {
+          Alert.alert(
+            'Succès',
+            `Boutique "${formData.name}" créée avec succès`,
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  setFormData({ 
+                    name: '', 
+                    email: '', 
+                    password: '', 
+                    confirmPassword: '', 
+                    address: '', 
+                    phone: '', 
+                    whatsapp: '',
+                    latitude: '',
+                    longitude: ''
+                  });
+                  onShopCreated && onShopCreated();
+                }
               }
-            }
-          ]
-        );
+            ]
+          );
+        }
       } else {
-        Alert.alert('Erreur', data.error || 'Erreur lors de la création');
+        Platform.OS === 'web' ? alert(data.error || 'Erreur lors de la création') : Alert.alert('Erreur', data.error || 'Erreur lors de la création');
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion au serveur');
+      Platform.OS === 'web' ? alert('Erreur de connexion au serveur') : Alert.alert('Erreur', 'Erreur de connexion au serveur');
     } finally {
       setLoading(false);
     }
@@ -101,16 +134,24 @@ export default function CreateShop({ onBack, onShopCreated }) {
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
-          <TouchableOpacity onPress={onBack}>
+        <View style={[styles.headerGlobal, { 
+          flexDirection: 'row', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: 10,
+          paddingTop: Platform.OS === 'ios' ? 50 : 10
+        }]}>
+          <TouchableOpacity onPress={onBack} style={{ marginRight: 10 }}>
             <Text style={styles.colorText}>
               {t('back')}
             </Text>
           </TouchableOpacity>
-          <Text style={[styles.authTitle, { fontSize: 16, padding: 8 }]}>
-            🏪 {t('createShop')}
-          </Text>
-          <View style={{ width: 50 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.textcoprit, { fontSize: 14 }]}>🏪 {t('createShop')}</Text>
+            <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+              {t('newShopRegistration')}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.centeredContainer}>
