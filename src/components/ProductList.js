@@ -2,6 +2,7 @@ import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimen
 import SimpleNavbar from "./SimpleNavbar";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
+import ProductDetailModal from "./ProductDetailModal";
 import styles from "./styles";
 import { useState } from 'react';
 import { useTranslation } from '../translations';
@@ -19,6 +20,7 @@ const itemWidth = (width - 60) / 2;
 function ProductList() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showEditProduct, setShowEditProduct] = useState(false);
+  const [showProductDetail, setShowProductDetail] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState(mockProducts);
   const { t } = useTranslation();
@@ -58,6 +60,10 @@ function ProductList() {
               <TouchableOpacity 
                 key={product.id} 
                 style={[styles.globalCard, { width: itemWidth }]}
+                onPress={() => {
+                  setSelectedProduct(product);
+                  setShowProductDetail(true);
+                }}
                 onLongPress={() => handleEditProduct(product)}
               >
                 <View style={styles.imageContainer}>
@@ -117,6 +123,16 @@ function ProductList() {
           onProductUpdated={handleProductUpdated}
         />
       )}
+      
+      <ProductDetailModal
+        visible={showProductDetail}
+        onClose={() => {
+          setShowProductDetail(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        shop={{ username: 'Ma Boutique' }}
+      />
     </View>
   );
 }

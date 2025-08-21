@@ -7,6 +7,8 @@ export default {
       platforms: ["ios", "android", "web"],
       newArchEnabled: true,
       plugins: [
+        "expo-video",
+        "expo-audio",
         [
           "expo-image-picker",
           {

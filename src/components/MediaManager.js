@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
-import { Video } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { productAPI } from '../services/api';
 import styles from './styles';
 
@@ -79,12 +79,14 @@ const MediaManager = ({ product, onMediaDeleted }) => {
           <View style={styles.mediaGrid}>
             {product.videos.map((uri, index) => (
               <View key={`vid-${index}`} style={styles.mediaItem}>
-                <Video
-                  source={{ uri }}
+                <VideoView
+                  player={useVideoPlayer(uri, (player) => {
+                    player.loop = false;
+                    player.muted = true;
+                  })}
                   style={styles.mediaPreview}
-                  useNativeControls={false}
-                  resizeMode="contain"
-                  shouldPlay={false}
+                  contentFit="contain"
+                  nativeControls={false}
                 />
                 <TouchableOpacity 
                   style={[

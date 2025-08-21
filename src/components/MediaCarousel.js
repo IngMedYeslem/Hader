@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, Text, Platform } from 'react-native';
+import { getMediaUrl } from '../services/api';
 import styles from './styles';
 
 const VideoPlayer = ({ uri, style }) => {
@@ -9,25 +10,37 @@ const VideoPlayer = ({ uri, style }) => {
         src={uri}
         style={style}
         controls
-        poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000'/%3E%3Cpolygon points='40,30 40,70 70,50' fill='%23fff'/%3E%3C/svg%3E"
+        preload="metadata"
       />
     );
   }
   
-  // Pour mobile, afficher un placeholder avec bouton play
+  const { VideoView, useVideoPlayer } = require('expo-video');
+  const player = useVideoPlayer(uri, (player) => {
+    player.loop = true;
+    player.muted = true;
+  });
+  
   return (
-    <View style={[style, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
-      <Text style={{ color: 'white', fontSize: 60 }}>▶️</Text>
-      <Text style={{ color: 'white', fontSize: 12, marginTop: 10 }}>Appuyez pour lire</Text>
-    </View>
+    <VideoView
+      player={player}
+      style={[style, { height: 250 }]}
+      contentFit="contain"
+      nativeControls
+      allowsFullscreen
+      allowsPictureInPicture
+    />
   );
 };
 
 export default function MediaCarousel({ images = [], videos = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Combiner vidéos et images, vidéos en premier
-  const allMedia = [...videos.map(v => ({ type: 'video', uri: v })), ...images.map(i => ({ type: 'image', uri: i }))];
+  // Combiner vidéos et images avec URLs complètes
+  const allMedia = [
+    ...videos.map(v => ({ type: 'video', uri: getMediaUrl(v) })), 
+    ...images.map(i => ({ type: 'image', uri: getMediaUrl(i) }))
+  ];
   
   if (allMedia.length === 0) {
     return (

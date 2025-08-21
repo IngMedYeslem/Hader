@@ -39,6 +39,23 @@ export const showPendingShops = async () => {
 
 console.log('API_URL:', API_URL);
 
+// Construire l'URL complète pour les médias
+export const getMediaUrl = (mediaPath) => {
+  if (!mediaPath) return null;
+  
+  // Si c'est déjà une URL complète, vérifier si elle utilise localhost sur mobile
+  if (mediaPath.startsWith('http')) {
+    if (Platform.OS !== 'web' && mediaPath.includes('localhost')) {
+      return mediaPath.replace('localhost', '192.168.100.121');
+    }
+    return mediaPath;
+  }
+  
+  // Construire l'URL avec la base API
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}/${mediaPath}`;
+};
+
 export const shopAPI = {
   login: async (email, password) => {
     const response = await fetch(`${API_URL}/shops/login`, {

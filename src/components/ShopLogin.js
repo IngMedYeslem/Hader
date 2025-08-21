@@ -167,17 +167,14 @@ function ShopLogin({ onLogin }) {
     }
   };
 
+  // Styles fixes pour éviter les re-calculs
   const locationRowStyle = {
-    flexDirection: screenWidth > 350 ? 'row' : 'column',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     marginBottom: 10,
   };
   
   const locationInputStyle = {
-    flex: screenWidth > 350 ? 1 : undefined,
-    marginRight: screenWidth > 350 ? 5 : 0,
-    marginLeft: screenWidth > 350 ? 5 : 0,
-    marginBottom: screenWidth > 350 ? 0 : 10,
+    marginBottom: 10,
   };
 
   return (
@@ -189,14 +186,17 @@ function ShopLogin({ onLogin }) {
       >
         <KeyboardAvoidingView 
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
-          {/* Scrollable Form */}
           <ScrollView 
-            contentContainerStyle={[styles.shopLoginScrollContent, { justifyContent: isRegister ? 'flex-start' : 'center' }]}
+            contentContainerStyle={[styles.shopLoginScrollContent, { 
+              justifyContent: isRegister ? 'flex-start' : 'center',
+              paddingBottom: Platform.OS === 'android' ? 50 : 20
+            }]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            enableOnAndroid={true}
           >
             <View style={styles.shopLoginFormCard}>
               <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15 }]}>
@@ -208,7 +208,7 @@ function ShopLogin({ onLogin }) {
                   {/* Section Informations générales */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                     <TextInput
-                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={`${t('shopName')} *`}
                       placeholderTextColor="#999"
                       value={shopName}
@@ -237,7 +237,7 @@ function ShopLogin({ onLogin }) {
                   {/* Section Contact */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                     <TextInput
-                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={`${t('phone')} *`}
                       placeholderTextColor="#999"
                       value={phone}
@@ -247,7 +247,7 @@ function ShopLogin({ onLogin }) {
                     />
                     
                     <TextInput
-                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                       placeholder={`${t('whatsapp')} *`}
                       placeholderTextColor="#999"
                       value={whatsapp}
@@ -263,7 +263,8 @@ function ShopLogin({ onLogin }) {
                       <TextInput
                         style={[styles.addProductInput, locationInputStyle, { 
                           fontSize: 16, 
-                          paddingVertical: 15 
+                          paddingVertical: 15,
+                          height: 50
                         }]}
                         placeholder={`${t('latitude')} *`}
                         placeholderTextColor="#999"
@@ -274,7 +275,8 @@ function ShopLogin({ onLogin }) {
                       <TextInput
                         style={[styles.addProductInput, locationInputStyle, { 
                           fontSize: 16, 
-                          paddingVertical: 15 
+                          paddingVertical: 15,
+                          height: 50
                         }]}
                         placeholder={`${t('longitude')} *`}
                         placeholderTextColor="#999"
@@ -301,7 +303,7 @@ function ShopLogin({ onLogin }) {
                   {/* Section Connexion */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                     <TextInput
-                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={t('login')}
                       placeholderTextColor="#999"
                       value={email}
@@ -312,7 +314,7 @@ function ShopLogin({ onLogin }) {
                     />
                     
                     <TextInput
-                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                       placeholder={t('password')}
                       placeholderTextColor="#999"
                       value={password}
@@ -327,7 +329,7 @@ function ShopLogin({ onLogin }) {
               {!isRegister && (
                 <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                   <TextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15 }]}
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                     placeholder={t('login')}
                     placeholderTextColor="#999"
                     value={email}
@@ -338,7 +340,7 @@ function ShopLogin({ onLogin }) {
                   />
                   
                   <TextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, marginBottom: 0 }]}
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                     placeholder={t('password')}
                     placeholderTextColor="#999"
                     value={password}

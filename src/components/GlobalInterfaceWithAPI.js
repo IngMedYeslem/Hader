@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/client';
 import { GET_ALL_PRODUCTS_WITH_SHOPS } from '../graphql/getAllProductsWithShops';
 import { useTranslation, formatPrice } from '../translations';
 import { fetchProductsWithShops } from '../services/apiService';
+import { getMediaUrl } from '../services/api';
 import GlobalNavbar from './GlobalNavbar';
 import styles from './styles';
 
@@ -95,7 +96,7 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
               <View style={styles.imageContainer}>
                 {product.images && product.images.length > 0 ? (
                   <Image 
-                    source={{ uri: product.images[0] }} 
+                    source={{ uri: getMediaUrl(product.images[0]) }} 
                     style={styles.globalImage}
                     resizeMode="cover"
                   />

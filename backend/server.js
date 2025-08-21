@@ -1,10 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const upload = require('./upload');
+const { upload, processUploads } = require('./upload');
 const fs = require('fs');
+const path = require('path');
 const User = require('./models/User');
 const Role = require('./models/Role');
+const { convertVideoFromBase64 } = require('./videoConverter');
 
 // Le modèle Shop est déjà défini plus bas
 
@@ -13,6 +15,60 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static('uploads'));
+
+// Route spécifique pour les images avec headers appropriés
+app.get('/uploads/*.jpg', (req, res) => {
+  const imagePath = path.join(__dirname, req.path);
+  if (fs.existsSync(imagePath)) {
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).send('Image non trouvée');
+  }
+});
+
+// Route spécifique pour les vidéos avec streaming mobile optimisé
+app.get('/uploads/*.mp4', (req, res) => {
+  const videoPath = path.join(__dirname, req.path);
+  if (!fs.existsSync(videoPath)) {
+    return res.status(404).send('Vidéo non trouvée');
+  }
+
+  const stat = fs.statSync(videoPath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  // Headers communs pour mobile
+  const commonHeaders = {
+    'Content-Type': 'video/mp4',
+    'Accept-Ranges': 'bytes',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Range, Content-Range',
+    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length'
+  };
+
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + 1024 * 1024, fileSize - 1); // Chunks de 1MB max
+    const chunksize = (end - start) + 1;
+    const file = fs.createReadStream(videoPath, { start, end });
+    
+    res.writeHead(206, {
+      ...commonHeaders,
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Content-Length': chunksize
+    });
+    file.pipe(res);
+  } else {
+    res.writeHead(200, {
+      ...commonHeaders,
+      'Content-Length': fileSize
+    });
+    fs.createReadStream(videoPath).pipe(res);
+  }
+});
 
 
 
@@ -444,6 +500,59 @@ app.get('/api/debug/products', async (req, res) => {
   }
 });
 
+// Route pour corriger les URLs des produits existants
+app.post('/api/debug/fix-urls', async (req, res) => {
+  try {
+    const products = await Product.find();
+    let updatedCount = 0;
+    
+    for (const product of products) {
+      let updated = false;
+      
+      // Corriger les URLs d'images
+      if (product.images) {
+        product.images = product.images.map(img => {
+          if (img.includes('localhost:3000') || img.includes('192.168.100.121:3000') || img.includes('192.168.1.126:3000')) {
+            updated = true;
+            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
+          }
+          return img;
+        });
+      }
+      
+      // Corriger les URLs de vidéos et ajouter .mp4 si manquant
+      if (product.videos) {
+        product.videos = product.videos.map(vid => {
+          let correctedVid = vid;
+          if (vid.includes('localhost:3000') || vid.includes('192.168.100.121:3000') || vid.includes('192.168.1.126:3000')) {
+            updated = true;
+            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
+          }
+          // Ajouter .mp4 si manquant
+          if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
+            correctedVid += '.mp4';
+            updated = true;
+          }
+          return correctedVid;
+        });
+      }
+      
+      if (updated) {
+        await product.save();
+        updatedCount++;
+        console.log(`Produit ${product.name} mis à jour`);
+      }
+    }
+    
+    res.json({ 
+      message: `${updatedCount} produits mis à jour avec les nouvelles URLs`,
+      totalProducts: products.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 mongoose.connect('mongodb://localhost:27017/ecommerce', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -677,27 +786,73 @@ app.post('/api/products', async (req, res) => {
     const imageArray = Array.isArray(images) ? images : (images ? [images] : []);
     const videoArray = Array.isArray(videos) ? videos : (videos ? [videos] : []);
     
-    // Vérifier le type des images
-    imageArray.forEach((img, index) => {
-      if (img.startsWith('data:')) {
-        console.log(`Image ${index + 1}: Base64 (${img.substring(0, 50)}...)`);
-      } else if (img.startsWith('file://')) {
-        console.log(`Image ${index + 1}: Fichier local (${img})`);
+    // Convertir les images base64 en fichiers
+    const convertedImages = [];
+    for (let i = 0; i < imageArray.length; i++) {
+      const image = imageArray[i];
+      if (image.startsWith('data:image/')) {
+        try {
+          console.log(`Sauvegarde image ${i + 1}...`);
+          const base64String = image.split(',')[1];
+          const buffer = Buffer.from(base64String, 'base64');
+          const id = Date.now().toString().slice(-8); // 8 derniers chiffres
+          const filename = `img_${id}_${i}.jpg`;
+          const imagePath = path.join('uploads', filename);
+          
+          console.log(`Génération image: filename=${filename}, path=${imagePath}`);
+          fs.writeFileSync(imagePath, buffer);
+          const imageUrl = `http://192.168.100.121:3000/uploads/${filename}`;
+          convertedImages.push(imageUrl);
+          console.log(`Image ${i + 1} sauvegardée: ${imageUrl}`);
+        } catch (error) {
+          console.error(`Erreur sauvegarde image ${i + 1}:`, error);
+          convertedImages.push(image);
+        }
       } else {
-        console.log(`Image ${index + 1}: URL (${img})`);
+        convertedImages.push(image);
       }
-    });
+    }
+    
+    // Convertir les vidéos base64 en fichiers MP4
+    const convertedVideos = [];
+    for (let i = 0; i < videoArray.length; i++) {
+      const video = videoArray[i];
+      if (video.startsWith('data:video/')) {
+        try {
+          console.log(`Conversion vidéo ${i + 1}...`);
+          const id = Date.now().toString().slice(-8); // 8 derniers chiffres
+          const filename = `vid_${id}_${i}.mp4`;
+          const outputPath = path.join('uploads', filename);
+          
+          console.log(`Génération vidéo: filename=${filename}, path=${outputPath}`);
+          await convertVideoFromBase64(video, outputPath, {
+            videoCodec: 'h264',
+            audioCodec: 'aac',
+            strict: '-2'
+          });
+          const videoUrl = `http://192.168.100.121:3000/uploads/${filename}`;
+          convertedVideos.push(videoUrl);
+          console.log(`URL vidéo générée: ${videoUrl}`);
+          console.log(`Vidéo ${i + 1} convertie: ${videoUrl}`);
+        } catch (error) {
+          console.error(`Erreur conversion vidéo ${i + 1}:`, error);
+          convertedVideos.push(video);
+        }
+      } else {
+        convertedVideos.push(video);
+      }
+    }
     
     const product = new Product({
       name,
       price,
-      images: imageArray,
-      videos: videoArray,
+      images: convertedImages,
+      videos: convertedVideos,
       shopId
     });
     
     const savedProduct = await product.save();
-    console.log('Produit sauvegardé avec', savedProduct.images.length, 'images');
+    console.log('Produit sauvegardé avec', savedProduct.images.length, 'images et', savedProduct.videos.length, 'vidéos');
     
     res.json(savedProduct);
   } catch (error) {
@@ -706,7 +861,7 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
+app.post('/api/upload', upload.single('image'), processUploads, (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Aucun fichier uploadé' });
@@ -717,7 +872,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
 });
 
-app.post('/api/upload-video', upload.single('video'), (req, res) => {
+app.post('/api/upload-video', upload.single('video'), processUploads, (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Aucune vidéo uploadée' });

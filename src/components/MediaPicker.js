@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Video } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import styles from './styles';
 
 const MediaPicker = ({ onMediaSelected, maxImages = 5, maxVideos = 2 }) => {
@@ -86,12 +86,14 @@ const MediaPicker = ({ onMediaSelected, maxImages = 5, maxVideos = 2 }) => {
         
         {videos.map((uri, index) => (
           <View key={`vid-${index}`} style={styles.mediaItem}>
-            <Video
-              source={{ uri }}
+            <VideoView
+              player={useVideoPlayer(uri, (player) => {
+                player.loop = false;
+                player.muted = true;
+              })}
               style={styles.mediaPreview}
-              useNativeControls
-              resizeMode="contain"
-              shouldPlay={false}
+              contentFit="contain"
+              nativeControls
             />
             <TouchableOpacity 
               style={styles.removeButton} 

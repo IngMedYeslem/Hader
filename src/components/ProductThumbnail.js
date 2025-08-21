@@ -1,102 +1,106 @@
-import React from 'react';
-import { View, Image, Text, Platform } from 'react-native';
-import { Video } from 'expo-av';
+import React, { useState } from 'react';
+import { View, Image, Text, Platform, TouchableOpacity, Modal } from 'react-native';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { getMediaUrl } from '../services/api';
 import styles from './styles';
 
 const ProductThumbnail = ({ product, style }) => {
-  // Vérifier et nettoyer les données
-  const videos = Array.isArray(product.videos) ? product.videos.filter(v => v && v.trim()) : [];
-  const images = Array.isArray(product.images) ? product.images.filter(i => i && i.trim()) : [];
+  const [fullscreen, setFullscreen] = useState(false);
+  
+  // Nettoyer et valider les données
+  const videos = Array.isArray(product.videos) ? product.videos.filter(v => v && v.trim() && !v.startsWith('file://')) : [];
+  const images = Array.isArray(product.images) ? product.images.filter(i => i && i.trim() && !i.startsWith('file://')) : [];
   
   const hasVideos = videos.length > 0;
   const hasImages = images.length > 0;
+  const firstVideo = hasVideos ? getMediaUrl(videos[0]) : null;
+  const firstImage = hasImages ? getMediaUrl(images[0]) : null;
   const totalMedia = videos.length + images.length;
 
-  console.log('ProductThumbnail:', {
-    productName: product.name,
-    hasVideos,
-    hasImages,
-    videosCount: videos.length,
-    imagesCount: images.length,
-    firstVideo: videos[0]?.substring(0, 50),
-    firstImage: images[0]?.substring(0, 50),
-    isLocalFile: images[0]?.startsWith('file://') || videos[0]?.startsWith('file://')
-  });
-  
-  // Filtrer les URLs locales non converties
-  const validImages = images.filter(img => !img.startsWith('file://'));
-  const validVideos = videos.filter(vid => !vid.startsWith('file://'));
-  
-  const hasValidVideos = validVideos.length > 0;
-  const hasValidImages = validImages.length > 0;
+  const player = useVideoPlayer(
+    hasVideos ? firstVideo : null,
+    (player) => {
+      if (player) {
+        player.loop = true;
+        player.muted = true;
+        player.play();
+      }
+    }
+  );
 
-  if (hasValidVideos) {
-    const videoUri = validVideos[0];
-    
-
-    
-    return (
-      <View style={style}>
+  return (
+    <View style={style}>
+      {hasVideos && firstVideo ? (
         <View style={styles.alibabaImage}>
           {Platform.OS === 'web' ? (
             <video
-              src={videoUri}
+              src={firstVideo}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              controls
               muted
-              playsInline
-              onError={(error) => console.log('Erreur vidéo web:', error)}
+              autoPlay
+              loop
             />
           ) : (
-            <Video
-              source={{ uri: videoUri }}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="cover"
-              shouldPlay={false}
-              isMuted={true}
-              useNativeControls={false}
-              pointerEvents="none"
-              onError={(error) => console.log('Erreur vidéo mobile:', error)}
-            />
+            <>
+              <TouchableOpacity onPress={() => setFullscreen(true)} activeOpacity={0.9}>
+                <VideoView
+                  style={{ width: '100%', height: '100%' }}
+                  player={player}
+                  contentFit="cover"
+                  nativeControls={false}
+                />
+              </TouchableOpacity>
+              
+              <Modal visible={fullscreen} animationType="slide">
+                <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>
+                  <VideoView
+                    style={{ width: '100%', height: '100%' }}
+                    player={player}
+                    contentFit="contain"
+                    nativeControls={true}
+                  />
+                  <TouchableOpacity 
+                    onPress={() => setFullscreen(false)}
+                    style={{
+                      position: 'absolute',
+                      top: 24,
+                      right: 18,
+                      padding: 10,
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderRadius: 20,
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 18 }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              </Modal>
+            </>
           )}
-        </View>
-        {(validVideos.length + validImages.length) > 1 && (
-          <View style={styles.imageCount}>
-            <Text style={styles.imageCountText}>+{(validVideos.length + validImages.length) - 1}</Text>
+          
+          <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
+            <Text style={styles.imageCountText}>🎥</Text>
           </View>
-        )}
-        <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
-          <Text style={styles.imageCountText}>🎥</Text>
         </View>
-      </View>
-    );
-  }
-  
-  if (hasValidImages) {
-    const imageUri = validImages[0];
-    return (
-      <View style={style}>
-        <Image 
-          source={{ uri: imageUri }} 
-          style={styles.alibabaImage}
-          resizeMode="cover"
-          onError={(error) => {
-            console.log('Erreur image:', error);
-            console.log('URI problématique:', imageUri);
-          }}
-          onLoad={() => console.log('Image chargée:', imageUri.substring(0, 50))}
-        />
-        {validImages.length > 1 && (
-          <View style={styles.imageCount}>
-            <Text style={styles.imageCountText}>+{validImages.length - 1}</Text>
-          </View>
-        )}
-      </View>
-    );
-  }
-  
-  return (
-    <View style={[style, styles.placeholderImage]}>
-      <Text style={styles.placeholderText}>📷</Text>
+      ) : hasImages && firstImage ? (
+        <View style={styles.alibabaImage}>
+          <Image 
+            source={{ uri: firstImage }} 
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        </View>
+      ) : (
+        <View style={[styles.alibabaImage, styles.placeholderImage]}>
+          <Text style={styles.placeholderText}>📷</Text>
+        </View>
+      )}
+      
+      {totalMedia > 1 && (
+        <View style={styles.imageCount}>
+          <Text style={styles.imageCountText}>+{totalMedia - 1}</Text>
+        </View>
+      )}
     </View>
   );
 };

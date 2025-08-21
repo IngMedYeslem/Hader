@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Platf
 import GlobalNavbar from './GlobalNavbar';
 import SearchBar from './SearchBar';
 import ProductModal from './ProductModal';
+import ProductDetailModal from './ProductDetailModal';
 import ShopSummary from './ShopSummary';
 import ProductThumbnail from './ProductThumbnail';
 import MediaGallery from './MediaGallery';
@@ -22,6 +23,7 @@ export default function GlobalInterface({ onShopLogin }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [useRealData, setUseRealData] = useState(false);
   const [error, setError] = useState(null);
   const [showAdminInterface, setShowAdminInterface] = useState(false);
@@ -34,30 +36,21 @@ export default function GlobalInterface({ onShopLogin }) {
         setLoading(true);
         setError(null);
         
-        // Forcer les données de test sur Android pour éviter OOM
-        if (Platform.OS === 'android') {
-          console.log('Android détecté, utilisation des données de test...');
+        // Vérifier si le serveur est disponible
+        const serverAvailable = await checkServerHealth();
+        
+        if (serverAvailable) {
+          console.log('Serveur disponible, chargement des données réelles...');
+          const realProducts = await fetchProductsWithShops();
+          setProducts(realProducts);
+          setFilteredProducts(realProducts);
+          setUseRealData(true);
+        } else {
+          console.log('Serveur non disponible, utilisation des données de test...');
           const mockProducts = getMockProducts();
           setProducts(mockProducts);
           setFilteredProducts(mockProducts);
           setUseRealData(false);
-        } else {
-          // Vérifier si le serveur est disponible pour les autres plateformes
-          const serverAvailable = await checkServerHealth();
-          
-          if (serverAvailable) {
-            console.log('Serveur disponible, chargement des données réelles...');
-            const realProducts = await fetchProductsWithShops();
-            setProducts(realProducts);
-            setFilteredProducts(realProducts);
-            setUseRealData(true);
-          } else {
-            console.log('Serveur non disponible, utilisation des données de test...');
-            const mockProducts = getMockProducts();
-            setProducts(mockProducts);
-            setFilteredProducts(mockProducts);
-            setUseRealData(false);
-          }
         }
       } catch (error) {
         console.error('Erreur chargement produits:', error);
@@ -213,7 +206,10 @@ export default function GlobalInterface({ onShopLogin }) {
             <TouchableOpacity 
               key={product.id} 
               style={[styles.globalCard, { width: '48%' }]}
-              onPress={() => handleProductPress(product)}
+              onPress={() => {
+                setSelectedProduct(product);
+                setDetailModalVisible(true);
+              }}
             >
               <View style={styles.imageContainer}>
                 <ProductThumbnail 
@@ -261,6 +257,16 @@ export default function GlobalInterface({ onShopLogin }) {
         visible={modalVisible}
         product={selectedProduct}
         onClose={handleCloseModal}
+      />
+      
+      <ProductDetailModal
+        visible={detailModalVisible}
+        onClose={() => {
+          setDetailModalVisible(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        shop={selectedProduct?.shop}
       />
     </ImageBackground>
   );

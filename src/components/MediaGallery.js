@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform, Linking, Alert } from 'react-native';
-import { Video, Audio } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
+
 import { useTranslation } from '../translations';
 import styles from './styles';
 
@@ -13,6 +14,15 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  
+  // Combiner vidéos et images (vidéos en premier)
+  const allMedia = [...videos.map(v => ({ type: 'video', uri: v })), ...images.map(i => ({ type: 'image', uri: i }))];
+  const currentMedia = allMedia[currentIndex] || { type: 'image', uri: '' };
+  
+  const player = useVideoPlayer(currentMedia.type === 'video' ? currentMedia.uri : '', (player) => {
+    player.loop = true;
+    player.muted = false;
+  });
 
   const handleWhatsApp = () => {
     if (shop?.whatsapp) {
@@ -30,32 +40,9 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
     }
   };
 
-  useEffect(() => {
-    const configureAudio = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: false,
-          playsInSilentModeIOS: true,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
-        });
-      } catch (error) {
-        console.log('Erreur configuration audio:', error);
-      }
-    };
-    
-    if (visible) {
-      configureAudio();
-    }
-  }, [visible]);
-  
-  // Combiner vidéos et images (vidéos en premier)
-  const allMedia = [...videos.map(v => ({ type: 'video', uri: v })), ...images.map(i => ({ type: 'image', uri: i }))];
+
   
   if (allMedia.length === 0) return null;
-
-  const currentMedia = allMedia[currentIndex] || { type: 'image', uri: '' };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -167,35 +154,16 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
                       <Text style={{ color: 'white', fontSize: 30, marginTop: 10 }}>⚠️</Text>
                     </View>
                   ) : (
-                    <Video
-                      source={{ uri: currentMedia.uri }}
-                      style={{ width: '100%', height: '100%' }}
-                      useNativeControls={showControls}
-                      resizeMode="contain"
-                      shouldPlay={isPlaying && visible && videoLoaded}
-                      isLooping={true}
-                      isMuted={false}
-                      onPlaybackStatusUpdate={(status) => {
-                        if (status.didJustFinish) {
-                          setIsPlaying(false);
-                        }
-                      }}
-                      onError={(error) => {
-                        console.log('Erreur vidéo:', error);
-                        setVideoError(true);
-                        setVideoLoaded(false);
-                      }}
-                      onLoad={() => {
-                        console.log('Vidéo chargée');
-                        setVideoLoaded(true);
-                        setVideoError(false);
-                      }}
-                      onLoadStart={() => {
-                        console.log('Début chargement vidéo');
-                        setVideoLoaded(false);
-                        setVideoError(false);
-                      }}
-                    />
+                    <View style={{ flex: 1 }}>
+                      <VideoView
+                        player={player}
+                        style={{ width: '100%', height: 250 }}
+                        allowsFullscreen
+                        allowsPictureInPicture
+                        contentFit="contain"
+                        nativeControls
+                      />
+                    </View>
                   )}
                 </View>
               ) : (
@@ -237,19 +205,19 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
                 activeOpacity={0.9}
               >
                 {media.type === 'video' ? (
-                  <View style={styles.mainImage}>
+                  <View style={{ flex: 1 }}>
                     {index === currentIndex ? (
-                      <Video
-                        source={{ uri: media.uri }}
-                        style={{ width: '100%', height: '100%' }}
-                        useNativeControls={showControls}
-                        resizeMode="contain"
-                        shouldPlay={index === currentIndex && isPlaying && visible && videoLoaded}
-                        isLooping={true}
-                        isMuted={false}
-                        onLoad={() => setVideoLoaded(true)}
-                        onError={() => setVideoError(true)}
-                      />
+                      <View style={{ position: 'relative' }}>
+                        <VideoView
+                          player={player}
+                          style={{ width: '100%', height: 250 }}
+                          allowsFullscreen
+                          allowsPictureInPicture
+                          contentFit="contain"
+                          nativeControls
+                        />
+
+                      </View>
                     ) : (
                       <View style={{ width: '100%', height: '100%', backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
                         <Text style={{ color: 'white', fontSize: 40 }}>🎥</Text>
