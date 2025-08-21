@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Platform } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Platform, PanResponder } from 'react-native';
 import GlobalNavbar from './GlobalNavbar';
 import SearchBar from './SearchBar';
 import ProductModal from './ProductModal';
@@ -123,9 +123,31 @@ export default function GlobalInterface({ onShopLogin }) {
     setShowShopSummary(true); // Réafficher le résumé après fermeture
   };
   
-  const toggleSummaryPosition = () => {
-    setSummaryPosition(prev => prev === 'top' ? 'bottom' : 'top');
-  };
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      return Math.abs(gestureState.dy) > 10;
+    },
+    onPanResponderMove: (evt, gestureState) => {},
+    onPanResponderRelease: (evt, gestureState) => {
+      if (gestureState.dy > 50) {
+        setSummaryPosition('bottom');
+      } else if (gestureState.dy < -50) {
+        setSummaryPosition('top');
+      }
+    },
+  });
+
+  const productsPanResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      return Math.abs(gestureState.dy) > 10;
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      if (Math.abs(gestureState.dy) > 20) {
+        setShowShopSummary(false);
+      }
+    },
+    onPanResponderRelease: () => {},
+  });
 
   if (showAdminInterface) {
     return <AdminInterface onBack={() => setShowAdminInterface(false)} />;
@@ -178,20 +200,21 @@ export default function GlobalInterface({ onShopLogin }) {
       />
       
       {showShopSummary && summaryPosition === 'top' && (
-        <View>
+        <View {...panResponder.panHandlers}>
           <ShopSummary products={products} />
-          <TouchableOpacity 
-            onPress={toggleSummaryPosition}
-            style={{ alignSelf: 'center', backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginHorizontal: 15, marginBottom: 5 }}
-          >
-            <Text style={{ color: '#C8A55F', fontSize: 10 }}>Déplacer en bas</Text>
-          </TouchableOpacity>
         </View>
       )}
       
-      <ScrollView style={styles.wrapper} contentContainerStyle={styles.contentContainer}>
+      <ScrollView 
+        style={styles.wrapper} 
+        contentContainerStyle={styles.contentContainer}
+        onScroll={() => setShowShopSummary(false)}
+        scrollEventThrottle={16}
+      >
         {showShopSummary && summaryPosition === 'bottom' && (
-          <ShopSummary products={products} />
+          <View {...panResponder.panHandlers}>
+            <ShopSummary products={products} />
+          </View>
         )}
         
         {filteredProducts.length === 0 ? (
@@ -201,7 +224,12 @@ export default function GlobalInterface({ onShopLogin }) {
             </Text>
           </View>
         ) : (
-          <View style={styles.globalGrid}>
+          <View 
+            style={styles.globalGrid} 
+            {...productsPanResponder.panHandlers}
+            onWheel={() => setShowShopSummary(false)}
+            onTouchMove={() => setShowShopSummary(false)}
+          >
             {filteredProducts.map((product) => (
             <TouchableOpacity 
               key={product.id} 

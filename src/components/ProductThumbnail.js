@@ -43,14 +43,14 @@ const ProductThumbnail = ({ product, style }) => {
             />
           ) : (
             <>
-              <TouchableOpacity onPress={() => setFullscreen(true)} activeOpacity={0.9}>
+              <View>
                 <VideoView
                   style={{ width: '100%', height: '100%' }}
                   player={player}
                   contentFit="cover"
                   nativeControls={false}
                 />
-              </TouchableOpacity>
+              </View>
               
               <Modal visible={fullscreen} animationType="slide">
                 <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>

@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platfo
 import { useTranslation } from '../translations';
 import styles from './styles';
 
-const API_URL = 'http://192.168.100.121:3000/api';
+const API_URL = 'http://172.20.10.6:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
   const { t } = useTranslation();

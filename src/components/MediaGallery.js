@@ -158,8 +158,8 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
                       <VideoView
                         player={player}
                         style={{ width: '100%', height: 250 }}
-                        allowsFullscreen
-                        allowsPictureInPicture
+                        allowsFullscreen={false}
+                        allowsPictureInPicture={false}
                         contentFit="contain"
                         nativeControls
                       />
@@ -211,8 +211,8 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
                         <VideoView
                           player={player}
                           style={{ width: '100%', height: 250 }}
-                          allowsFullscreen
-                          allowsPictureInPicture
+                          allowsFullscreen={false}
+                          allowsPictureInPicture={false}
                           contentFit="contain"
                           nativeControls
                         />
