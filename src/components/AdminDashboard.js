@@ -419,76 +419,53 @@ export default function AdminDashboard() {
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.headerGlobal, { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: 10,
-        paddingTop: Platform.OS === 'ios' ? 50 : 10
-      }]}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.textcoprit, { fontSize: 14 }]}>🛠️ {t('administration')}</Text>
-          <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
-            {users.length} {t('users')} • {shops.length} {t('shops')}
-          </Text>
-        </View>
-      </View>
-      
-      {pendingShops.length > 0 && (
-        <View style={{ backgroundColor: '#fff3cd', padding: 8, marginHorizontal: 10, marginVertical: 5, borderRadius: 6 }}>
-          <Text style={{ color: '#856404', fontWeight: 'bold', textAlign: 'center' }}>
-            {pendingShops.length} {t('shopsWaiting')}
-          </Text>
-        </View>
-      )}
-      
 
       
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginHorizontal: 15, marginVertical: 12, gap: 10 }}>
+      <View style={{ flexDirection: 'row', marginHorizontal: 15, marginVertical: 8, gap: 8 }}>
         <TouchableOpacity
-          style={[styles.filterBtn, { flex: 1, paddingVertical: 12 }, activeTab === 'users' && styles.filterBtnActive]}
+          style={[styles.filterBtn, { flex: 1, paddingVertical: 10 }, activeTab === 'users' && styles.filterBtnActive]}
           onPress={() => setActiveTab('users')}
         >
-          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 14, fontWeight: '600' }, activeTab === 'users' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 13 }, activeTab === 'users' && styles.filterTextActive]}>
             👥 {t('users')} ({users.length})
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.filterBtn, { flex: 1, paddingVertical: 12 }, activeTab === 'shops' && styles.filterBtnActive]}
+          style={[styles.filterBtn, { flex: 1, paddingVertical: 10 }, activeTab === 'shops' && styles.filterBtnActive]}
           onPress={() => setActiveTab('shops')}
         >
-          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 14, fontWeight: '600' }, activeTab === 'shops' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 13 }, activeTab === 'shops' && styles.filterTextActive]}>
             🏪 {t('shops')} ({shops.length + pendingLocalShops.length})
           </Text>
         </TouchableOpacity>
       </View>
       
       {activeTab === 'shops' && (
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginHorizontal: 15, marginBottom: 10, gap: 6 }}>
+        <View style={{ flexDirection: 'row', marginHorizontal: 15, marginBottom: 8, gap: 6 }}>
           <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 8 }, shopFilter === 'all' && styles.filterBtnActive]}
+            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'all' && styles.filterBtnActive]}
             onPress={() => setShopFilter('all')}
           >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 12, fontWeight: '500' }, shopFilter === 'all' && styles.filterTextActive]}>
+            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 11 }, shopFilter === 'all' && styles.filterTextActive]}>
               {t('all')} ({shops.length + pendingLocalShops.length})
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 8 }, shopFilter === 'validated' && styles.filterBtnActive]}
+            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'validated' && styles.filterBtnActive]}
             onPress={() => setShopFilter('validated')}
           >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 12, fontWeight: '500' }, shopFilter === 'validated' && styles.filterTextActive]}>
+            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 11 }, shopFilter === 'validated' && styles.filterTextActive]}>
               ✅ {t('validated')} ({shops.filter(s => s.isValidated !== false).length})
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 8 }, shopFilter === 'pending' && styles.filterBtnActive]}
+            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'pending' && styles.filterBtnActive]}
             onPress={() => setShopFilter('pending')}
           >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 12, fontWeight: '500' }, shopFilter === 'pending' && styles.filterTextActive]}>
+            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 11 }, shopFilter === 'pending' && styles.filterTextActive]}>
               ⏳ {t('pending')} ({shops.filter(s => s.isValidated === false).length + pendingLocalShops.length})
             </Text>
           </TouchableOpacity>
