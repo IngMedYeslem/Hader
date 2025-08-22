@@ -289,20 +289,7 @@ export default function AdminDashboard() {
                   ⏳ En attente d'approbation
                 </Text>
               </View>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity
-                  style={[styles.submitBtn, { flex: 1, marginRight: 5, backgroundColor: '#4CAF50' }]}
-                  onPress={() => handleApprove(item.id, item.username)}
-                >
-                  <Text style={styles.submitText}>Approuver</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.submitBtn, { flex: 1, marginLeft: 5, backgroundColor: '#f44336' }]}
-                  onPress={() => handleReject(item.id, item.username)}
-                >
-                  <Text style={styles.submitText}>Rejeter</Text>
-                </TouchableOpacity>
-              </View>
+
               
               {isShop && !item.linkedShop && shops.length > 0 && (
                 <View style={{ marginTop: 10 }}>
@@ -370,7 +357,7 @@ export default function AdminDashboard() {
             </View>
           </View>
           
-          {!isValidated && (
+          {!isValidated && shopFilter === 'pending' && (
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
               <TouchableOpacity
                 style={{ flex: 1, backgroundColor: '#4CAF50', paddingVertical: 8, borderRadius: 6, alignItems: 'center' }}
