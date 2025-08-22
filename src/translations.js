@@ -30,6 +30,7 @@ const translations = {
     permissionRequired: 'Permission requise',
     galleryAccess: 'Accès à la galerie nécessaire',
     cameraAccess: 'Accès à l\'appareil photo nécessaire',
+    locationRequired: 'Localisation requise',
     chooseFile: 'Choisir un fichier',
     // Admin
     createAdmin: 'Créer un Admin',
@@ -81,8 +82,8 @@ const translations = {
     testAccounts: 'Comptes Test',
     accountWaitingApproval: 'Compte en attente d\'approbation',
     accountValidatedIn24h: 'Votre compte sera validé sous 24 heures',
-    contactAdminAfter24h: 'Si votre compte n\'est pas validé après 24h, contactez l\'administrateur',
-    contactAdmin: 'Contacter l\'administrateur',
+    contactAdminAfter24h: 'Si votre compte n\'est pas validé après 24h, contactez centre d\'aide',
+    contactAdmin: 'Contacter centre d\'aide',
     contactWhatsApp: 'Contacter via WhatsApp',
     callAdmin: 'Appeler l\'administrateur',
     // Navbar
@@ -157,6 +158,7 @@ const translations = {
     permissionRequired: 'Permission required',
     galleryAccess: 'Gallery access required',
     cameraAccess: 'Camera access required',
+    locationRequired: 'Location required',
     chooseFile: 'Choose file',
     // Admin
     createAdmin: 'Create Admin',
@@ -209,7 +211,7 @@ const translations = {
     accountWaitingApproval: 'Account waiting for approval',
     accountValidatedIn24h: 'Your account will be validated within 24 hours',
     contactAdminAfter24h: 'If your account is not validated after 24h, contact the administrator',
-    contactAdmin: 'Contact administrator',
+    contactAdmin: 'Contact help center',
     contactWhatsApp: 'Contact via WhatsApp',
     callAdmin: 'Call administrator',
     // Navbar
@@ -284,6 +286,7 @@ const translations = {
     permissionRequired: 'إذن مطلوب',
     galleryAccess: 'الوصول إلى المعرض مطلوب',
     cameraAccess: 'الوصول إلى الكاميرا مطلوب',
+    locationRequired: 'الموقع مطلوب',
     chooseFile: 'اختيار ملف',
     // Admin
     createAdmin: 'إنشاء مدير',
