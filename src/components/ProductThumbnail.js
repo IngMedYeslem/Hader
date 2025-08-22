@@ -30,70 +30,103 @@ const ProductThumbnail = ({ product, style }) => {
 
   return (
     <View style={style}>
-      {hasVideos && firstVideo ? (
-        <View style={styles.alibabaImage}>
-          {Platform.OS === 'web' ? (
+      {Platform.OS === 'web' ? (
+        !hasVideos && hasImages && firstImage ? (
+          <View style={styles.alibabaImage}>
+            <img 
+              src={firstImage}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              alt="Product"
+            />
+            <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.7)', padding: 8 }}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }} numberOfLines={1}>
+                {product.name}
+              </Text>
+              <Text style={{ color: '#C8A55F', fontSize: 11 }}>
+                {product.price} MRU
+              </Text>
+            </View>
+          </View>
+        ) : hasVideos && firstVideo ? (
+          <View style={styles.alibabaImage}>
             <video
               src={firstVideo}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              controls
               muted
               autoPlay
               loop
             />
-          ) : (
-            <>
-              <View>
+            <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
+              <Text style={styles.imageCountText}>🎥</Text>
+            </View>
+            <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.7)', padding: 8 }}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }} numberOfLines={1}>
+                {product.name}
+              </Text>
+              <Text style={{ color: '#C8A55F', fontSize: 11 }}>
+                {product.price} MRU
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.alibabaImage, styles.placeholderImage]}>
+            <Text style={styles.placeholderText}>📷</Text>
+          </View>
+        )
+      ) : (
+        // Mobile : logique originale (vidéo en priorité)
+        hasVideos && firstVideo ? (
+          <View style={styles.alibabaImage}>
+            <View>
+              <VideoView
+                style={{ width: '100%', height: '100%' }}
+                player={player}
+                contentFit="cover"
+                nativeControls={false}
+              />
+            </View>
+            
+            <Modal visible={fullscreen} animationType="slide">
+              <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>
                 <VideoView
                   style={{ width: '100%', height: '100%' }}
                   player={player}
-                  contentFit="cover"
-                  nativeControls={false}
+                  contentFit="contain"
+                  nativeControls={true}
                 />
+                <TouchableOpacity 
+                  onPress={() => setFullscreen(false)}
+                  style={{
+                    position: 'absolute',
+                    top: 24,
+                    right: 18,
+                    padding: 10,
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    borderRadius: 20,
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 18 }}>✕</Text>
+                </TouchableOpacity>
               </View>
-              
-              <Modal visible={fullscreen} animationType="slide">
-                <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center' }}>
-                  <VideoView
-                    style={{ width: '100%', height: '100%' }}
-                    player={player}
-                    contentFit="contain"
-                    nativeControls={true}
-                  />
-                  <TouchableOpacity 
-                    onPress={() => setFullscreen(false)}
-                    style={{
-                      position: 'absolute',
-                      top: 24,
-                      right: 18,
-                      padding: 10,
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      borderRadius: 20,
-                    }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 18 }}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-              </Modal>
-            </>
-          )}
-          
-          <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
-            <Text style={styles.imageCountText}>🎥</Text>
+            </Modal>
+            
+            <View style={[styles.imageCount, { top: 5, right: 5, bottom: 'auto' }]}>
+              <Text style={styles.imageCountText}>🎥</Text>
+            </View>
           </View>
-        </View>
-      ) : hasImages && firstImage ? (
-        <View style={styles.alibabaImage}>
-          <Image 
-            source={{ uri: firstImage }} 
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
-        </View>
-      ) : (
-        <View style={[styles.alibabaImage, styles.placeholderImage]}>
-          <Text style={styles.placeholderText}>📷</Text>
-        </View>
+        ) : hasImages && firstImage ? (
+          <View style={styles.alibabaImage}>
+            <Image 
+              source={{ uri: firstImage }} 
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          </View>
+        ) : (
+          <View style={[styles.alibabaImage, styles.placeholderImage]}>
+            <Text style={styles.placeholderText}>📷</Text>
+          </View>
+        )
       )}
       
       {totalMedia > 1 && (
