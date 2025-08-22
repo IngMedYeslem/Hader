@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN_MUTATION } from "../graphql/LOGIN_MUTATION";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
+import PasswordInput from "./PasswordInput";
 import styles from "./styles";
 import { Linking } from "react-native";
 
@@ -19,7 +20,6 @@ export default function LoginScreen({ navigation }) {
   const { t, i18n } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [secureText, setSecureText] = useState(true);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -97,29 +97,17 @@ export default function LoginScreen({ navigation }) {
               ]}
             />
 
-            <TextInput
+            <PasswordInput
               placeholder={t("password")}
               placeholderTextColor="#C8A55F"
               mode="outlined"
-              secureTextEntry={secureText}
               value={password}
               onChangeText={setPassword}
               style={[
                 styles.input,
                 { textAlign: i18n.language === "ar" ? "right" : "left" }
               ]}
-              right={i18n.language === "ar" ? null : (
-                <TextInput.Icon 
-                  icon={secureText ? "eye-off" : "eye"} 
-                  onPress={() => setSecureText(!secureText)}
-                />
-              )}
-              left={i18n.language === "ar" ? (
-                <TextInput.Icon 
-                  icon={secureText ? "eye-off" : "eye"} 
-                  onPress={() => setSecureText(!secureText)}
-                />
-              ) : null}
+              isRTL={i18n.language === "ar"}
             />
 
             <Button

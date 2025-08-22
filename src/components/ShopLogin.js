@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import SimpleNavbar from './SimpleNavbar';
+import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { shopAPI } from '../services/api';
@@ -20,10 +21,26 @@ function ShopLogin({ onLogin }) {
   const [whatsapp, setWhatsapp] = useState('');
   const [location, setLocation] = useState({ latitude: '', longitude: '' });
   const { t } = useTranslation();
+  const slideAnim = useState(new Animated.Value(300))[0];
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     // Synchroniser automatiquement au démarrage
     syncLocalData();
+    
+    // Animations d'entrée
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      })
+    ]).start();
   }, []);
 
   const getCurrentLocation = async () => {
@@ -198,7 +215,13 @@ function ShopLogin({ onLogin }) {
             keyboardShouldPersistTaps="handled"
             enableOnAndroid={true}
           >
-            <View style={styles.shopLoginFormCard}>
+            <Animated.View style={[
+              styles.shopLoginFormCard,
+              {
+                transform: [{ translateY: slideAnim }],
+                opacity: fadeAnim
+              }
+            ]}>
               <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15 }]}>
                 {isRegister ? t('createShop') : t('shopLogin')}
               </Text>
@@ -259,37 +282,10 @@ function ShopLogin({ onLogin }) {
                   
                   {/* Section Localisation */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                    <View style={locationRowStyle}>
-                      <TextInput
-                        style={[styles.addProductInput, locationInputStyle, { 
-                          fontSize: 16, 
-                          paddingVertical: 15,
-                          height: 50
-                        }]}
-                        placeholder={`${t('latitude')} *`}
-                        placeholderTextColor="#999"
-                        value={location.latitude}
-                        onChangeText={(text) => setLocation({...location, latitude: text})}
-                        keyboardType="numeric"
-                      />
-                      <TextInput
-                        style={[styles.addProductInput, locationInputStyle, { 
-                          fontSize: 16, 
-                          paddingVertical: 15,
-                          height: 50
-                        }]}
-                        placeholder={`${t('longitude')} *`}
-                        placeholderTextColor="#999"
-                        value={location.longitude}
-                        onChangeText={(text) => setLocation({...location, longitude: text})}
-                        keyboardType="numeric"
-                      />
-                    </View>
-                    
                     <TouchableOpacity 
                       style={[styles.submitBtn, { 
                         backgroundColor: '#4CAF50', 
-                        marginTop: 10,
+                        marginTop: 0,
                         marginBottom: 0,
                         paddingVertical: 15,
                         borderRadius: 12
@@ -298,8 +294,16 @@ function ShopLogin({ onLogin }) {
                     >
                       <Text style={[styles.submitText, { fontSize: 16 }]}>📍 {t('getLocation')}</Text>
                     </TouchableOpacity>
+                    {(location.latitude && location.longitude) ? (
+                      <Text style={{ marginTop: 10, color: '#333', fontSize: 15 }}>
+                        {t('locationSet')}
+                      </Text>
+                    ) : (
+                      <Text style={{ marginTop: 10, color: 'red', fontSize: 15 }}>
+                        {t('locationRequired')}
+                      </Text>
+                    )}
                   </View>
-                  
                   {/* Section Connexion */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                     <TextInput
@@ -313,13 +317,12 @@ function ShopLogin({ onLogin }) {
                       autoCompleteType="email"
                     />
                     
-                    <TextInput
+                    <SimplePasswordInput
                       style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                       placeholder={t('password')}
                       placeholderTextColor="#999"
                       value={password}
                       onChangeText={setPassword}
-                      secureTextEntry
                       autoCompleteType="password"
                     />
                   </View>
@@ -339,13 +342,12 @@ function ShopLogin({ onLogin }) {
                     autoCompleteType="email"
                   />
                   
-                  <TextInput
+                  <SimplePasswordInput
                     style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                     placeholder={t('password')}
                     placeholderTextColor="#999"
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
                     autoCompleteType="password"
                   />
                 </View>
@@ -372,7 +374,7 @@ function ShopLogin({ onLogin }) {
                   {isRegister ? t('alreadyAccount') : t('createShopAccount')}
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </ImageBackground>

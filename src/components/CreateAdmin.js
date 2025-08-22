@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground } from 'react-native';
+import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 import { useTranslation } from '../translations';
 
@@ -115,22 +116,20 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
             autoCapitalize="none"
           />
 
-          <TextInput
+          <SimplePasswordInput
             style={styles.addProductInput}
             placeholder={t('password')}
             placeholderTextColor="#999"
             value={formData.password}
             onChangeText={(text) => setFormData({...formData, password: text})}
-            secureTextEntry
           />
 
-          <TextInput
+          <SimplePasswordInput
             style={styles.addProductInput}
             placeholder={t('confirmPassword')}
             placeholderTextColor="#999"
             value={formData.confirmPassword}
             onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
-            secureTextEntry
           />
 
           <TouchableOpacity

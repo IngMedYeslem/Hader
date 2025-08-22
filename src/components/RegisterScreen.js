@@ -11,6 +11,7 @@ import { useMutation, gql } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
+import PasswordInput from "./PasswordInput";
 import styles from "./styles";  // Importer les styles
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +28,6 @@ export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [secureText, setSecureText] = useState(true);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [profileImage, setProfileImage] = useState(null);
@@ -179,54 +179,30 @@ export default function RegisterScreen({ navigation }) {
               ]}
             />
 
-            <TextInput
+            <PasswordInput
               placeholder={t("password")}
               placeholderTextColor="#C8A55F"
               mode="outlined"
-              secureTextEntry={secureText}
               value={password}
               onChangeText={setPassword}
-               right={i18n.language === "ar" ? null : (
-                              <TextInput.Icon 
-                                icon={secureText ? "eye-off" : "eye"} 
-                                onPress={() => setSecureText(!secureText)}
-                              />
-                            )}
-                            left={i18n.language === "ar" ? (
-                              <TextInput.Icon 
-                                icon={secureText ? "eye-off" : "eye"} 
-                                onPress={() => setSecureText(!secureText)}
-                              />
-                            ) : null}
               style={[
                 styles.input,
                 { textAlign: i18n.language === "ar" ? "right" : "left" }
               ]}
+              isRTL={i18n.language === "ar"}
             />
 
-            <TextInput
+            <PasswordInput
               placeholder={t("confirmPassword")}
               placeholderTextColor="#C8A55F"
               mode="outlined"
-              secureTextEntry={secureText}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-               right={i18n.language === "ar" ? null : (
-                              <TextInput.Icon 
-                                icon={secureText ? "eye-off" : "eye"} 
-                                onPress={() => setSecureText(!secureText)}
-                              />
-                            )}
-                            left={i18n.language === "ar" ? (
-                              <TextInput.Icon 
-                                icon={secureText ? "eye-off" : "eye"} 
-                                onPress={() => setSecureText(!secureText)}
-                              />
-                            ) : null}
               style={[
                 styles.input,
                 { textAlign: i18n.language === "ar" ? "right" : "left" }
               ]}
+              isRTL={i18n.language === "ar"}
             />
 
             <Button 

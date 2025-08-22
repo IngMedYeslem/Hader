@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform, Animated, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { useTranslation } from '../translations';
+import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 
 const API_URL = 'http://172.20.10.6:3000/api';
@@ -12,6 +13,23 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const slideAnim = useState(new Animated.Value(300))[0];
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
 
   const handleLogin = async () => {
     if (!credentials.username || !credentials.password) {
@@ -69,8 +87,23 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
         </View>
       </View>
 
-      <View style={styles.centeredContainer}>
-        <View style={[styles.card, { width: '90%', maxWidth: 400 }]}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.centeredContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+        <Animated.View style={[
+          styles.card, 
+          { 
+            width: '90%', 
+            maxWidth: 400,
+            transform: [{ translateY: slideAnim }],
+            opacity: fadeAnim
+          }
+        ]}>
           <Text style={[styles.authTitle, { fontSize: 22, marginBottom: 25 }]}>
             🛠️ {t('administration')}
           </Text>
@@ -84,13 +117,12 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
             autoCapitalize="none"
           />
 
-          <TextInput
+          <SimplePasswordInput
             style={[styles.addProductInput, { color: '#2C3E50' }]}
             placeholder={t('password')}
             placeholderTextColor="#666"
             value={credentials.password}
             onChangeText={(text) => setCredentials({...credentials, password: text})}
-            secureTextEntry
           />
 
           <TouchableOpacity
@@ -108,8 +140,9 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
               {t('adminLoginInfo')}
             </Text>
           </View>
-        </View>
-      </View>
+        </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }

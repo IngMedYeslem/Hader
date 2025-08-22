@@ -199,7 +199,15 @@ function ShopDashboard({ shop, onLogout }) {
             </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
-
+            <TouchableOpacity 
+              onPress={() => setShopInfoVisible(true)}
+              style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
+            >
+              <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
+                ℹ️ Info
+              </Text>
+            </TouchableOpacity>
+            
             <TouchableOpacity 
               onPress={onLogout}
               style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
