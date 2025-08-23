@@ -399,10 +399,36 @@ const translations = {
 
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform, I18nManager } from 'react-native';
+import { useRTL } from './hooks/useRTL';
+
+// Langues RTL supportées
+const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
 
 let currentLanguage = 'fr';
 let languageChangeListeners = [];
+
+// Fonction utilitaire pour vérifier si une langue est RTL
+const isRTLLanguage = (lang) => RTL_LANGUAGES.includes(lang);
+
+// Fonction pour appliquer la direction RTL/LTR
+const applyDirection = (language) => {
+  const shouldBeRTL = isRTLLanguage(language);
+  
+  if (Platform.OS === 'web') {
+    // Pour le web, utiliser CSS direction
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = shouldBeRTL ? 'rtl' : 'ltr';
+      document.documentElement.style.direction = shouldBeRTL ? 'rtl' : 'ltr';
+    }
+  } else {
+    // Pour React Native, utiliser I18nManager
+    if (shouldBeRTL !== I18nManager.isRTL) {
+      I18nManager.allowRTL(shouldBeRTL);
+      I18nManager.forceRTL(shouldBeRTL);
+    }
+  }
+};
 
 export const useTranslation = () => {
   const [, forceUpdate] = useState({});
@@ -444,6 +470,9 @@ export const useTranslation = () => {
   const setLanguage = async (lang) => {
     if (translations[lang] && lang !== currentLanguage) {
       currentLanguage = lang;
+      
+      // Appliquer automatiquement la direction RTL/LTR
+      applyDirection(lang);
       
       try {
         if (Platform.OS === 'web') {
@@ -491,6 +520,9 @@ export const setLanguage = async (lang) => {
   if (translations[lang] && lang !== currentLanguage) {
     currentLanguage = lang;
     
+    // Appliquer automatiquement la direction RTL/LTR
+    applyDirection(lang);
+    
     try {
       if (Platform.OS === 'web') {
         localStorage.setItem('selectedLanguage', lang);
@@ -522,4 +554,5 @@ export const setCurrency = async (currency) => {
 export const getLanguage = () => currentLanguage;
 export const getCurrency = () => currentCurrency;
 export const formatPrice = (price) => `${price} ${currentCurrency}`;
-export { CURRENCIES };
+export const isCurrentLanguageRTL = () => isRTLLanguage(currentLanguage);
+export { CURRENCIES, RTL_LANGUAGES, isRTLLanguage };

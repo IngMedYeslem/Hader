@@ -2,7 +2,9 @@ import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ImageBackground, Alert, Image, Platform } from 'react-native';
 import SimpleNavbar from './SimpleNavbar';
 import styles from './styles';
-import { useTranslation } from '../translations';
+import { useTranslation, isCurrentLanguageRTL } from '../translations';
+import { RTLTextInput, RTLFormField } from './RTLInput';
+import { RTLView, RTLText } from './RTLComponents';
 
 function AddProduct({ onBack, onAdd }) {
   const [products, setProducts] = useState([{ name: '', price: '', images: [], videos: [] }]);
@@ -245,24 +247,28 @@ function AddProduct({ onBack, onAdd }) {
                   )}
                 </View>
                 
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={t('productName')}
-                  placeholderTextColor="#999"
-                  value={product.name}
-                  onChangeText={(text) => updateProduct(index, 'name', text)}
-                />
+                <RTLFormField label={t('productName')} labelStyle={styles.colorText}>
+                  <RTLTextInput
+                    style={styles.addProductInput}
+                    placeholder={t('productName')}
+                    placeholderTextColor="#999"
+                    value={product.name}
+                    onChangeText={(text) => updateProduct(index, 'name', text)}
+                  />
+                </RTLFormField>
                 
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={t('price')}
-                  placeholderTextColor="#999"
-                  keyboardType="numeric"
-                  value={product.price}
-                  onChangeText={(text) => updateProduct(index, 'price', text)}
-                />
+                <RTLFormField label={t('price')} labelStyle={styles.colorText}>
+                  <RTLTextInput
+                    style={styles.addProductInput}
+                    placeholder={t('price')}
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                    value={product.price}
+                    onChangeText={(text) => updateProduct(index, 'price', text)}
+                  />
+                </RTLFormField>
                 
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                <RTLView style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
                   <TouchableOpacity 
                     style={[styles.imagePickerBtn, { flex: 1, marginRight: 5 }]} 
                     onPress={() => selectImage(index)}
@@ -284,7 +290,7 @@ function AddProduct({ onBack, onAdd }) {
                         : 'Ajouter vidéos'}
                     </Text>
                   </TouchableOpacity>
-                </View>
+                </RTLView>
                 
                 {Platform.OS === 'web' && (
                   <>

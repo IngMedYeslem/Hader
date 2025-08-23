@@ -129,4 +129,12 @@ i18n
     interpolation: { escapeValue: false }
   });
 
+// Synchroniser avec le système de traduction unifié
+i18n.on('languageChanged', (lng) => {
+  // Importer dynamiquement pour éviter les dépendances circulaires
+  import('./translations').then(({ setLanguage }) => {
+    setLanguage(lng);
+  });
+});
+
 export default i18n;

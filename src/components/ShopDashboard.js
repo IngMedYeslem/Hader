@@ -208,7 +208,7 @@ function ShopDashboard({ shop, onLogout }) {
           
           {/* Deuxième niveau - Boutons */}
           <View style={{ 
-            flexDirection: 'row', 
+            flexDirection: t('currentLanguage') === 'ar' ? 'row-reverse' : 'row', 
             justifyContent: 'space-between', 
             alignItems: 'center',
             paddingHorizontal: 20,
@@ -224,7 +224,7 @@ function ShopDashboard({ shop, onLogout }) {
               </Text>
             </TouchableOpacity> */}
             
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flexDirection: t('currentLanguage') === 'ar' ? 'row-reverse' : 'row', gap: 10 }}>
               {shop.isApproved && (
                 <TouchableOpacity 
                   onPress={() => setShopInfoVisible(true)}

@@ -44,14 +44,6 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
           paddingVertical: 12
         }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-          <Image 
-            source={require('../../assets/okaadh.png')} 
-            style={{ 
-              width: 80, 
-              height: 30, 
-              resizeMode: 'contain'
-            }}
-          />
           <TouchableOpacity 
             onPress={handleLanguageChange}
             style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
@@ -62,13 +54,13 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
           </TouchableOpacity>
         </View>
         
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <TouchableOpacity 
             onPress={onAdminAccess} 
             style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
           >
             <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
-              👨💼 Admin
+              👨💼 {t('admin')}
             </Text>
           </TouchableOpacity>
           
@@ -80,6 +72,15 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
               🏪 {t('shopSpace')}
             </Text>
           </TouchableOpacity>
+          
+          <Image 
+            source={require('../../assets/okaadh.png')} 
+            style={{ 
+              width: 80, 
+              height: 30, 
+              resizeMode: 'contain'
+            }}
+          />
         </View>
         </View>
       </View>

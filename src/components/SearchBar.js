@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, Text, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { useTranslation } from '../translations';
+import { RTLTextInput } from './RTLInput';
 import styles from './styles';
 
 export default function SearchBar({ searchText, onSearchChange, selectedShop, onShopFilter, shops }) {
   const { t } = useTranslation();
   return (
     <View style={styles.searchContainer}>
-      <TextInput
+      <RTLTextInput
         style={styles.searchInput}
         placeholder={t('searchProduct')}
         placeholderTextColor="#999"

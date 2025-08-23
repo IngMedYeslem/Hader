@@ -5,9 +5,11 @@ import * as Location from 'expo-location';
 import SimpleNavbar from './SimpleNavbar';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
-import { useTranslation } from '../translations';
+import { useTranslation, isCurrentLanguageRTL } from '../translations';
 import { shopAPI } from '../services/api';
 import { syncService, markShopForSync } from '../services/syncService';
+import { RTLTextInput, RTLFormField } from './RTLInput';
+import { RTLView } from './RTLComponents';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -230,7 +232,7 @@ function ShopLogin({ onLogin }) {
                 <>
                   {/* Section Informations générales */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                    <TextInput
+                    <RTLTextInput
                       style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={`${t('shopName')} *`}
                       placeholderTextColor="#999"
@@ -239,7 +241,7 @@ function ShopLogin({ onLogin }) {
                       autoCapitalize="words"
                     />
                     
-                    <TextInput
+                    <RTLTextInput
                       style={[styles.addProductInput, { 
                         fontSize: 16, 
                         paddingVertical: 15,
@@ -259,7 +261,7 @@ function ShopLogin({ onLogin }) {
                   
                   {/* Section Contact */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                    <TextInput
+                    <RTLTextInput
                       style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={`${t('phone')} *`}
                       placeholderTextColor="#999"
@@ -269,7 +271,7 @@ function ShopLogin({ onLogin }) {
                       autoCompleteType="tel"
                     />
                     
-                    <TextInput
+                    <RTLTextInput
                       style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                       placeholder={`${t('whatsapp')} *`}
                       placeholderTextColor="#999"
@@ -306,7 +308,7 @@ function ShopLogin({ onLogin }) {
                   </View>
                   {/* Section Connexion */}
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                    <TextInput
+                    <RTLTextInput
                       style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                       placeholder={t('login')}
                       placeholderTextColor="#999"
@@ -331,7 +333,7 @@ function ShopLogin({ onLogin }) {
               
               {!isRegister && (
                 <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                  <TextInput
+                  <RTLTextInput
                     style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                     placeholder={t('login')}
                     placeholderTextColor="#999"

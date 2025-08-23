@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, View, TouchableOpacity, Text } from 'react-native';
+import { Platform, View, TouchableOpacity, Text, I18nManager } from 'react-native';
 import { ApolloProvider } from '@apollo/client';
 import client from './src/apolloClientSimple';
 import { NavigationProvider } from './src/NavigationContext';
-import { useTranslation } from './src/translations';
+import { useTranslation, getLanguage, isRTLLanguage } from './src/translations';
+import { useRTLCursor } from './src/hooks/useRTLCursor';
 import ShopLogin from './src/components/ShopLogin';
 import ShopDashboard from './src/components/ShopDashboard';
 import GlobalInterface from './src/components/GlobalInterface';
@@ -14,7 +15,42 @@ export default function App() {
   const [currentShop, setCurrentShop] = useState(null);
   const [showGlobalInterface, setShowGlobalInterface] = useState(true);
   
+  // Injecter le CSS pour le curseur RTL sur le web
+  useRTLCursor();
+  
   useEffect(() => {
+    // Initialiser la direction RTL/LTR au démarrage
+    const initializeDirection = async () => {
+      try {
+        let savedLang;
+        if (Platform.OS === 'web') {
+          savedLang = localStorage.getItem('selectedLanguage') || localStorage.getItem('language');
+        } else {
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          savedLang = await AsyncStorage.getItem('selectedLanguage') || await AsyncStorage.getItem('language');
+        }
+        
+        const currentLang = savedLang || getLanguage();
+        const shouldBeRTL = isRTLLanguage(currentLang);
+        
+        if (Platform.OS === 'web') {
+          if (typeof document !== 'undefined') {
+            document.documentElement.dir = shouldBeRTL ? 'rtl' : 'ltr';
+            document.documentElement.style.direction = shouldBeRTL ? 'rtl' : 'ltr';
+          }
+        } else {
+          if (shouldBeRTL !== I18nManager.isRTL) {
+            I18nManager.allowRTL(shouldBeRTL);
+            I18nManager.forceRTL(shouldBeRTL);
+          }
+        }
+      } catch (error) {
+        console.log('Erreur initialisation direction:', error);
+      }
+    };
+    
+    initializeDirection();
+    
     // Charger l'état de connexion au démarrage
     if (Platform.OS === 'web') {
       const savedShop = localStorage.getItem('currentShop');

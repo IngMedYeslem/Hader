@@ -16,7 +16,7 @@ export default function PasswordInput({
 
   const EyeIcon = () => (
     <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-      <Text style={{ fontSize: 18 }}>{secureText ? '👁️' : '👁️‍🗨️'}</Text>
+      <Text style={{ fontSize: 18 }}>{secureText ? '👁️' : '🗨️'}</Text>
     </TouchableOpacity>
   );
 
