@@ -185,39 +185,58 @@ function ShopDashboard({ shop, onLogout }) {
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={[styles.headerGlobal, { 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: 10,
-          paddingTop: Platform.OS === 'ios' ? 50 : 10
-        }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.textcoprit, { fontSize: 14 }]}>🏠 {shop.name}</Text>
-            <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
-              {products.length} {t('products')} • {shop.isApproved ? t('approved') : t('pending')}
+        <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+          {/* Premier niveau - Titre */}
+          <View style={{ paddingVertical: 30, paddingHorizontal: 30, alignItems: 'center' }}>
+            <Text style={{ 
+              fontSize: 18, 
+              color: '#C8A55F', 
+              fontWeight: 'bold'
+            }}>
+              ⏳ {t('accountWaitingApproval')}
             </Text>
+            
           </View>
-          <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
-            {shop.isApproved && (
+          
+          {/* Deuxième niveau - Boutons */}
+          <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingBottom: 12,
+            borderTopWidth: 1,
+            borderTopColor: 'rgba(200, 165, 95, 0.2)'
+          }}>
+            {/* <TouchableOpacity 
+              onPress={() => navigateTo('marketplace')}
+            >
+              <Text style={[styles.colorText, { fontSize: 14 }]}>
+                ← {t('backToMarketplace')}
+              </Text>
+            </TouchableOpacity> */}
+            
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {shop.isApproved && (
+                <TouchableOpacity 
+                  onPress={() => setShopInfoVisible(true)}
+                  style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+                >
+                  <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
+                    ℹ️ {t('info')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              
               <TouchableOpacity 
-                onPress={() => setShopInfoVisible(true)}
-                style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
+                onPress={onLogout}
+                style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
               >
-                <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
-                  ℹ️ Info
+                <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
+                  {t('logout')}
                 </Text>
               </TouchableOpacity>
-            )}
-            
-            <TouchableOpacity 
-              onPress={onLogout}
-              style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8 }}
-            >
-              <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
-                {t('logout')}
-              </Text>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -237,9 +256,9 @@ function ShopDashboard({ shop, onLogout }) {
                   </>
                 ) : (
                   <View style={styles.card}>
-                    <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20 }]}>
+                    {/* <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20 }]}>
                       ⏳ {t('accountWaitingApproval')}
-                    </Text>
+                    </Text> */}
                     <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
                       {t('accountValidatedIn24h')}
                     </Text>

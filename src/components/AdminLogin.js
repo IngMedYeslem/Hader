@@ -67,23 +67,41 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <View style={[styles.headerGlobal, { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: 10,
-        paddingTop: Platform.OS === 'ios' ? 50 : 10
-      }]}>
-        <TouchableOpacity onPress={onBack} style={{ marginRight: 10 }}>
-          <Text style={styles.colorText}>
-            ← {t('back')}
+      <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+        {/* Premier niveau - Titre */}
+        <View style={{ paddingVertical: 30, paddingHorizontal: 30, alignItems: 'center' }}>
+          <Text style={{ 
+            fontSize: 16, 
+            color: '#C8A55F', 
+            fontWeight: 'bold'
+          }}>
+            👨💼 {t('adminLogin')}
           </Text>
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.textcoprit, { fontSize: 14 }]}>👨💼 {t('adminLogin')}</Text>
-          <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+          <Text style={{ 
+            fontSize: 12, 
+            color: '#C8A55F', 
+            opacity: 0.7,
+            marginTop: 4
+          }}>
             {t('administration')}
           </Text>
+        </View>
+        
+        {/* Deuxième niveau - Boutons */}
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'flex-start', 
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingBottom: 12,
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(200, 165, 95, 0.2)'
+        }}>
+          <TouchableOpacity onPress={onBack}>
+            <Text style={[styles.colorText, { fontSize: 16 }]}>
+              ← {t('back')}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
