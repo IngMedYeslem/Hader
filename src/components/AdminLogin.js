@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform, Animated, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform, Animated, ScrollView, KeyboardAvoidingView, SafeAreaView } from 'react-native';
 import { useTranslation } from '../translations';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 
-const API_URL = 'http://172.20.10.6:3000/api';
+const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
   const { t } = useTranslation();
@@ -67,9 +67,10 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
       style={{ flex: 1 }}
       resizeMode="cover"
     >
-      <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
-        {/* Premier niveau - Titre */}
-        <View style={{ paddingVertical: 30, paddingHorizontal: 30, alignItems: 'center' }}>
+      <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
+        <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+          {/* Premier niveau - Titre */}
+          <View style={{ paddingVertical: 15, paddingHorizontal: 30, alignItems: 'center' }}>
           <Text style={{ 
             fontSize: 16, 
             color: '#C8A55F', 
@@ -103,7 +104,8 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+        </View>
+      </SafeAreaView>
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }}

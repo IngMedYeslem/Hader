@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking, Platform } from 'react-native';
+import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking, Platform, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
@@ -185,17 +185,25 @@ function ShopDashboard({ shop, onLogout }) {
         style={styles.background}
         resizeMode="cover"
       >
-        <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
-          {/* Premier niveau - Titre */}
-          <View style={{ paddingVertical: 30, paddingHorizontal: 30, alignItems: 'center' }}>
+        <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
+          <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+            {/* Premier niveau - Titre */}
+            <View style={{ paddingVertical: 15, paddingHorizontal: 30, alignItems: 'center' }}>
             <Text style={{ 
-              fontSize: 18, 
+              fontSize: 16, 
               color: '#C8A55F', 
               fontWeight: 'bold'
             }}>
-              ⏳ {t('accountWaitingApproval')}
+              🏠 {shop.name}
             </Text>
-            
+            <Text style={{ 
+              fontSize: 12, 
+              color: '#C8A55F', 
+              opacity: 0.7,
+              marginTop: 4
+            }}>
+              {products.length} {t('products')} • {shop.isApproved ? t('approved') : t('pending')}
+            </Text>
           </View>
           
           {/* Deuxième niveau - Boutons */}
@@ -238,7 +246,8 @@ function ShopDashboard({ shop, onLogout }) {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+          </View>
+        </SafeAreaView>
 
         
         <ScrollView 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, Image, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from '../translations';
 import styles from './styles';
@@ -33,65 +33,56 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
   }, []);
 
   return (
-    <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
-      {/* Premier niveau - Titre */}
-      <View style={{ paddingVertical: 30, paddingHorizontal: 30, alignItems: 'center' }}>
-        <Text style={{ 
-          fontSize: 20, 
-          color: '#C8A55F', 
-          fontWeight: 'bold'
+    <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
+      <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+        {/* Niveau unique - Logo et Boutons */}
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          paddingHorizontal: 15,
+          paddingVertical: 12
         }}>
-          🛍️ {t('globalMarketplace')}
-        </Text>
-        <Text style={{ 
-          fontSize: 13, 
-          color: '#C8A55F', 
-          opacity: 0.7,
-          marginTop: 4
-        }}>
-          {productCount} {t('products')} • {shopCount} {t('shops')}
-        </Text>
-      </View>
-      
-      {/* Deuxième niveau - Boutons */}
-      <View style={{ 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingBottom: 9,
-        borderTopWidth: 2,
-        borderTopColor: 'rgba(200, 165, 95, 0.2)'
-      }}>
-        <TouchableOpacity 
-          onPress={handleLanguageChange}
-          style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
-        >
-          <Text style={{ fontSize: 13, color: '#C8A55F' }}>
-            {getLanguageFlag()}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+          <Image 
+            source={require('../../assets/okaadh.png')} 
+            style={{ 
+              width: 80, 
+              height: 30, 
+              resizeMode: 'contain'
+            }}
+          />
+          <TouchableOpacity 
+            onPress={handleLanguageChange}
+            style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
+          >
+            <Text style={{ fontSize: 12, color: '#C8A55F' }}>
+              {getLanguageFlag()}
+            </Text>
+          </TouchableOpacity>
+        </View>
         
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           <TouchableOpacity 
             onPress={onAdminAccess} 
-            style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+            style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
           >
-            <Text style={{ color: '#dc3545', fontSize: 13, fontWeight: 'bold' }}>
+            <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
               👨💼 Admin
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             onPress={onShopLogin} 
-            style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+            style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
           >
-            <Text style={{ color: '#C8A55F', fontSize: 13, fontWeight: 'bold' }}>
+            <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
               🏪 {t('shopSpace')}
             </Text>
           </TouchableOpacity>
         </View>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, SafeAreaView } from 'react-native';
 import AdminDashboard from './AdminDashboard';
 import AdminLogin from './AdminLogin';
 import CreateAdmin from './CreateAdmin';
@@ -46,9 +46,10 @@ export default function AdminInterface({ onBack }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={{ backgroundColor: '#2C3E50' }}>
-        {/* Premier niveau - Titre */}
-        <View style={{ paddingVertical: 35, paddingHorizontal: 30, alignItems: 'center' }}>
+      <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
+        <View style={{ backgroundColor: '#2C3E50' }}>
+          {/* Premier niveau - Titre */}
+          <View style={{ paddingVertical: 20, paddingHorizontal: 30, alignItems: 'center' }}>
           <Text style={{ 
             fontSize: 17, 
             color: '#C8A55F', 
@@ -111,7 +112,8 @@ export default function AdminInterface({ onBack }) {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+        </View>
+      </SafeAreaView>
       
 
       
