@@ -4,7 +4,7 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 
-const API_URL = 'http://172.20.10.6:3000/api';
+const API_URL = 'http://192.168.100.121:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();

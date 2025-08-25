@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Alert, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, Alert, ImageBackground, KeyboardAvoidingView, Platform, Animated, Dimensions } from 'react-native';
 import MediaManager from './MediaManager';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { productAPI } from '../services/api';
+import { RTLTextInput } from './RTLInput';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
   const { t } = useTranslation();
@@ -16,6 +19,28 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
     images: [],
     videos: []
   });
+  const slideAnim = useState(new Animated.Value(300))[0];
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      slideAnim.setValue(300);
+      fadeAnim.setValue(0);
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (product) {
@@ -81,69 +106,124 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-        <View style={styles.galleryHeader}>
-          <Text style={[styles.galleryTitle, { color: '#2C3E50' }]}>
-            Éditer Produit
-          </Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Text style={[styles.closeBtnText, { color: '#2C3E50' }]}>✕</Text>
-          </TouchableOpacity>
-        </View>
+    <Modal visible={visible} animationType="none" presentationStyle="pageSheet">
+      <View style={[styles.wrapper, styles.shopLoginContainer, { minHeight: screenHeight }]}>
+        <ImageBackground 
+          source={require('../../assets/b2.jpeg')} 
+          style={styles.background}
+          resizeMode="cover"
+        >
+          <KeyboardAvoidingView 
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+          >
+            <ScrollView 
+              contentContainerStyle={[styles.shopLoginScrollContent, { 
+                justifyContent: 'flex-start',
+                paddingBottom: Platform.OS === 'android' ? 50 : 20,
+                paddingTop: 60
+              }]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              enableOnAndroid={true}
+            >
+              <Animated.View style={[
+                styles.shopLoginFormCard,
+                {
+                  transform: [{ translateY: slideAnim }],
+                  opacity: fadeAnim
+                }
+              ]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 0 }]}>
+                    📝 Éditer Produit
+                  </Text>
+                  <TouchableOpacity onPress={onClose}>
+                    <Text style={[styles.closeBtnText, { color: '#2C3E50', fontSize: 24 }]}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Section Informations de base */}
+                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                  <RTLTextInput
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
+                    placeholder="Nom du produit *"
+                    placeholderTextColor="#999"
+                    value={formData.name}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+                  />
+                  
+                  <RTLTextInput
+                    style={[styles.addProductInput, { 
+                      fontSize: 16, 
+                      paddingVertical: 15,
+                      minHeight: 60,
+                      textAlignVertical: 'top',
+                      marginBottom: 0
+                    }]}
+                    placeholder="Description"
+                    placeholderTextColor="#999"
+                    multiline
+                    value={formData.description}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+                  />
+                </View>
+                
+                {/* Section Prix et Stock */}
+                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                  <RTLTextInput
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
+                    placeholder="Prix (MRU) *"
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                    value={formData.price}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, price: text }))}
+                  />
+                  
+                  <RTLTextInput
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
+                    placeholder="Stock disponible"
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                    value={formData.stock}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, stock: text }))}
+                  />
+                </View>
+                
+                {/* Section Catégorie */}
+                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 15 }}>
+                  <RTLTextInput
+                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
+                    placeholder="Catégorie"
+                    placeholderTextColor="#999"
+                    value={formData.category}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, category: text }))}
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  style={[styles.submitBtn, { 
+                    paddingVertical: 12,
+                    borderRadius: 8,
+                    marginTop: 8,
+                    marginBottom: 15
+                  }]} 
+                  onPress={handleSave}
+                >
+                  <Text style={[styles.submitText, { fontSize: 18 }]}>
+                    💾 Sauvegarder
+                  </Text>
+                </TouchableOpacity>
 
-        <ScrollView style={{ flex: 1, padding: 20 }}>
-          <View style={styles.card}>
-            <Text style={styles.authTitle}>Informations du produit</Text>
-            
-            <TextInput
-              style={[styles.input, { marginBottom: 15 }]}
-              placeholder="Nom du produit *"
-              value={formData.name}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-            />
-            
-            <TextInput
-              style={[styles.input, { height: 80, textAlignVertical: 'top', marginBottom: 15 }]}
-              placeholder="Description"
-              multiline
-              value={formData.description}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-            />
-            
-            <TextInput
-              style={[styles.input, { marginBottom: 15 }]}
-              placeholder="Prix (MRU) *"
-              keyboardType="numeric"
-              value={formData.price}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, price: text }))}
-            />
-            
-            <TextInput
-              style={[styles.input, { marginBottom: 15 }]}
-              placeholder="Catégorie"
-              value={formData.category}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, category: text }))}
-            />
-            
-            <TextInput
-              style={[styles.input, { marginBottom: 20 }]}
-              placeholder="Stock disponible"
-              keyboardType="numeric"
-              value={formData.stock}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, stock: text }))}
-            />
-            
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSave}>
-              <Text style={styles.submitText}>💾 Sauvegarder</Text>
-            </TouchableOpacity>
-          </View>
-
-          <MediaManager 
-            product={{ ...product, images: formData.images, videos: formData.videos }}
-            onMediaDeleted={handleMediaDeleted}
-          />
-        </ScrollView>
+                <MediaManager 
+                  product={{ ...product, images: formData.images, videos: formData.videos }}
+                  onMediaDeleted={handleMediaDeleted}
+                />
+              </Animated.View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </ImageBackground>
       </View>
     </Modal>
   );

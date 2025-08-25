@@ -1,14 +1,33 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ImageBackground, Alert, Image, Platform } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ImageBackground, Alert, Image, Platform, KeyboardAvoidingView, Animated, Dimensions } from 'react-native';
 import SimpleNavbar from './SimpleNavbar';
 import styles from './styles';
 import { useTranslation, isCurrentLanguageRTL } from '../translations';
 import { RTLTextInput, RTLFormField } from './RTLInput';
 import { RTLView, RTLText } from './RTLComponents';
 
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
 function AddProduct({ onBack, onAdd }) {
   const [products, setProducts] = useState([{ name: '', description: '', price: '', category: '', stock: '', images: [], videos: [] }]);
   const { t } = useTranslation();
+  const slideAnim = useState(new Animated.Value(300))[0];
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
 
   const addProductField = () => {
     setProducts([...products, { name: '', description: '', price: '', category: '', stock: '', images: [], videos: [] }]);
@@ -225,107 +244,170 @@ function AddProduct({ onBack, onAdd }) {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <SimpleNavbar />
+    <View style={[styles.wrapper, styles.shopLoginContainer, { minHeight: screenHeight }]}>
       <ImageBackground 
         source={require('../../assets/b2.jpeg')} 
         style={styles.background}
         resizeMode="cover"
       >
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.addProductContainer}>
-            <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-              <Text style={styles.backBtnText}>{t('back')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.addProductTitle}>{t('addProducts')}</Text>
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <ScrollView 
+            contentContainerStyle={[styles.shopLoginScrollContent, { 
+              justifyContent: 'flex-start',
+              paddingBottom: Platform.OS === 'android' ? 50 : 20,
+              paddingTop: 60
+            }]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            enableOnAndroid={true}
+          >
+            <Animated.View style={[
+              styles.shopLoginFormCard,
+              {
+                transform: [{ translateY: slideAnim }],
+                opacity: fadeAnim
+              }
+            ]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <TouchableOpacity 
+                  onPress={onBack}
+                  style={{ 
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(108, 117, 125, 0.15)', 
+                    paddingHorizontal: 12, 
+                    paddingVertical: 8, 
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: 'rgba(108, 117, 125, 0.3)'
+                  }}
+                >
+                  <Text style={{ fontSize: 14, marginRight: 6 }}>←</Text>
+                  <Text style={{ color: '#6c757d', fontSize: 12, fontWeight: 'bold' }}>
+                    {t('back')}
+                  </Text>
+                </TouchableOpacity>
+                
+                <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 0 }]}>
+                  ➕ {t('addProducts')}
+                </Text>
+                
+                <View style={{ width: 60 }} />
+              </View>
             
-            {products.map((product, index) => (
-              <View key={index} style={styles.productForm}>
-                <View style={styles.formHeader}>
-                  <Text style={styles.productNumber}>{t('product')} {index + 1}</Text>
-                  {products.length > 1 && (
-                    <TouchableOpacity onPress={() => removeProduct(index)}>
-                      <Text style={styles.removeBtn}>✕</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                
-                <RTLFormField label={t('productName')} labelStyle={styles.colorText}>
-                  <RTLTextInput
-                    style={styles.addProductInput}
-                    placeholder={t('productName')}
-                    placeholderTextColor="#999"
-                    value={product.name}
-                    onChangeText={(text) => updateProduct(index, 'name', text)}
-                  />
-                </RTLFormField>
-                
-                <RTLFormField label={t('description')} labelStyle={styles.colorText}>
-                  <RTLTextInput
-                    style={[styles.addProductInput, { height: 80, textAlignVertical: 'top' }]}
-                    placeholder={t('description')}
-                    placeholderTextColor="#999"
-                    multiline
-                    value={product.description}
-                    onChangeText={(text) => updateProduct(index, 'description', text)}
-                  />
-                </RTLFormField>
-                
-                <RTLFormField label={t('price')} labelStyle={styles.colorText}>
-                  <RTLTextInput
-                    style={styles.addProductInput}
-                    placeholder={t('price')}
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={product.price}
-                    onChangeText={(text) => updateProduct(index, 'price', text)}
-                  />
-                </RTLFormField>
-                
-                <RTLFormField label={t('category')} labelStyle={styles.colorText}>
-                  <RTLTextInput
-                    style={styles.addProductInput}
-                    placeholder={t('category')}
-                    placeholderTextColor="#999"
-                    value={product.category}
-                    onChangeText={(text) => updateProduct(index, 'category', text)}
-                  />
-                </RTLFormField>
-                
-                <RTLFormField label={t('stock')} labelStyle={styles.colorText}>
-                  <RTLTextInput
-                    style={styles.addProductInput}
-                    placeholder={t('stock')}
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={product.stock}
-                    onChangeText={(text) => updateProduct(index, 'stock', text)}
-                  />
-                </RTLFormField>
-                
-                <RTLView style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <TouchableOpacity 
-                    style={[styles.imagePickerBtn, { flex: 1, marginRight: 5 }]} 
-                    onPress={() => selectImage(index)}
-                  >
-                    <Text style={styles.imagePickerText}>
-                      📷 {product.images && product.images.length > 0 
-                        ? `${product.images.length} photos` 
-                        : 'Ajouter photos'}
+              {products.map((product, index) => (
+                <View key={index} style={{ marginBottom: 20 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                    <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 0, color: '#C8A55F', fontWeight: 'bold' }]}>
+                      📦 {t('product')} {index + 1}
                     </Text>
-                  </TouchableOpacity>
+                    {products.length > 1 && (
+                      <TouchableOpacity onPress={() => removeProduct(index)}>
+                        <Text style={[styles.closeBtnText, { color: '#dc3545', fontSize: 20 }]}>✕</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   
-                  <TouchableOpacity 
-                    style={[styles.imagePickerBtn, { flex: 1, marginLeft: 5 }]} 
-                    onPress={() => selectVideo(index)}
-                  >
-                    <Text style={styles.imagePickerText}>
-                      🎥 {product.videos && product.videos.length > 0 
-                        ? `${product.videos.length} vidéos` 
-                        : 'Ajouter vidéos'}
-                    </Text>
-                  </TouchableOpacity>
-                </RTLView>
+                  {/* Section Informations de base */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <RTLTextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
+                      placeholder={t('productName')}
+                      placeholderTextColor="#999"
+                      value={product.name}
+                      onChangeText={(text) => updateProduct(index, 'name', text)}
+                    />
+                    
+                    <RTLTextInput
+                      style={[styles.addProductInput, { 
+                        fontSize: 16, 
+                        paddingVertical: 15,
+                        minHeight: 60,
+                        textAlignVertical: 'top',
+                        marginBottom: 0
+                      }]}
+                      placeholder={t('description')}
+                      placeholderTextColor="#999"
+                      multiline
+                      value={product.description}
+                      onChangeText={(text) => updateProduct(index, 'description', text)}
+                    />
+                  </View>
+                  
+                  {/* Section Prix et Stock */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <RTLTextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
+                      placeholder={t('price')}
+                      placeholderTextColor="#999"
+                      keyboardType="numeric"
+                      value={product.price}
+                      onChangeText={(text) => updateProduct(index, 'price', text)}
+                    />
+                    
+                    <RTLTextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
+                      placeholder={t('stock')}
+                      placeholderTextColor="#999"
+                      keyboardType="numeric"
+                      value={product.stock}
+                      onChangeText={(text) => updateProduct(index, 'stock', text)}
+                    />
+                  </View>
+                  
+                  {/* Section Catégorie */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <RTLTextInput
+                      style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
+                      placeholder={t('category')}
+                      placeholderTextColor="#999"
+                      value={product.category}
+                      onChangeText={(text) => updateProduct(index, 'category', text)}
+                    />
+                  </View>
+                
+                  {/* Section Médias */}
+                  <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                    <RTLView style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <TouchableOpacity 
+                        style={[styles.submitBtn, { 
+                          flex: 1, 
+                          marginRight: 5,
+                          backgroundColor: '#4CAF50',
+                          paddingVertical: 12,
+                          borderRadius: 8
+                        }]} 
+                        onPress={() => selectImage(index)}
+                      >
+                        <Text style={[styles.submitText, { fontSize: 14 }]}>
+                          📷 {product.images && product.images.length > 0 
+                            ? `${product.images.length} photos` 
+                            : 'Ajouter photos'}
+                        </Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={[styles.submitBtn, { 
+                          flex: 1, 
+                          marginLeft: 5,
+                          backgroundColor: '#FF9800',
+                          paddingVertical: 12,
+                          borderRadius: 8
+                        }]} 
+                        onPress={() => selectVideo(index)}
+                      >
+                        <Text style={[styles.submitText, { fontSize: 14 }]}>
+                          🎥 {product.videos && product.videos.length > 0 
+                            ? `${product.videos.length} vidéos` 
+                            : 'Ajouter vidéos'}
+                        </Text>
+                      </TouchableOpacity>
+                    </RTLView>
+                  </View>
                 
                 {Platform.OS === 'web' && (
                   <>
@@ -348,64 +430,83 @@ function AddProduct({ onBack, onAdd }) {
                   </>
                 )}
                 
-                {/* Images */}
-                {product.images && product.images.length > 0 && (
-                  <View style={styles.imageGrid}>
-                    {product.images.map((imageUri, imgIndex) => (
-                      <View key={`img-${index}-${imgIndex}`} style={styles.imageWrapper}>
-                        <Image 
-                          source={{ uri: imageUri }} 
-                          style={styles.previewImage}
-                        />
-                        <TouchableOpacity 
-                          style={styles.removeImageBtn}
-                          onPress={() => {
-                            const updated = [...products];
-                            updated[index].images.splice(imgIndex, 1);
-                            setProducts(updated);
-                          }}
-                        >
-                          <Text style={styles.removeImageText}>×</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-                
-                {/* Vidéos */}
-                {product.videos && product.videos.length > 0 && (
-                  <View style={styles.imageGrid}>
-                    {product.videos.map((videoUri, vidIndex) => (
-                      <View key={`vid-${index}-${vidIndex}`} style={styles.imageWrapper}>
-                        <View style={[styles.previewImage, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
-                          <Text style={{ color: 'white', fontSize: 20 }}>🎥</Text>
+                  {/* Aperçu Images */}
+                  {product.images && product.images.length > 0 && (
+                    <View style={[styles.imageGrid, { marginBottom: 8 }]}>
+                      {product.images.map((imageUri, imgIndex) => (
+                        <View key={`img-${index}-${imgIndex}`} style={styles.imageWrapper}>
+                          <Image 
+                            source={{ uri: imageUri }} 
+                            style={styles.previewImage}
+                          />
+                          <TouchableOpacity 
+                            style={styles.removeImageBtn}
+                            onPress={() => {
+                              const updated = [...products];
+                              updated[index].images.splice(imgIndex, 1);
+                              setProducts(updated);
+                            }}
+                          >
+                            <Text style={styles.removeImageText}>×</Text>
+                          </TouchableOpacity>
                         </View>
-                        <TouchableOpacity 
-                          style={styles.removeImageBtn}
-                          onPress={() => {
-                            const updated = [...products];
-                            updated[index].videos.splice(vidIndex, 1);
-                            setProducts(updated);
-                          }}
-                        >
-                          <Text style={styles.removeImageText}>×</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ))}
-            
-            <TouchableOpacity style={styles.addMoreBtn} onPress={addProductField}>
-              <Text style={styles.addMoreText}>{t('addAnother')}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-              <Text style={styles.submitText}>{t('saveProducts')}</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+                      ))}
+                    </View>
+                  )}
+                  
+                  {/* Aperçu Vidéos */}
+                  {product.videos && product.videos.length > 0 && (
+                    <View style={[styles.imageGrid, { marginBottom: 8 }]}>
+                      {product.videos.map((videoUri, vidIndex) => (
+                        <View key={`vid-${index}-${vidIndex}`} style={styles.imageWrapper}>
+                          <View style={[styles.previewImage, { backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={{ color: 'white', fontSize: 20 }}>🎥</Text>
+                          </View>
+                          <TouchableOpacity 
+                            style={styles.removeImageBtn}
+                            onPress={() => {
+                              const updated = [...products];
+                              updated[index].videos.splice(vidIndex, 1);
+                              setProducts(updated);
+                            }}
+                          >
+                            <Text style={styles.removeImageText}>×</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ))}
+              
+              <TouchableOpacity 
+                style={[styles.submitBtn, { 
+                  backgroundColor: '#17a2b8',
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  marginBottom: 10
+                }]} 
+                onPress={addProductField}
+              >
+                <Text style={[styles.submitText, { fontSize: 16 }]}>
+                  ➕ {t('addAnother')}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.submitBtn, { 
+                  paddingVertical: 12,
+                  borderRadius: 8
+                }]} 
+                onPress={handleSubmit}
+              >
+                <Text style={[styles.submitText, { fontSize: 18 }]}>
+                  💾 {t('saveProducts')}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </ImageBackground>
     </View>
   );

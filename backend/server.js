@@ -512,9 +512,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       // Corriger les URLs d'images
       if (product.images) {
         product.images = product.images.map(img => {
-          if (img.includes('localhost:3000') || img.includes('172.20.10.6:3000') || img.includes('192.168.1.126:3000')) {
+          if (img.includes('localhost:3000') || img.includes('192.168.100.121:3000') || img.includes('192.168.1.126:3000')) {
             updated = true;
-            return img.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.6:3000');
+            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
           }
           return img;
         });
@@ -524,9 +524,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       if (product.videos) {
         product.videos = product.videos.map(vid => {
           let correctedVid = vid;
-          if (vid.includes('localhost:3000') || vid.includes('172.20.10.6:3000') || vid.includes('192.168.1.126:3000')) {
+          if (vid.includes('localhost:3000') || vid.includes('192.168.100.121:3000') || vid.includes('192.168.1.126:3000')) {
             updated = true;
-            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.6:3000');
+            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
           }
           // Ajouter .mp4 si manquant
           if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
@@ -839,7 +839,7 @@ app.post('/api/products', async (req, res) => {
           
           console.log(`Génération image: filename=${filename}, path=${imagePath}`);
           fs.writeFileSync(imagePath, buffer);
-          const imageUrl = `http://172.20.10.6:3000/uploads/${filename}`;
+          const imageUrl = `http://192.168.100.121:3000/uploads/${filename}`;
           convertedImages.push(imageUrl);
           console.log(`Image ${i + 1} sauvegardée: ${imageUrl}`);
         } catch (error) {
@@ -868,7 +868,7 @@ app.post('/api/products', async (req, res) => {
             audioCodec: 'aac',
             strict: '-2'
           });
-          const videoUrl = `http://172.20.10.6:3000/uploads/${filename}`;
+          const videoUrl = `http://192.168.100.121:3000/uploads/${filename}`;
           convertedVideos.push(videoUrl);
           console.log(`URL vidéo générée: ${videoUrl}`);
           console.log(`Vidéo ${i + 1} convertie: ${videoUrl}`);
