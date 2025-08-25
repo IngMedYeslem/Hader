@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utiliser l'IP locale pour les smartphones
 const API_URL = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.100.121:3000/api'  // Remplacez par votre IP locale
+  ? 'http://172.20.10.6:3000/api'  // Remplacez par votre IP locale
   : 'http://localhost:3000/api';
 
 // Nettoyer les boutiques locales fantômes
@@ -46,7 +46,7 @@ export const getMediaUrl = (mediaPath) => {
   // Si c'est déjà une URL complète, vérifier si elle utilise localhost sur mobile
   if (mediaPath.startsWith('http')) {
     if (Platform.OS !== 'web' && mediaPath.includes('localhost')) {
-      return mediaPath.replace('localhost', '192.168.100.121');
+      return mediaPath.replace('localhost', '172.20.10.6');
     }
     return mediaPath;
   }
@@ -210,5 +210,38 @@ export const productAPI = {
     }
     
     return response.json();
+  },
+
+  delete: async (productId) => {
+    try {
+      console.log('=== Suppression produit ===');
+      console.log('ID:', productId);
+      
+      const response = await fetch(`${API_URL}/products/${productId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.status === 404) {
+        console.log('⚠️ Produit non trouvé sur le serveur, suppression locale uniquement');
+        return { success: true, message: 'Produit supprimé localement' };
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erreur serveur:', errorText);
+        throw new Error(`Erreur serveur: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('=== Produit supprimé du serveur ===');
+      return result;
+    } catch (error) {
+      if (error.message.includes('fetch') || error.message.includes('NetworkError')) {
+        console.log('⚠️ Serveur non disponible, suppression locale uniquement');
+        return { success: true, message: 'Produit supprimé localement (serveur indisponible)' };
+      }
+      console.error('❌ Erreur suppression produit:', error);
+      throw error;
+    }
   }
 };

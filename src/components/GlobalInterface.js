@@ -9,7 +9,7 @@ import ProductThumbnail from './ProductThumbnail';
 import MediaGallery from './MediaGallery';
 import AdminInterface from './AdminInterface';
 import { fetchProductsWithShops, checkServerHealth } from '../services/apiService';
-import { getMockProducts } from '../services/serverCheck';
+import { getServerStatus } from '../services/serverCheck';
 import { useTranslation } from '../translations';
 import styles from './styles';
 
@@ -24,7 +24,7 @@ export default function GlobalInterface({ onShopLogin }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [useRealData, setUseRealData] = useState(false);
+  const [serverAvailable, setServerAvailable] = useState(false);
   const [error, setError] = useState(null);
   const [showAdminInterface, setShowAdminInterface] = useState(false);
   const [showShopSummary, setShowShopSummary] = useState(true);
@@ -36,30 +36,31 @@ export default function GlobalInterface({ onShopLogin }) {
         setLoading(true);
         setError(null);
         
-        // Vérifier si le serveur est disponible
-        const serverAvailable = await checkServerHealth();
+        const status = await getServerStatus();
+        setServerAvailable(status.isAvailable);
+        setError(status.isAvailable ? null : 'Serveur non disponible');
         
-        if (serverAvailable) {
-          console.log('Serveur disponible, chargement des données réelles...');
-          const realProducts = await fetchProductsWithShops();
-          setProducts(realProducts);
-          setFilteredProducts(realProducts);
-          setUseRealData(true);
+        if (status.isAvailable) {
+          try {
+            const realProducts = await fetchProductsWithShops();
+            setProducts(realProducts);
+            setFilteredProducts(realProducts);
+          } catch (fetchError) {
+            console.log('Erreur fetch produits:', fetchError);
+            setServerAvailable(false);
+            setProducts([]);
+            setFilteredProducts([]);
+          }
         } else {
-          console.log('Serveur non disponible, utilisation des données de test...');
-          const mockProducts = getMockProducts();
-          setProducts(mockProducts);
-          setFilteredProducts(mockProducts);
-          setUseRealData(false);
+          setProducts([]);
+          setFilteredProducts([]);
         }
       } catch (error) {
         console.error('Erreur chargement produits:', error);
         setError('Erreur de connexion au serveur');
-        // Fallback vers les données de test
-        const mockProducts = getMockProducts();
-        setProducts(mockProducts);
-        setFilteredProducts(mockProducts);
-        setUseRealData(false);
+        setServerAvailable(false);
+        setProducts([]);
+        setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
@@ -181,10 +182,10 @@ export default function GlobalInterface({ onShopLogin }) {
         shopCount={shopCount} 
       />
       
-      {!useRealData && (
-        <View style={{ backgroundColor: 'rgba(255,165,0,0.1)', margin: 10, padding: 10, borderRadius: 5 }}>
-          <Text style={{ color: '#ff8c00', fontSize: 12, textAlign: 'center' }}>
-            📶 Mode démonstration - Données de test
+      {!serverAvailable && (
+        <View style={{ backgroundColor: 'rgba(255,0,0,0.1)', margin: 10, padding: 10, borderRadius: 5 }}>
+          <Text style={{ color: 'red', fontSize: 12, textAlign: 'center' }}>
+            ❌ Serveur non disponible
           </Text>
         </View>
       )}
@@ -217,10 +218,19 @@ export default function GlobalInterface({ onShopLogin }) {
           </View>
         )}
         
-        {filteredProducts.length === 0 ? (
+        {!serverAvailable ? (
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ color: 'red', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
+              🔌 Connexion au serveur impossible
+            </Text>
+            <Text style={{ color: 'red', fontSize: 14, textAlign: 'center' }}>
+              Veuillez vérifier votre connexion et réessayer
+            </Text>
+          </View>
+        ) : filteredProducts.length === 0 ? (
           <View style={{ padding: 20, alignItems: 'center' }}>
             <Text style={{ color: '#C8A55F', fontSize: 16, textAlign: 'center' }}>
-              Aucun produit trouvé pour votre recherche
+              Aucun produit trouvé
             </Text>
           </View>
         ) : (

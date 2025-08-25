@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { productAPI } from '../services/api';
+import { showAlert } from '../utils/alert';
 import styles from './styles';
 
 // Composant séparé pour chaque vidéo
@@ -39,7 +40,7 @@ const MediaManager = ({ product, onMediaDeleted }) => {
   const [deleting, setDeleting] = useState(null);
 
   const handleDeleteMedia = async (mediaType, mediaIndex) => {
-    Alert.alert(
+    showAlert(
       'Confirmer la suppression',
       `Êtes-vous sûr de vouloir supprimer ce ${mediaType === 'images' ? 'photo' : 'vidéo'} ?`,
       [
@@ -54,9 +55,9 @@ const MediaManager = ({ product, onMediaDeleted }) => {
               if (onMediaDeleted) {
                 onMediaDeleted(mediaType, mediaIndex);
               }
-              Alert.alert('Succès', 'Média supprimé avec succès');
+              showAlert('Succès', 'Média supprimé avec succès');
             } catch (error) {
-              Alert.alert('Erreur', 'Impossible de supprimer le média');
+              showAlert('Erreur', 'Impossible de supprimer le média');
               console.error(error);
             } finally {
               setDeleting(null);

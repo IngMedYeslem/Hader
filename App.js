@@ -10,6 +10,38 @@ import ShopDashboard from './src/components/ShopDashboard';
 import GlobalInterface from './src/components/GlobalInterface';
 import styles from './src/components/styles';
 
+// Fonction pour vider le cache au démarrage
+const clearCache = async () => {
+  try {
+    if (Platform.OS === 'web') {
+      if (typeof localStorage !== 'undefined') {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.includes('products') || key.includes('shops') || key.includes('cache')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+    } else {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const keys = await AsyncStorage.getAllKeys();
+      const cacheKeys = keys.filter(key => 
+        key.includes('products') || 
+        key.includes('shops') || 
+        key.includes('cache') ||
+        key.startsWith('products_')
+      );
+      
+      if (cacheKeys.length > 0) {
+        await AsyncStorage.multiRemove(cacheKeys);
+        console.log(`🗑️ Cache vidé: ${cacheKeys.length} clés supprimées`);
+      }
+    }
+  } catch (error) {
+    console.log('Erreur vidage cache:', error);
+  }
+};
+
 export default function App() {
   const { t } = useTranslation();
   const [currentShop, setCurrentShop] = useState(null);
@@ -19,6 +51,9 @@ export default function App() {
   useRTLCursor();
   
   useEffect(() => {
+    // Vider le cache au démarrage
+    clearCache();
+    
     // Initialiser la direction RTL/LTR au démarrage
     const initializeDirection = async () => {
       try {

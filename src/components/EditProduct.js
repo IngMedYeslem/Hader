@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Alert, ImageBackground, KeyboardAvoidingView, Platform, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, ImageBackground, KeyboardAvoidingView, Platform, Animated, Dimensions } from 'react-native';
 import MediaManager from './MediaManager';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { productAPI } from '../services/api';
 import { RTLTextInput } from './RTLInput';
+import { showAlert } from '../utils/alert';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -66,7 +67,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.price.trim()) {
-      Alert.alert('Erreur', 'Le nom et le prix sont obligatoires');
+      showAlert('Erreur', 'Le nom et le prix sont obligatoires');
       return;
     }
 
@@ -90,11 +91,11 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
       console.log('Résultat API:', result);
       
       onProductUpdated({ ...product, ...updatedProduct });
-      Alert.alert('Succès', 'Produit mis à jour');
+      showAlert('Succès', 'Produit mis à jour');
       onClose();
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
-      Alert.alert('Erreur', `Impossible de mettre à jour le produit: ${error.message}`);
+      showAlert('Erreur', `Impossible de mettre à jour le produit: ${error.message}`);
     }
   };
 
@@ -103,6 +104,31 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
       ...prev,
       [mediaType]: prev[mediaType].filter((_, index) => index !== mediaIndex)
     }));
+  };
+
+  const handleDelete = () => {
+    showAlert(
+      'Confirmer la suppression',
+      'Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Supprimer', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await productAPI.delete(product._id);
+              showAlert('Succès', 'Produit supprimé');
+              onProductUpdated(null); // Signal pour supprimer de la liste
+              onClose();
+            } catch (error) {
+              console.error('Erreur suppression:', error);
+              showAlert('Erreur', `Impossible de supprimer le produit: ${error.message}`);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -202,19 +228,34 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                   />
                 </View>
                 
-                <TouchableOpacity 
-                  style={[styles.submitBtn, { 
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    marginTop: 8,
-                    marginBottom: 15
-                  }]} 
-                  onPress={handleSave}
-                >
-                  <Text style={[styles.submitText, { fontSize: 18 }]}>
-                    💾 Sauvegarder
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 15 }}>
+                  <TouchableOpacity 
+                    style={[styles.submitBtn, { 
+                      paddingVertical: 12,
+                      borderRadius: 8,
+                      flex: 1
+                    }]} 
+                    onPress={handleSave}
+                  >
+                    <Text style={[styles.submitText, { fontSize: 18 }]}>
+                      💾 Sauvegarder
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.submitBtn, { 
+                      paddingVertical: 12,
+                      borderRadius: 8,
+                      backgroundColor: '#e74c3c',
+                      flex: 1
+                    }]} 
+                    onPress={handleDelete}
+                  >
+                    <Text style={[styles.submitText, { fontSize: 18 }]}>
+                      🗑️ Supprimer
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
                 <MediaManager 
                   product={{ ...product, images: formData.images, videos: formData.videos }}

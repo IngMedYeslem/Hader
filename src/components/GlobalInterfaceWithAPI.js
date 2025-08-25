@@ -5,6 +5,7 @@ import { GET_ALL_PRODUCTS_WITH_SHOPS } from '../graphql/getAllProductsWithShops'
 import { useTranslation, formatPrice } from '../translations';
 import { fetchProductsWithShops } from '../services/apiService';
 import { getMediaUrl } from '../services/api';
+import { getServerStatus } from '../services/serverCheck';
 import GlobalNavbar from './GlobalNavbar';
 import styles from './styles';
 
@@ -12,49 +13,41 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
   const { t } = useTranslation();
   const [apiProducts, setApiProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [serverStatus, setServerStatus] = useState({ isAvailable: true, message: '' });
   const { loading, error, data } = useQuery(GET_ALL_PRODUCTS_WITH_SHOPS, {
     errorPolicy: 'all',
     fetchPolicy: 'cache-and-network'
   });
 
   useEffect(() => {
-    loadProducts();
+    checkServerAndLoadProducts();
   }, []);
 
-  const loadProducts = async () => {
-    try {
-      const products = await fetchProductsWithShops();
-      setApiProducts(products);
-    } catch (error) {
-      console.log('Erreur chargement produits:', error);
+  const checkServerAndLoadProducts = async () => {
+    const status = await getServerStatus();
+    setServerStatus(status);
+    
+    if (status.isAvailable) {
+      try {
+        const products = await fetchProductsWithShops();
+        setApiProducts(products);
+      } catch (error) {
+        console.log('Erreur chargement produits:', error);
+        setServerStatus({ isAvailable: false, message: 'Serveur non disponible' });
+        setApiProducts([]);
+      }
+    } else {
+      setApiProducts([]);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadProducts();
+    await checkServerAndLoadProducts();
     setRefreshing(false);
   };
 
-  // Données de fallback si l'API n'est pas disponible
-  const mockProducts = [
-    {
-      id: '1',
-      name: 'Smartphone Samsung Galaxy',
-      price: 2500,
-      images: ['https://via.placeholder.com/150'],
-      shop: { username: 'TechStore', profileImage: 'https://via.placeholder.com/50' }
-    },
-    {
-      id: '2', 
-      name: 'Laptop Dell Inspiron',
-      price: 4500,
-      images: ['https://via.placeholder.com/150'],
-      shop: { username: 'ElectroShop', profileImage: 'https://via.placeholder.com/50' }
-    }
-  ];
-
-  const products = apiProducts.length > 0 ? apiProducts : (data?.productsWithShops || mockProducts);
+  const products = serverStatus.isAvailable ? (apiProducts.length > 0 ? apiProducts : (data?.productsWithShops || [])) : [];
 
   if (loading && !data) return (
     <ImageBackground 
@@ -75,13 +68,11 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
     >
       <GlobalNavbar onShopLogin={onShopLogin} />
       
-      {error && (
-        <View style={{ padding: 10, backgroundColor: 'rgba(255,0,0,0.1)', margin: 10, borderRadius: 5 }}>
-          <Text style={{ color: 'red', fontSize: 12, textAlign: 'center' }}>
-            Serveur non disponible - Affichage des données de démonstration
-          </Text>
-        </View>
-      )}
+      <View style={{ padding: 10, backgroundColor: serverStatus.isAvailable ? 'rgba(0,255,0,0.1)' : 'rgba(255,0,0,0.1)', margin: 10, borderRadius: 5 }}>
+        <Text style={{ color: serverStatus.isAvailable ? 'green' : 'red', fontSize: 12, textAlign: 'center' }}>
+          {serverStatus.message}
+        </Text>
+      </View>
       
       <ScrollView 
         style={styles.wrapper} 
@@ -90,45 +81,62 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View style={styles.globalGrid}>
-          {products.map((product) => (
-            <View key={product.id} style={[styles.globalCard, { width: '48%' }]}>
-              <View style={styles.imageContainer}>
-                {product.images && product.images.length > 0 ? (
-                  <Image 
-                    source={{ uri: getMediaUrl(product.images[0]) }} 
-                    style={styles.globalImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Text style={styles.placeholderText}>📷</Text>
-                  </View>
-                )}
-              </View>
-              
-              <View style={styles.productInfo}>
-                <Text style={styles.globalProductName} numberOfLines={2}>
-                  {product.name}
-                </Text>
-                <Text style={styles.globalPrice}>
-                  {formatPrice(product.price)}
-                </Text>
-                <View style={styles.shopInfo}>
-                  <Text style={styles.shopName}>
-                    Boutique: {product.shop?.username || 'Non spécifiée'}
-                  </Text>
-                  {product.shop?.profileImage && (
+        {!serverStatus.isAvailable ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
+              🔌 Connexion au serveur impossible
+            </Text>
+            <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>
+              Veuillez vérifier votre connexion et réessayer
+            </Text>
+          </View>
+        ) : products.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <Text style={{ color: 'white', fontSize: 16, textAlign: 'center' }}>
+              Aucun produit disponible
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.globalGrid}>
+            {products.map((product) => (
+              <View key={product.id} style={[styles.globalCard, { width: '48%' }]}>
+                <View style={styles.imageContainer}>
+                  {product.images && product.images.length > 0 ? (
                     <Image 
-                      source={{ uri: product.shop.profileImage }} 
-                      style={styles.shopAvatar}
+                      source={{ uri: getMediaUrl(product.images[0]) }} 
+                      style={styles.globalImage}
+                      resizeMode="cover"
                     />
+                  ) : (
+                    <View style={styles.placeholderImage}>
+                      <Text style={styles.placeholderText}>📷</Text>
+                    </View>
                   )}
                 </View>
+                
+                <View style={styles.productInfo}>
+                  <Text style={styles.globalProductName} numberOfLines={2}>
+                    {product.name}
+                  </Text>
+                  <Text style={styles.globalPrice}>
+                    {formatPrice(product.price)}
+                  </Text>
+                  <View style={styles.shopInfo}>
+                    <Text style={styles.shopName}>
+                      Boutique: {product.shop?.username || 'Non spécifiée'}
+                    </Text>
+                    {product.shop?.profileImage && (
+                      <Image 
+                        source={{ uri: product.shop.profileImage }} 
+                        style={styles.shopAvatar}
+                      />
+                    )}
+                  </View>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </ImageBackground>
   );

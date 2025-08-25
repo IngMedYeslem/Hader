@@ -32,9 +32,15 @@ function ShopDashboard({ shop, onLogout }) {
   };
 
   const handleProductUpdated = (updatedProduct) => {
-    setProducts(products.map(p => 
-      p._id === updatedProduct._id ? updatedProduct : p
-    ));
+    if (updatedProduct === null) {
+      // Suppression du produit
+      setProducts(products.filter(p => p._id !== selectedProduct._id));
+    } else {
+      // Mise à jour du produit
+      setProducts(products.map(p => 
+        p._id === updatedProduct._id ? updatedProduct : p
+      ));
+    }
   };
   
   const showAddProduct = currentPage === 'addProduct';
@@ -317,16 +323,58 @@ function ShopDashboard({ shop, onLogout }) {
             </View>
           </ScrollView>
         ) : (
-          <ShopViewSelector
-            products={products}
-            onProductPress={(product) => {
-              if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
-                setSelectedProduct(product);
-                setGalleryVisible(true);
-              }
-            }}
-            onEditProduct={handleEditProduct}
-          />
+          <ScrollView 
+            style={styles.wrapper} 
+            contentContainerStyle={styles.contentContainer}
+          >
+            <View style={styles.globalGrid}>
+              {products.map((product) => (
+                <TouchableOpacity 
+                  key={product._id} 
+                  style={[styles.globalCard, { width: '48%' }]}
+                  onPress={() => {
+                    setSelectedProduct(product);
+                    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
+                      setGalleryVisible(true);
+                    }
+                  }}
+                  onLongPress={() => handleEditProduct(product)}
+                >
+                  <View style={styles.imageContainer}>
+                    <ProductThumbnail 
+                      product={product} 
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                    <TouchableOpacity 
+                      style={{
+                        position: 'absolute',
+                        top: 5,
+                        right: 5,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        borderRadius: 12,
+                        width: 24,
+                        height: 24,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}
+                      onPress={() => handleEditProduct(product)}
+                    >
+                      <Text style={{ color: 'white', fontSize: 10 }}>✏️</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <View style={styles.productInfo}>
+                    <Text style={styles.globalProductName} numberOfLines={2}>
+                      {product.name}
+                    </Text>
+                    <Text style={styles.globalPrice}>
+                      {product.price} MRU
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
         )}
         
         {shop.isApproved && (
@@ -343,6 +391,8 @@ function ShopDashboard({ shop, onLogout }) {
           images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
           videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
           productName={selectedProduct?.name}
+          productPrice={selectedProduct?.price}
+          shop={shop}
           onClose={() => {
             setGalleryVisible(false);
             setSelectedProduct(null);
