@@ -7,11 +7,11 @@ import { RTLTextInput, RTLFormField } from './RTLInput';
 import { RTLView, RTLText } from './RTLComponents';
 
 function AddProduct({ onBack, onAdd }) {
-  const [products, setProducts] = useState([{ name: '', price: '', images: [], videos: [] }]);
+  const [products, setProducts] = useState([{ name: '', description: '', price: '', category: '', stock: '', images: [], videos: [] }]);
   const { t } = useTranslation();
 
   const addProductField = () => {
-    setProducts([...products, { name: '', price: '', images: [], videos: [] }]);
+    setProducts([...products, { name: '', description: '', price: '', category: '', stock: '', images: [], videos: [] }]);
   };
 
   const updateProduct = (index, field, value) => {
@@ -207,14 +207,17 @@ function AddProduct({ onBack, onAdd }) {
           
           await onAdd({
             name: product.name,
+            description: product.description,
             price: parseFloat(product.price),
+            category: product.category,
+            stock: parseInt(product.stock) || 0,
             images: convertedImages,
             videos: convertedVideos
           });
         }
       }
       Alert.alert(t('success'), t('productsAdded'));
-      setProducts([{ name: '', price: '', images: [], videos: [] }]);
+      setProducts([{ name: '', description: '', price: '', category: '', stock: '', images: [], videos: [] }]);
       onBack();
     } catch (error) {
       Alert.alert(t('error'), error.message);
@@ -257,6 +260,17 @@ function AddProduct({ onBack, onAdd }) {
                   />
                 </RTLFormField>
                 
+                <RTLFormField label={t('description')} labelStyle={styles.colorText}>
+                  <RTLTextInput
+                    style={[styles.addProductInput, { height: 80, textAlignVertical: 'top' }]}
+                    placeholder={t('description')}
+                    placeholderTextColor="#999"
+                    multiline
+                    value={product.description}
+                    onChangeText={(text) => updateProduct(index, 'description', text)}
+                  />
+                </RTLFormField>
+                
                 <RTLFormField label={t('price')} labelStyle={styles.colorText}>
                   <RTLTextInput
                     style={styles.addProductInput}
@@ -265,6 +279,27 @@ function AddProduct({ onBack, onAdd }) {
                     keyboardType="numeric"
                     value={product.price}
                     onChangeText={(text) => updateProduct(index, 'price', text)}
+                  />
+                </RTLFormField>
+                
+                <RTLFormField label={t('category')} labelStyle={styles.colorText}>
+                  <RTLTextInput
+                    style={styles.addProductInput}
+                    placeholder={t('category')}
+                    placeholderTextColor="#999"
+                    value={product.category}
+                    onChangeText={(text) => updateProduct(index, 'category', text)}
+                  />
+                </RTLFormField>
+                
+                <RTLFormField label={t('stock')} labelStyle={styles.colorText}>
+                  <RTLTextInput
+                    style={styles.addProductInput}
+                    placeholder={t('stock')}
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                    value={product.stock}
+                    onChangeText={(text) => updateProduct(index, 'stock', text)}
                   />
                 </RTLFormField>
                 

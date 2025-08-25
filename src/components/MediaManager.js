@@ -4,6 +4,37 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import { productAPI } from '../services/api';
 import styles from './styles';
 
+// Composant séparé pour chaque vidéo
+const VideoItem = ({ uri, index, onDelete, deleting }) => {
+  const player = useVideoPlayer(uri, (player) => {
+    player.loop = false;
+    player.muted = true;
+  });
+
+  return (
+    <View style={styles.mediaItem}>
+      <VideoView
+        player={player}
+        style={styles.mediaPreview}
+        contentFit="contain"
+        nativeControls={false}
+      />
+      <TouchableOpacity 
+        style={[
+          styles.deleteButton,
+          deleting === `videos-${index}` && { opacity: 0.5 }
+        ]}
+        onPress={() => onDelete('videos', index)}
+        disabled={deleting === `videos-${index}`}
+      >
+        <Text style={styles.deleteButtonText}>
+          {deleting === `videos-${index}` ? '...' : '🗑️'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 const MediaManager = ({ product, onMediaDeleted }) => {
   const [deleting, setDeleting] = useState(null);
 
@@ -78,29 +109,13 @@ const MediaManager = ({ product, onMediaDeleted }) => {
           <Text style={styles.mediaSectionTitle}>Vidéos ({product.videos.length})</Text>
           <View style={styles.mediaGrid}>
             {product.videos.map((uri, index) => (
-              <View key={`vid-${index}`} style={styles.mediaItem}>
-                <VideoView
-                  player={useVideoPlayer(uri, (player) => {
-                    player.loop = false;
-                    player.muted = true;
-                  })}
-                  style={styles.mediaPreview}
-                  contentFit="contain"
-                  nativeControls={false}
-                />
-                <TouchableOpacity 
-                  style={[
-                    styles.deleteButton,
-                    deleting === `videos-${index}` && { opacity: 0.5 }
-                  ]}
-                  onPress={() => handleDeleteMedia('videos', index)}
-                  disabled={deleting === `videos-${index}`}
-                >
-                  <Text style={styles.deleteButtonText}>
-                    {deleting === `videos-${index}` ? '...' : '🗑️'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <VideoItem
+                key={`vid-${index}`}
+                uri={uri}
+                index={index}
+                onDelete={handleDeleteMedia}
+                deleting={deleting}
+              />
             ))}
           </View>
         </View>

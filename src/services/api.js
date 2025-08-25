@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utiliser l'IP locale pour les smartphones
 const API_URL = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.100.121:3000/api'  // Remplacez par votre IP locale
+  ? 'http://172.20.10.6:3000/api'  // Remplacez par votre IP locale
   : 'http://localhost:3000/api';
 
 // Nettoyer les boutiques locales fantômes
@@ -46,7 +46,7 @@ export const getMediaUrl = (mediaPath) => {
   // Si c'est déjà une URL complète, vérifier si elle utilise localhost sur mobile
   if (mediaPath.startsWith('http')) {
     if (Platform.OS !== 'web' && mediaPath.includes('localhost')) {
-      return mediaPath.replace('localhost', '192.168.100.121');
+      return mediaPath.replace('localhost', '172.20.10.6');
     }
     return mediaPath;
   }
@@ -169,6 +169,33 @@ export const productAPI = {
       body: formData
     });
     return response.json();
+  },
+
+  update: async (productId, productData) => {
+    try {
+      console.log('=== Mise à jour produit ===');
+      console.log('ID:', productId);
+      console.log('Données:', productData);
+      
+      const response = await fetch(`${API_URL}/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erreur serveur:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('=== Produit mis à jour ===');
+      return result;
+    } catch (error) {
+      console.error('❌ Erreur mise à jour produit:', error);
+      throw error;
+    }
   },
 
   deleteMedia: async (productId, mediaType, mediaIndex) => {

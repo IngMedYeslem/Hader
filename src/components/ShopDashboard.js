@@ -6,6 +6,7 @@ import MediaGallery from "./MediaGallery";
 import EditProduct from "./EditProduct";
 import ShopInfo from "./ShopInfo";
 import ProductThumbnail from "./ProductThumbnail";
+import ShopViewSelector from "./ShopViewSelector";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
@@ -99,10 +100,8 @@ function ShopDashboard({ shop, onLogout }) {
         'Votre compte est en attente d\'approbation par un administrateur. Vous ne pouvez pas ajouter de produits pour le moment.',
         [{ text: 'OK', onPress: () => navigateTo('dashboard') }]
       );
-      return null;
-    }
-    
-    return <AddProduct 
+    } else {
+      return <AddProduct 
       onBack={() => navigateTo('dashboard')} 
       onAdd={async (newProduct) => {
         try {
@@ -176,6 +175,7 @@ function ShopDashboard({ shop, onLogout }) {
         }
       }} 
     />;
+    }
   }
 
   return (
@@ -208,151 +208,126 @@ function ShopDashboard({ shop, onLogout }) {
           
           {/* Deuxième niveau - Boutons */}
           <View style={{ 
-            flexDirection: t('currentLanguage') === 'ar' ? 'row-reverse' : 'row', 
-            justifyContent: 'space-between', 
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            paddingHorizontal: 20,
-            paddingBottom: 12,
+            paddingHorizontal: 15,
+            paddingBottom: 10,
             borderTopWidth: 1,
             borderTopColor: 'rgba(200, 165, 95, 0.2)'
           }}>
-            {/* <TouchableOpacity 
-              onPress={() => navigateTo('marketplace')}
-            >
-              <Text style={[styles.colorText, { fontSize: 14 }]}>
-                ← {t('backToMarketplace')}
-              </Text>
-            </TouchableOpacity> */}
-            
-            <View style={{ flexDirection: t('currentLanguage') === 'ar' ? 'row-reverse' : 'row', gap: 10 }}>
-              {shop.isApproved && (
-                <TouchableOpacity 
-                  onPress={() => setShopInfoVisible(true)}
-                  style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
-                >
-                  <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
-                    ℹ️ {t('info')}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              
+            {shop.isApproved && (
               <TouchableOpacity 
-                onPress={onLogout}
-                style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+                onPress={() => setShopInfoVisible(true)}
+                style={{ 
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(200, 165, 95, 0.15)', 
+                  paddingHorizontal: 15, 
+                  paddingVertical: 10, 
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: 'rgba(200, 165, 95, 0.3)'
+                }}
               >
-                <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
-                  {t('logout')}
+                <Text style={{ fontSize: 14, marginRight: 6 }}>ℹ️</Text>
+                <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
+                  {t('info')}
                 </Text>
               </TouchableOpacity>
-            </View>
+            )}
+            
+            <TouchableOpacity 
+              onPress={onLogout}
+              style={{ 
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(220, 53, 69, 0.15)', 
+                paddingHorizontal: 15, 
+                paddingVertical: 10, 
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: 'rgba(220, 53, 69, 0.3)'
+              }}
+            >
+              <Text style={{ fontSize: 14, marginRight: 6 }}>🚪</Text>
+              <Text style={{ color: '#dc3545', fontSize: 12, fontWeight: 'bold' }}>
+                {t('logout')}
+              </Text>
+            </TouchableOpacity>
           </View>
           </View>
         </SafeAreaView>
 
         
-        <ScrollView 
-          style={styles.scrollContainer} 
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.globalGrid}>
-            {products.length === 0 ? (
-              <View style={styles.centeredContainer}>
-                {shop.isApproved ? (
-                  <>
-                    <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
-                    <Text style={styles.emptySubText}>{t('tapPlusToAdd')}</Text>
-                  </>
-                ) : (
-                  <View style={styles.card}>
-                    {/* <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20 }]}>
-                      ⏳ {t('accountWaitingApproval')}
-                    </Text> */}
-                    <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
-                      {t('accountValidatedIn24h')}
+        {products.length === 0 ? (
+          <ScrollView 
+            style={styles.scrollContainer} 
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.centeredContainer}>
+              {shop.isApproved ? (
+                <>
+                  <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
+                  <Text style={styles.emptySubText}>{t('tapPlusToAdd')}</Text>
+                </>
+              ) : (
+                <View style={styles.card}>
+                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
+                    {t('accountValidatedIn24h')}
+                  </Text>
+                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 20 }]}>
+                    {t('contactAdminAfter24h')}
+                  </Text>
+                  
+                  <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 15 }]}>
+                    📞 {t('contactAdmin')}
+                  </Text>
+                  
+                  <TouchableOpacity 
+                    style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
+                    onPress={() => {
+                      const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
+                      Linking.openURL(whatsappUrl).catch(() => {
+                        Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
+                      });
+                    }}
+                  >
+                    <Text style={styles.submitText}>
+                      📱 {t('contactWhatsApp')}
                     </Text>
-                    <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 20 }]}>
-                      {t('contactAdminAfter24h')}
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.submitBtn, { backgroundColor: '#007AFF' }]}
+                    onPress={() => {
+                      const phoneUrl = `tel:+22236251999`;
+                      Linking.openURL(phoneUrl).catch(() => {
+                        Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone');
+                      });
+                    }}
+                  >
+                    <Text style={styles.submitText}>
+                      📞 {t('callAdmin')}
                     </Text>
-                    
-                    <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 15 }]}>
-                      📞 {t('contactAdmin')}
-                    </Text>
-                    
-                    <TouchableOpacity 
-                      style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
-                      onPress={() => {
-                        const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
-                        Linking.openURL(whatsappUrl).catch(() => {
-                          Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
-                        });
-                      }}
-                    >
-                      <Text style={styles.submitText}>
-                        📱 {t('contactWhatsApp')}
-                      </Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                      style={[styles.submitBtn, { backgroundColor: '#007AFF' }]}
-                      onPress={() => {
-                        const phoneUrl = `tel:+22236251999`;
-                        Linking.openURL(phoneUrl).catch(() => {
-                          Alert.alert('Erreur', 'Impossible d\'ouvrir l\'application téléphone');
-                        });
-                      }}
-                    >
-                      <Text style={styles.submitText}>
-                        📞 {t('callAdmin')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ) : (
-              products.map((product) => (
-                <TouchableOpacity 
-                  key={product._id || product.id || `product-${Date.now()}-${Math.random()}`} 
-                  style={[styles.globalCard, { width: itemWidth }]}
-                  onPress={() => {
-                    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
-                      setSelectedProduct(product);
-                      setGalleryVisible(true);
-                    }
-                  }}
-                  onLongPress={() => handleEditProduct(product)}
-                >
-                  <View style={styles.imageContainer}>
-                    <ProductThumbnail 
-                      product={product} 
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                    <TouchableOpacity 
-                      style={{
-                        position: 'absolute',
-                        top: 5,
-                        right: 5,
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        borderRadius: 12,
-                        width: 24,
-                        height: 24,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
-                      onPress={() => handleEditProduct(product)}
-                    >
-                      <Text style={{ color: 'white', fontSize: 12 }}>✏️</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.productInfo}>
-                    <Text style={styles.globalProductName} numberOfLines={2}>{product.name}</Text>
-                    <Text style={styles.globalPrice}>{product.price} MRU</Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            )}
-          </View>
-        </ScrollView>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        ) : (
+          <ShopViewSelector
+            products={products}
+            onProductPress={(product) => {
+              if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
+                setSelectedProduct(product);
+                setGalleryVisible(true);
+              }
+            }}
+            onEditProduct={handleEditProduct}
+          />
+        )}
         
         {shop.isApproved && (
           <TouchableOpacity 

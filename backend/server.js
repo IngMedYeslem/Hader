@@ -512,9 +512,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       // Corriger les URLs d'images
       if (product.images) {
         product.images = product.images.map(img => {
-          if (img.includes('localhost:3000') || img.includes('192.168.100.121:3000') || img.includes('192.168.1.126:3000')) {
+          if (img.includes('localhost:3000') || img.includes('172.20.10.6:3000') || img.includes('192.168.1.126:3000')) {
             updated = true;
-            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
+            return img.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.6:3000');
           }
           return img;
         });
@@ -524,9 +524,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       if (product.videos) {
         product.videos = product.videos.map(vid => {
           let correctedVid = vid;
-          if (vid.includes('localhost:3000') || vid.includes('192.168.100.121:3000') || vid.includes('192.168.1.126:3000')) {
+          if (vid.includes('localhost:3000') || vid.includes('172.20.10.6:3000') || vid.includes('192.168.1.126:3000')) {
             updated = true;
-            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.100.121:3000');
+            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.6:3000');
           }
           // Ajouter .mp4 si manquant
           if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
@@ -582,7 +582,10 @@ const shopSchema = new mongoose.Schema({
 
 const productSchema = new mongoose.Schema({
   name: String,
+  description: String,
   price: Number,
+  category: String,
+  stock: { type: Number, default: 0 },
   images: [String], // Tableau d'images
   videos: [String], // Tableau de vidéos
   shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
@@ -773,9 +776,44 @@ app.get('/api/products/:shopId', async (req, res) => {
   }
 });
 
+// Route pour mettre à jour un produit
+app.put('/api/products/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { name, description, price, category, stock, images, videos } = req.body;
+    
+    console.log('=== Mise à jour produit ===');
+    console.log('ID produit:', productId);
+    console.log('Données reçues:', { name, description, price, category, stock });
+    
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Produit non trouvé' });
+    }
+    
+    // Mettre à jour les champs
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.price = price !== undefined ? price : product.price;
+    product.category = category || product.category;
+    product.stock = stock !== undefined ? stock : product.stock;
+    
+    if (images) product.images = images;
+    if (videos) product.videos = videos;
+    
+    const updatedProduct = await product.save();
+    console.log('Produit mis à jour:', updatedProduct.name);
+    
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error('Erreur mise à jour produit:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, price, images, videos, shopId } = req.body;
+    const { name, description, price, category, stock, images, videos, shopId } = req.body;
     
     console.log('=== Début création produit ===');
     console.log('Données reçues:', { name, price, shopId });
@@ -801,7 +839,7 @@ app.post('/api/products', async (req, res) => {
           
           console.log(`Génération image: filename=${filename}, path=${imagePath}`);
           fs.writeFileSync(imagePath, buffer);
-          const imageUrl = `http://192.168.100.121:3000/uploads/${filename}`;
+          const imageUrl = `http://172.20.10.6:3000/uploads/${filename}`;
           convertedImages.push(imageUrl);
           console.log(`Image ${i + 1} sauvegardée: ${imageUrl}`);
         } catch (error) {
@@ -830,7 +868,7 @@ app.post('/api/products', async (req, res) => {
             audioCodec: 'aac',
             strict: '-2'
           });
-          const videoUrl = `http://192.168.100.121:3000/uploads/${filename}`;
+          const videoUrl = `http://172.20.10.6:3000/uploads/${filename}`;
           convertedVideos.push(videoUrl);
           console.log(`URL vidéo générée: ${videoUrl}`);
           console.log(`Vidéo ${i + 1} convertie: ${videoUrl}`);
@@ -845,7 +883,10 @@ app.post('/api/products', async (req, res) => {
     
     const product = new Product({
       name,
+      description,
       price,
+      category,
+      stock: stock || 0,
       images: convertedImages,
       videos: convertedVideos,
       shopId
