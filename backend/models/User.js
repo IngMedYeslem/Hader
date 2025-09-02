@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   isApproved: { type: Boolean, default: false }, // 🔹 Statut de validation pour les boutiques
   approvedAt: { type: Date },
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  linkedShopId: { type: mongoose.Schema.Types.ObjectId, ref: "Shop" } // 🔹 Liaison avec une boutique
+  linkedShopId: { type: mongoose.Schema.Types.ObjectId, ref: "Shop" }, // 🔹 Liaison avec une boutique
+  expoPushToken: { type: String } // 🔹 Token Expo pour notifications push
 });
 
 const User = mongoose.model("User", userSchema);

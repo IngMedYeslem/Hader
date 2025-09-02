@@ -4,13 +4,15 @@ import { Card, TextInput, Button, Snackbar } from "react-native-paper";
 import { useMutation } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UPDATE_USER_MUTATION } from "../graphql/UpdateUser";
+import { useAccountRefresh } from "../hooks/useAccountRefresh";
 
 export default function UpdateUserScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState(""); // ✅ Stocker sous forme de chaîne pour l'affichage
+  const [role, setRole] = useState("");
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { refreshAccount, isRefreshing } = useAccountRefresh();
 
   // 🔹 Charger les données utilisateur depuis AsyncStorage
   useEffect(() => {
@@ -33,15 +35,19 @@ export default function UpdateUserScreen({ navigation }) {
     loadUserData();
   }, []);
 
-  // 🔹 Mutation GraphQL pour mettre à jour l'utilisateur
   const [updateUser, { loading }] = useMutation(UPDATE_USER_MUTATION, {
-    onCompleted: () => {
-      setSnackbarMessage("Utilisateur mis à jour avec succès");
+    onCompleted: async (data) => {
+      await refreshAccount({
+        username: data.updateUser.username,
+        email: data.updateUser.email,
+        role: data.updateUser.roles
+      });
+      setSnackbarMessage("Compte actualisé avec succès");
       setSnackbarVisible(true);
       navigation.replace("HomeScreen");
     },
     onError: () => {
-      setSnackbarMessage("Erreur lors de la mise à jour de l'utilisateur");
+      setSnackbarMessage("Erreur lors de la mise à jour");
       setSnackbarVisible(true);
     },
   });
@@ -90,7 +96,7 @@ export default function UpdateUserScreen({ navigation }) {
             style={{ marginBottom: 16 }}
           />
 
-          <Button mode="contained" onPress={handleUpdateUser} loading={loading} style={{ marginTop: 16 }}>
+          <Button mode="contained" onPress={handleUpdateUser} loading={loading || isRefreshing} style={{ marginTop: 16 }}>
             Mettre à jour
           </Button>
         </Card.Content>

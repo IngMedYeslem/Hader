@@ -9,6 +9,7 @@ import ShopLogin from './src/components/ShopLogin';
 import ShopDashboard from './src/components/ShopDashboard';
 import GlobalInterface from './src/components/GlobalInterface';
 import styles from './src/components/styles';
+import pushNotificationService from './src/services/pushNotifications';
 
 // Fonction pour vider le cache au démarrage
 const clearCache = async () => {
@@ -54,6 +55,11 @@ export default function App() {
     // Vider le cache au démarrage
     clearCache();
     
+    // Initialiser les notifications push
+    pushNotificationService.initialize().catch(error => {
+      console.log('Erreur initialisation notifications:', error);
+    });
+    
     // Initialiser la direction RTL/LTR au démarrage
     const initializeDirection = async () => {
       try {
@@ -87,25 +93,46 @@ export default function App() {
     initializeDirection();
     
     // Charger l'état de connexion au démarrage
-    if (Platform.OS === 'web') {
-      const savedShop = localStorage.getItem('currentShop');
-      if (savedShop) {
-        try {
+    const loadSavedShop = async () => {
+      try {
+        let savedShop;
+        if (Platform.OS === 'web') {
+          savedShop = localStorage.getItem('currentShop');
+        } else {
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          savedShop = await AsyncStorage.getItem('currentShop');
+        }
+        
+        if (savedShop) {
           const shop = JSON.parse(savedShop);
           setCurrentShop(shop);
+          
+          if (Platform.OS !== 'web') {
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            await AsyncStorage.setItem('userId', shop._id);
+            console.log('💾 ID utilisateur restauré:', shop._id);
+          }
+          
           console.log('Connexion restaurée au démarrage');
-        } catch (error) {
-          console.log('Erreur restauration connexion:', error);
         }
+      } catch (error) {
+        console.log('Erreur restauration connexion:', error);
       }
-    }
+    };
+    
+    loadSavedShop();
   }, []);
   
-  const handleLogin = (shop) => {
+  const handleLogin = async (shop) => {
     setCurrentShop(shop);
     // Sauvegarder pour restauration après rechargement
     if (Platform.OS === 'web') {
       localStorage.setItem('currentShop', JSON.stringify(shop));
+    } else {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      await AsyncStorage.setItem('currentShop', JSON.stringify(shop));
+      await AsyncStorage.setItem('userId', shop._id);
+      console.log('💾 ID utilisateur sauvegardé:', shop._id);
     }
   };
   

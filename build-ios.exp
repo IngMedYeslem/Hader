@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+
+set timeout 600
+spawn eas build --profile development --platform ios --clear-cache
+
+expect {
+    "Do you want to log in to your Apple account?" {
+        send "n\r"
+        exp_continue
+    }
+    eof
+}

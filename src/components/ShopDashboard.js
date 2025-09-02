@@ -7,9 +7,12 @@ import EditProduct from "./EditProduct";
 import ShopInfo from "./ShopInfo";
 import ProductThumbnail from "./ProductThumbnail";
 import ShopViewSelector from "./ShopViewSelector";
+import NotificationCenter from "./NotificationCenter";
+import ValidationStatusIndicator from "./ValidationStatusIndicator";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
+import { useShopValidationRefresh } from '../hooks/useShopValidationRefresh';
 import { productAPI } from '../services/api';
 import { syncService } from '../services/syncService';
 import { imageService } from '../services/imageService';
@@ -22,9 +25,20 @@ function ShopDashboard({ shop, onLogout }) {
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [shopInfoVisible, setShopInfoVisible] = useState(false);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isApproved, setIsApproved] = useState(shop.isApproved || false);
   const { t } = useTranslation();
   const { currentPage, navigateTo } = useNavigation();
+  
+  // Hook pour l'actualisation automatique du statut de validation
+  const { isApproved: autoRefreshApproved } = useShopValidationRefresh(
+    shop._id,
+    () => {
+      setIsApproved(true);
+      window.location.reload();
+    }
+  );
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
@@ -47,7 +61,26 @@ function ShopDashboard({ shop, onLogout }) {
 
   useEffect(() => {
     loadProducts();
+    checkApprovalStatus();
   }, []);
+  
+  // Synchroniser le statut avec le hook d'actualisation automatique
+  useEffect(() => {
+    setIsApproved(autoRefreshApproved);
+  }, [autoRefreshApproved]);
+  
+  const checkApprovalStatus = async () => {
+    try {
+      const response = await fetch(`http://172.20.10.6:3000/api/shops/${shop._id}`);
+      if (response.ok) {
+        const shopData = await response.json();
+        console.log('🔄 Statut approbation vérifié:', shopData.isApproved);
+        setIsApproved(shopData.isApproved || false);
+      }
+    } catch (error) {
+      console.log('❌ Erreur vérification statut:', error);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -100,7 +133,7 @@ function ShopDashboard({ shop, onLogout }) {
   };
 
   if (showAddProduct) {
-    if (!shop.isApproved) {
+    if (!isApproved) {
       Alert.alert(
         'Compte non approuvé',
         'Votre compte est en attente d\'approbation par un administrateur. Vous ne pouvez pas ajouter de produits pour le moment.',
@@ -202,14 +235,25 @@ function ShopDashboard({ shop, onLogout }) {
             }}>
               🏠 {shop.name}
             </Text>
-            <Text style={{ 
-              fontSize: 12, 
-              color: '#C8A55F', 
-              opacity: 0.7,
-              marginTop: 4
+            <View style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              marginTop: 8
             }}>
-              {products.length} {t('products')} • {shop.isApproved ? t('approved') : t('pending')}
-            </Text>
+              <Text style={{ 
+                fontSize: 12, 
+                color: '#C8A55F', 
+                opacity: 0.7,
+                marginRight: 8
+              }}>
+                {products.length} {t('products')}
+              </Text>
+              <ValidationStatusIndicator 
+                isApproved={isApproved} 
+                isChecking={false}
+              />
+            </View>
           </View>
           
           {/* Deuxième niveau - Boutons */}
@@ -222,26 +266,50 @@ function ShopDashboard({ shop, onLogout }) {
             borderTopWidth: 1,
             borderTopColor: 'rgba(200, 165, 95, 0.2)'
           }}>
-            {shop.isApproved && (
-              <TouchableOpacity 
-                onPress={() => setShopInfoVisible(true)}
-                style={{ 
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(200, 165, 95, 0.15)', 
-                  paddingHorizontal: 15, 
-                  paddingVertical: 10, 
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: 'rgba(200, 165, 95, 0.3)'
-                }}
-              >
-                <Text style={{ fontSize: 14, marginRight: 6 }}>ℹ️</Text>
-                <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
-                  {t('info')}
-                </Text>
-              </TouchableOpacity>
-            )}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {Platform.OS !== 'web' && (
+                <TouchableOpacity 
+                  onPress={() => setNotificationsVisible(true)}
+                  style={{ 
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(52, 152, 219, 0.15)', 
+                    paddingHorizontal: 15, 
+                    paddingVertical: 10, 
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: 'rgba(52, 152, 219, 0.3)',
+                    marginRight: 10
+                  }}
+                >
+                  <Text style={{ fontSize: 14, marginRight: 6 }}>🔔</Text>
+                  <Text style={{ color: '#3498db', fontSize: 12, fontWeight: 'bold' }}>
+                    Notifications
+                  </Text>
+                </TouchableOpacity>
+              )}
+              
+              {isApproved && (
+                <TouchableOpacity 
+                  onPress={() => setShopInfoVisible(true)}
+                  style={{ 
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(200, 165, 95, 0.15)', 
+                    paddingHorizontal: 15, 
+                    paddingVertical: 10, 
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: 'rgba(200, 165, 95, 0.3)'
+                  }}
+                >
+                  <Text style={{ fontSize: 14, marginRight: 6 }}>ℹ️</Text>
+                  <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
+                    {t('info')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             
             <TouchableOpacity 
               onPress={onLogout}
@@ -273,7 +341,7 @@ function ShopDashboard({ shop, onLogout }) {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.centeredContainer}>
-              {shop.isApproved ? (
+              {isApproved ? (
                 <>
                   <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
                   <Text style={styles.emptySubText}>{t('tapPlusToAdd')}</Text>
@@ -377,7 +445,7 @@ function ShopDashboard({ shop, onLogout }) {
           </ScrollView>
         )}
         
-        {shop.isApproved && (
+        {isApproved && (
           <TouchableOpacity 
             style={styles.floatingBtn} 
             onPress={() => navigateTo('addProduct')}
@@ -416,6 +484,64 @@ function ShopDashboard({ shop, onLogout }) {
           visible={shopInfoVisible}
           onClose={() => setShopInfoVisible(false)}
         />
+
+        {/* Modal des notifications */}
+        {notificationsVisible && (
+          <View style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <View style={{
+              backgroundColor: 'white',
+              margin: 20,
+              borderRadius: 12,
+              maxHeight: '80%',
+              width: '90%',
+              maxWidth: 400
+            }}>
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: 20,
+                borderBottomWidth: 1,
+                borderBottomColor: '#eee'
+              }}>
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#2C3E50'
+                }}>
+                  Notifications
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => setNotificationsVisible(false)}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    backgroundColor: '#f0f0f0',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>×</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <NotificationCenter 
+                userId={shop._id}
+                shopId={shop._id}
+              />
+            </View>
+          </View>
+        )}
       </ImageBackground>
     </View>
   );

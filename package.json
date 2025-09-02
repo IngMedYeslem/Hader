@@ -16,11 +16,13 @@
     "@types/react": "~19.0.10",
     "expo": "~53.0.0",
     "expo-audio": "~0.4.8",
+    "expo-constants": "~17.0.3",
     "expo-file-system": "~18.1.11",
     "expo-image-manipulator": "~13.1.7",
     "expo-image-picker": "~16.1.4",
     "expo-location": "^18.1.6",
     "expo-media-library": "~17.1.7",
+    "expo-notifications": "~0.30.1",
     "expo-video": "~2.2.2",
     "ffmpeg-kit-react-native": "^6.0.2",
     "graphql": "^16.8.0",
@@ -29,7 +31,9 @@
     "react-native": "0.79.5",
     "react-native-web": "^0.20.0",
     "typescript": "~5.8.3",
-    "with-router": "^1.0.1"
+    "with-router": "^1.0.1",
+    "expo-device": "~7.1.4",
+    "expo-dev-client": "~5.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

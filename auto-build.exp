@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+spawn eas build --profile development --platform android
+
+expect {
+    "Generate a new Android Keystore?" {
+        send "y\r"
+        exp_continue
+    }
+    "Do you want to log in to your Apple account?" {
+        send "n\r"
+        exp_continue
+    }
+    eof
+}

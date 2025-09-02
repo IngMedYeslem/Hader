@@ -7,6 +7,36 @@ const path = require('path');
 const User = require('./models/User');
 const Role = require('./models/Role');
 const { convertVideoFromBase64 } = require('./videoConverter');
+const notificationService = require('./services/notificationService');
+const notificationRoutes = require('./routes/notifications');
+
+// Fonction pour envoyer des notifications push Expo
+async function sendExpoPushNotification(expoPushToken, { title, body, data }) {
+  try {
+    const message = {
+      to: expoPushToken,
+      sound: 'default',
+      title,
+      body,
+      data
+    };
+    
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(message)
+    });
+    
+    const result = await response.json();
+    console.log('📤 Résultat notification Expo:', result);
+  } catch (error) {
+    console.error('❌ Erreur notification Expo:', error);
+  }
+}
 
 // Le modèle Shop est déjà défini plus bas
 
@@ -15,6 +45,9 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static('uploads'));
+
+// Routes de notifications
+app.use('/api', notificationRoutes);
 
 // Route spécifique pour les images avec headers appropriés
 app.get('/uploads/*.jpg', (req, res) => {
@@ -179,14 +212,42 @@ app.get('/api/users', async (req, res) => {
 
 app.post('/api/users/:userId/approve', async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).populate('roles', 'name');
+    console.log(`🔔 Approbation utilisateur ID: ${req.params.userId}`);
+    
+    const user = await User.findById(req.params.userId).populate('roles', 'name').populate('linkedShopId', 'name');
     if (!user) {
+      console.log('❌ Utilisateur non trouvé');
       return res.status(404).json({ error: 'Utilisateur non trouvé' });
     }
+
+    console.log(`✅ Utilisateur trouvé: ${user.username}`);
+    console.log(`🏠 LinkedShopId: ${user.linkedShopId ? user.linkedShopId._id : 'AUCUN'}`);
+    console.log(`🏠 Nom boutique: ${user.linkedShopId ? user.linkedShopId.name : 'AUCUN'}`);
 
     user.isApproved = true;
     user.approvedAt = new Date();
     await user.save();
+
+    // Envoyer notification push
+    if (user.linkedShopId) {
+      console.log(`🔔 Envoi notification pour boutique: ${user.linkedShopId.name}`);
+      
+      // Sauvegarder en base
+      await notificationService.sendShopValidationNotification(user._id, user.linkedShopId.name);
+      
+      // Envoyer notification push Expo si token disponible
+      if (user.expoPushToken && user.expoPushToken.startsWith('ExponentPushToken')) {
+        await sendExpoPushNotification(user.expoPushToken, {
+          title: 'Boutique validée ✅',
+          body: `Votre boutique "${user.linkedShopId.name}" a été validée`,
+          data: { type: 'shop_validated', shopName: user.linkedShopId.name }
+        });
+      }
+      
+      console.log('✅ Notification envoyée');
+    } else {
+      console.log('⚠️ Pas de boutique liée - aucune notification envoyée');
+    }
 
     res.json({
       id: user._id,
@@ -197,6 +258,7 @@ app.post('/api/users/:userId/approve', async (req, res) => {
       approvedAt: user.approvedAt
     });
   } catch (error) {
+    console.error('❌ Erreur approbation:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -297,6 +359,66 @@ app.post('/api/users/:userId/link-shop/:shopId', async (req, res) => {
 
     res.json({ message: `Utilisateur ${user.username} lié à la boutique ${shop.name}` });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route pour enregistrer le token Expo
+app.post('/api/users/expo-token', async (req, res) => {
+  try {
+    const { userId, expoPushToken } = req.body;
+    
+    // Chercher par userId d'abord, puis par linkedShopId
+    let user = await User.findById(userId);
+    if (!user) {
+      user = await User.findOne({ linkedShopId: userId });
+    }
+    
+    if (!user) {
+      console.log('Utilisateur non trouvé pour ID:', userId);
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    user.expoPushToken = expoPushToken;
+    await user.save();
+    
+    console.log('Token Expo enregistré pour utilisateur:', user.username);
+    res.json({ message: 'Token Expo enregistré' });
+  } catch (error) {
+    console.error('Erreur enregistrement token:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route pour récupérer les notifications en attente
+app.get('/api/users/:userId/notifications', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`📱 API: Récupération notifications pour userId: ${userId}`);
+    const notifications = await notificationService.getUserNotifications(userId);
+    console.log(`📨 API: Trouvé ${notifications.length} notifications`);
+    res.json(notifications);
+  } catch (error) {
+    console.error('❌ API: Erreur notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route pour tester les notifications
+app.get('/api/test/notifications/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`🔍 Test récupération pour userId: ${userId}`);
+    
+    const notifications = await notificationService.getUserNotifications(userId);
+    
+    res.json({
+      userId,
+      count: notifications.length,
+      notifications
+    });
+  } catch (error) {
+    console.error('❌ Erreur test notifications:', error);
     res.status(500).json({ error: error.message });
   }
 });

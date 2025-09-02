@@ -3,12 +3,20 @@ export default {
       name: "my-ecommerce-app",
       slug: "my-ecommerce-app",
       version: "1.0.0",
+      projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a",
       orientation: "portrait",
       platforms: ["ios", "android", "web"],
-      newArchEnabled: true,
+      newArchEnabled: false,
       plugins: [
         "expo-video",
         "expo-audio",
+        [
+          "expo-notifications",
+          {
+            icon: "./assets/logo.png",
+            color: "#C8A55F"
+          }
+        ],
         [
           "expo-image-picker",
           {
@@ -22,14 +30,20 @@ export default {
         supportsTablet: true,
         infoPlist: {
           NSPhotoLibraryUsageDescription: "L'application a besoin d'accéder à votre galerie pour sélectionner des images.",
-          NSCameraUsageDescription: "L'application a besoin d'accéder à votre appareil photo."
+          NSCameraUsageDescription: "L'application a besoin d'accéder à votre appareil photo.",
+          ITSAppUsesNonExemptEncryption: false
         }
       },
       android: {
         package: "com.mycompany.myecommerceapp",
+        compileSdkVersion: 34,
+        targetSdkVersion: 34,
         permissions: [
           "CAMERA",
-          "READ_EXTERNAL_STORAGE"
+          "READ_EXTERNAL_STORAGE",
+          "RECEIVE_BOOT_COMPLETED",
+          "VIBRATE",
+          "WAKE_LOCK"
         ],
         adaptiveIcon: {
           foregroundImage: "./assets/logo.png",
@@ -41,7 +55,10 @@ export default {
         favicon: "./assets/logo.png"
       },
       extra: {
-        API_URL: process.env.API_URL || "http://172.20.10.4:4000" // Utilisation d'une variable d'environnement si elle est définie
+        API_URL: process.env.API_URL || "http://172.20.10.6:3000", // Utilisation d'une variable d'environnement si elle est définie
+        eas: {
+          projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a"
+        }
       }
     }
   };

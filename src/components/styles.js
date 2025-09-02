@@ -1343,6 +1343,77 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
   },
+
+  // Styles pour NotificationCenter
+  notificationCenter: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    padding: 15,
+  },
+  notificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+  },
+  refreshButton: {
+    fontSize: 20,
+    color: '#C8A55F',
+  },
+  notificationItem: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    position: 'relative',
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 5,
+  },
+  notificationBody: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  notificationTime: {
+    fontSize: 12,
+    color: '#999',
+  },
+  unreadIndicator: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ff4444',
+  },
+  loadingText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 50,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#999',
+    marginTop: 50,
+    fontStyle: 'italic',
+  },
 });
 
 export default styles;

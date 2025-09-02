@@ -191,6 +191,7 @@ export default function AdminDashboard() {
       });
       
       if (linkedUser) {
+        console.log('🔔 Validation boutique - linkedUser:', linkedUser);
         const response = await fetch(`${API_URL}/users/${linkedUser.id}/approve`, {
           method: 'POST'
         });

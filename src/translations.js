@@ -140,7 +140,9 @@ const translations = {
     whatsappNotInstalled: 'WhatsApp n\'est pas installé sur cet appareil',
     emailSubject: 'Demande d\'information',
     emailBody: 'Bonjour, je suis intéressé(e) par le produit. Merci de me contacter.',
-    whatsappMessage: 'Bonjour, je suis intéressé(e) par le produit:'
+    whatsappMessage: 'Bonjour, je suis intéressé(e) par le produit:',
+    checking: 'Vérification...',
+    newShopRegistration: 'Nouvelle inscription boutique'
   },
   en: {
     loading: 'Loading...',
@@ -271,7 +273,9 @@ const translations = {
     whatsappNotInstalled: 'WhatsApp is not installed on this device',
     emailSubject: 'Information request',
     emailBody: 'Hello, I am interested in the product. Please contact me.',
-    whatsappMessage: 'Hello, I am interested in the product:'
+    whatsappMessage: 'Hello, I am interested in the product:',
+    checking: 'Checking...',
+    newShopRegistration: 'New shop registration'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -402,7 +406,9 @@ const translations = {
     whatsappNotInstalled: 'واتساب غير مثبت على هذا الجهاز',
     emailSubject: 'طلب معلومات',
     emailBody: 'مرحبا، أنا مهتم بالمنتج. يرجى التواصل معي.',
-    whatsappMessage: 'مرحبا، أنا مهتم بالمنتج:'
+    whatsappMessage: 'مرحبا، أنا مهتم بالمنتج:',
+    checking: 'جاري التحقق...',
+    newShopRegistration: 'تسجيل متجر جديد'
   }
 };
 

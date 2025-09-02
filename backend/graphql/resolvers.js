@@ -225,6 +225,13 @@ users: async () => {
     user.approvedBy = context.user.id;
     await user.save();
 
+    // 🔹 Envoyer notification si c'est une boutique
+    const isShop = user.roles.some(role => role.name === "AJOUT-PROD");
+    if (isShop) {
+      const notificationService = require('../services/notificationService');
+      await notificationService.sendShopValidationNotification(userId, user.username);
+    }
+
     return {
       id: user.id,
       username: user.username,
