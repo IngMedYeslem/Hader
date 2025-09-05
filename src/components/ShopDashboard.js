@@ -28,6 +28,7 @@ function ShopDashboard({ shop, onLogout }) {
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isApproved, setIsApproved] = useState(shop.isApproved || false);
+  const [showWelcomePage, setShowWelcomePage] = useState(false);
   const { t } = useTranslation();
   const { currentPage, navigateTo } = useNavigation();
   
@@ -62,7 +63,28 @@ function ShopDashboard({ shop, onLogout }) {
   useEffect(() => {
     loadProducts();
     checkApprovalStatus();
+    checkWelcomePage();
   }, []);
+  
+  const checkWelcomePage = async () => {
+    try {
+      const shouldShow = await AsyncStorage.getItem('showWelcomePage');
+      if (shouldShow === 'true' && !isApproved) {
+        setShowWelcomePage(true);
+      }
+    } catch (error) {
+      console.log('Erreur vérification page d\'accueil:', error);
+    }
+  };
+  
+  const hideWelcomePage = async () => {
+    try {
+      await AsyncStorage.removeItem('showWelcomePage');
+      setShowWelcomePage(false);
+    } catch (error) {
+      console.log('Erreur masquage page d\'accueil:', error);
+    }
+  };
   
   // Synchroniser le statut avec le hook d'actualisation automatique
   useEffect(() => {
@@ -132,6 +154,86 @@ function ShopDashboard({ shop, onLogout }) {
     }
   };
 
+  // Afficher la page d'accueil pour les boutiques non validées
+  if (showWelcomePage && !isApproved) {
+    return (
+      <View style={styles.wrapper}>
+        <ImageBackground 
+          source={require('../../assets/b2.jpeg')} 
+          style={styles.background}
+          resizeMode="cover"
+        >
+          <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
+            <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50', paddingVertical: 20, paddingHorizontal: 30, alignItems: 'center' }]}>
+              <Text style={{ fontSize: 18, color: '#C8A55F', fontWeight: 'bold', textAlign: 'center' }}>
+                🏠 {t('welcome')} {shop.name}!
+              </Text>
+              <Text style={{ fontSize: 14, color: '#C8A55F', opacity: 0.8, textAlign: 'center', marginTop: 5 }}>
+                {t('shopCreatedSuccessfully')}
+              </Text>
+            </View>
+          </SafeAreaView>
+          
+          <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.contentContainer}>
+            <View style={styles.centeredContainer}>
+              <View style={[styles.card, { margin: 20 }]}>
+                <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20, textAlign: 'center' }]}>
+                  🎉 {t('congratulations')}!
+                </Text>
+                
+                <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
+                  {t('shopCreatedWaitingValidation')}
+                </Text>
+                
+                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 15, borderRadius: 8, marginBottom: 20 }}>
+                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 10 }]}>
+                    🕰️ {t('validationProcess')}:
+                  </Text>
+                  <Text style={[styles.colorText, { fontSize: 13, marginBottom: 8 }]}>
+                    • {t('adminWillReview')}
+                  </Text>
+                  <Text style={[styles.colorText, { fontSize: 13, marginBottom: 8 }]}>
+                    • {t('validationWithin24h')}
+                  </Text>
+                  <Text style={[styles.colorText, { fontSize: 13 }]}>
+                    • {t('canAddProductsAfterValidation')}
+                  </Text>
+                </View>
+                
+                <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 15, textAlign: 'center' }]}>
+                  📞 {t('needHelp')}?
+                </Text>
+                
+                <TouchableOpacity 
+                  style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
+                  onPress={() => {
+                    const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopValidationMessage'))}`;
+                    Linking.openURL(whatsappUrl).catch(() => {
+                      Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
+                    });
+                  }}
+                >
+                  <Text style={styles.submitText}>
+                    📱 {t('contactWhatsApp')}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.submitBtn, { backgroundColor: '#C8A55F' }]}
+                  onPress={hideWelcomePage}
+                >
+                  <Text style={styles.submitText}>
+                    {t('understood')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </ImageBackground>
+      </View>
+    );
+  }
+  
   if (showAddProduct) {
     if (!isApproved) {
       Alert.alert(

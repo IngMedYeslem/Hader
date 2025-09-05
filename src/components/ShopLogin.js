@@ -82,8 +82,17 @@ function ShopLogin({ onLogin }) {
       if (shop.error) {
         Platform.OS === 'web' ? alert(shop.error) : Alert.alert('Erreur', shop.error);
       } else {
+        // Vérifier le statut de validation
+        const isValidated = shop.isApproved || false;
+        
         // Enregistrer l'ID de la boutique pour les notifications
         await AsyncStorage.setItem('currentShopId', shop._id);
+        
+        // Si pas validée, marquer comme première connexion
+        if (!isValidated) {
+          await AsyncStorage.setItem('showWelcomePage', 'true');
+        }
+        
         onLogin(shop);
       }
     } catch (error) {
@@ -94,8 +103,17 @@ function ShopLogin({ onLogin }) {
         const shop = shops.find(s => s.email === email && s.password === password);
         
         if (shop) {
+          // Vérifier le statut de validation (local)
+          const isValidated = shop.isApproved || false;
+          
           // Enregistrer l'ID de la boutique pour les notifications
           await AsyncStorage.setItem('currentShopId', shop._id);
+          
+          // Si pas validée, marquer comme première connexion
+          if (!isValidated) {
+            await AsyncStorage.setItem('showWelcomePage', 'true');
+          }
+          
           onLogin(shop);
         } else {
           Platform.OS === 'web' ? alert('Email ou mot de passe incorrect') : Alert.alert('Erreur', 'Email ou mot de passe incorrect');
@@ -146,6 +164,10 @@ function ShopLogin({ onLogin }) {
       } else {
         // Enregistrer l'ID de la boutique pour les notifications
         await AsyncStorage.setItem('currentShopId', shop.shop._id);
+        
+        // Marquer pour afficher la page d'accueil (nouvelle boutique)
+        await AsyncStorage.setItem('showWelcomePage', 'true');
+        
         onLogin(shop.shop);
       }
     } catch (error) {
@@ -179,8 +201,13 @@ function ShopLogin({ onLogin }) {
         await markShopForSync(newShop);
         
         Platform.OS === 'web' ? alert('Boutique créée en mode local') : Alert.alert('Succès', 'Boutique créée en mode local');
+        
         // Enregistrer l'ID de la boutique pour les notifications
         await AsyncStorage.setItem('currentShopId', newShop._id);
+        
+        // Marquer pour afficher la page d'accueil (nouvelle boutique)
+        await AsyncStorage.setItem('showWelcomePage', 'true');
+        
         onLogin(newShop);
         
         // Essayer de synchroniser immédiatement

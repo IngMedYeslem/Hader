@@ -749,13 +749,7 @@ app.post('/api/shops/login', async (req, res) => {
       // Vérifier le statut d'approbation
       const user = await User.findOne({ linkedShopId: shop._id }).populate('roles', 'name');
       
-      if (user && !user.isApproved) {
-        return res.status(403).json({ 
-          error: 'Votre compte est en attente d\'approbation par un administrateur.',
-          isApproved: false
-        });
-      }
-      
+      // Permettre la connexion même si non approuvée
       res.json({
         ...shop.toObject(),
         isApproved: user ? user.isApproved : false,

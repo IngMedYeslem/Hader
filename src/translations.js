@@ -142,7 +142,19 @@ const translations = {
     emailBody: 'Bonjour, je suis intéressé(e) par le produit. Merci de me contacter.',
     whatsappMessage: 'Bonjour, je suis intéressé(e) par le produit:',
     checking: 'Vérification...',
-    newShopRegistration: 'Nouvelle inscription boutique'
+    newShopRegistration: 'Nouvelle inscription boutique',
+    welcome: 'Bienvenue',
+    shopCreatedSuccessfully: 'Votre boutique a été créée avec succès',
+    congratulations: 'Félicitations',
+    shopCreatedWaitingValidation: 'Votre boutique a été créée et est maintenant en attente de validation par notre équipe.',
+    validationProcess: 'Processus de validation',
+    adminWillReview: 'Un administrateur va examiner votre boutique',
+    validationWithin24h: 'La validation se fait généralement sous 24h',
+    canAddProductsAfterValidation: 'Vous pourrez ajouter des produits après validation',
+    needHelp: 'Besoin d\'aide',
+    understood: 'J\'ai compris',
+    locationSet: 'Localisation définie avec succès',
+    shopValidationMessage: 'Bonjour, je viens de créer ma boutique et j\'aimerais des informations sur la validation.'
   },
   en: {
     loading: 'Loading...',
@@ -275,7 +287,19 @@ const translations = {
     emailBody: 'Hello, I am interested in the product. Please contact me.',
     whatsappMessage: 'Hello, I am interested in the product:',
     checking: 'Checking...',
-    newShopRegistration: 'New shop registration'
+    newShopRegistration: 'New shop registration',
+    welcome: 'Welcome',
+    shopCreatedSuccessfully: 'Your shop has been created successfully',
+    congratulations: 'Congratulations',
+    shopCreatedWaitingValidation: 'Your shop has been created and is now awaiting validation by our team.',
+    validationProcess: 'Validation process',
+    adminWillReview: 'An administrator will review your shop',
+    validationWithin24h: 'Validation is usually done within 24h',
+    canAddProductsAfterValidation: 'You can add products after validation',
+    needHelp: 'Need help',
+    understood: 'I understand',
+    locationSet: 'Location set successfully',
+    shopValidationMessage: 'Hello, I just created my shop and would like information about validation.'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -408,7 +432,19 @@ const translations = {
     emailBody: 'مرحبا، أنا مهتم بالمنتج. يرجى التواصل معي.',
     whatsappMessage: 'مرحبا، أنا مهتم بالمنتج:',
     checking: 'جاري التحقق...',
-    newShopRegistration: 'تسجيل متجر جديد'
+    newShopRegistration: 'تسجيل متجر جديد',
+    welcome: 'مرحباً',
+    shopCreatedSuccessfully: 'تم إنشاء متجرك بنجاح',
+    congratulations: 'تهانينا',
+    shopCreatedWaitingValidation: 'تم إنشاء متجرك وهو الآن في انتظار التحقق من قبل فريقنا.',
+    validationProcess: 'عملية التحقق',
+    adminWillReview: 'سيقوم المدير بمراجعة متجرك',
+    validationWithin24h: 'يتم التحقق عادة خلال 24 ساعة',
+    canAddProductsAfterValidation: 'يمكنك إضافة المنتجات بعد التحقق',
+    needHelp: 'تحتاج مساعدة',
+    understood: 'فهمت',
+    locationSet: 'تم تحديد الموقع بنجاح',
+    shopValidationMessage: 'مرحباً، لقد أنشأت متجري للتو وأود الحصول على معلومات حول التحقق.'
   }
 };
 
