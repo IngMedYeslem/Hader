@@ -348,6 +348,19 @@ export default function AdminDashboard() {
               <Text style={{ color: '#25D366', fontSize: 13, marginBottom: 3, textDecorationLine: 'underline' }}>🟢 {item.whatsapp}</Text>
             </TouchableOpacity>
             <Text style={{ color: '#C8A55F', fontSize: 13, marginBottom: 3 }}>📍 {item.address}</Text>
+            {item.location && (
+              <TouchableOpacity 
+                onPress={() => {
+                  const url = `https://www.google.com/maps?q=${item.location.latitude},${item.location.longitude}`;
+                  Linking.openURL(url);
+                }}
+                style={{ marginTop: 4 }}
+              >
+                <Text style={{ color: '#007AFF', fontSize: 12, textDecorationLine: 'underline' }}>
+                  🗺️ {t('viewOnMapCoords')} ({item.location.latitude.toFixed(4)}, {item.location.longitude.toFixed(4)})
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
           
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

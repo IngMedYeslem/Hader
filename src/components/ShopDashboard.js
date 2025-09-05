@@ -464,7 +464,7 @@ function ShopDashboard({ shop, onLogout }) {
                   <TouchableOpacity 
                     style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
                     onPress={() => {
-                      const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent('Bonjour, je souhaite faire valider mon compte boutique.')}`;
+                      const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopAccountValidationMessage'))}`;
                       Linking.openURL(whatsappUrl).catch(() => {
                         Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
                       });

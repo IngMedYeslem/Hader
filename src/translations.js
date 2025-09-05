@@ -154,7 +154,9 @@ const translations = {
     needHelp: 'Besoin d\'aide',
     understood: 'J\'ai compris',
     locationSet: 'Localisation définie avec succès',
-    shopValidationMessage: 'Bonjour, je viens de créer ma boutique et j\'aimerais des informations sur la validation.'
+    shopValidationMessage: 'Bonjour, je viens de créer ma boutique et j\'aimerais des informations sur la validation.',
+    shopAccountValidationMessage: 'Bonjour, je souhaite faire valider mon compte boutique.',
+    viewOnMapCoords: 'Voir sur la carte'
   },
   en: {
     loading: 'Loading...',
@@ -299,7 +301,9 @@ const translations = {
     needHelp: 'Need help',
     understood: 'I understand',
     locationSet: 'Location set successfully',
-    shopValidationMessage: 'Hello, I just created my shop and would like information about validation.'
+    shopValidationMessage: 'Hello, I just created my shop and would like information about validation.',
+    shopAccountValidationMessage: 'Hello, I would like to validate my shop account.',
+    viewOnMapCoords: 'View on map'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -444,7 +448,9 @@ const translations = {
     needHelp: 'تحتاج مساعدة',
     understood: 'فهمت',
     locationSet: 'تم تحديد الموقع بنجاح',
-    shopValidationMessage: 'مرحباً، لقد أنشأت متجري للتو وأود الحصول على معلومات حول التحقق.'
+    shopValidationMessage: 'مرحباً، لقد أنشأت متجري للتو وأود الحصول على معلومات حول التحقق.',
+    shopAccountValidationMessage: 'مرحباً، أود التحقق من حساب متجري.',
+    viewOnMapCoords: 'عرض على الخريطة'
   }
 };
 
