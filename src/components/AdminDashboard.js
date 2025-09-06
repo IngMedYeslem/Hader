@@ -216,6 +216,10 @@ export default function AdminDashboard() {
         });
         if (response.ok) {
           Platform.OS === 'web' ? alert(`Boutique "${shopName}" validée`) : Alert.alert('Succès', `Boutique "${shopName}" validée`);
+          // Actualiser et changer de filtre si on était sur "rejetées"
+          if (shopFilter === 'rejected') {
+            setShopFilter('validated');
+          }
           await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
         } else {
           Platform.OS === 'web' ? alert('Erreur lors de la validation') : Alert.alert('Erreur', 'Erreur lors de la validation');
@@ -471,6 +475,15 @@ export default function AdminDashboard() {
                 <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>Rejeter</Text>
               </TouchableOpacity>
             </View>
+          )}
+          
+          {isRejected && (
+            <TouchableOpacity
+              style={{ backgroundColor: '#007bff', paddingVertical: 8, borderRadius: 6, alignItems: 'center', marginTop: 8 }}
+              onPress={() => handleValidateShop(item._id, item.name)}
+            >
+              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>Réactiver boutique</Text>
+            </TouchableOpacity>
           )}
         </View>
       </View>

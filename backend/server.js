@@ -9,6 +9,7 @@ const Role = require('./models/Role');
 const { convertVideoFromBase64 } = require('./videoConverter');
 const notificationService = require('./services/notificationService');
 const notificationRoutes = require('./routes/notifications');
+const reactivationRoutes = require('./routes/reactivation');
 
 // Fonction pour envoyer des notifications push Expo
 async function sendExpoPushNotification(expoPushToken, { title, body, data }) {
@@ -48,6 +49,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Routes de notifications
 app.use('/api', notificationRoutes);
+app.use('/api', reactivationRoutes);
 
 // Route spécifique pour les images avec headers appropriés
 app.get('/uploads/*.jpg', (req, res) => {
@@ -228,6 +230,7 @@ app.post('/api/users/:userId/approve', async (req, res) => {
     console.log(`🏠 Nom boutique: ${user.linkedShopId ? user.linkedShopId.name : 'AUCUN'}`);
 
     user.isApproved = true;
+    user.isRejected = false;
     user.approvedAt = new Date();
     await user.save();
 
@@ -710,34 +713,8 @@ mongoose.connection.on('error', (err) => {
   console.error('❌ Erreur MongoDB:', err);
 });
 
-const shopSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  address: { type: String, required: true },
-  phone: { type: String, required: true },
-  whatsapp: { type: String, required: true },
-  location: {
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true }
-  },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const productSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-  price: Number,
-  category: String,
-  stock: { type: Number, default: 0 },
-  images: [String], // Tableau d'images
-  videos: [String], // Tableau de vidéos
-  shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Shop = mongoose.model('Shop', shopSchema);
-const Product = mongoose.model('Product', productSchema);
+const Shop = require('./models/Shop');
+const Product = require('./models/Product');
 
 
 
