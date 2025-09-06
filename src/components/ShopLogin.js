@@ -22,6 +22,7 @@ function ShopLogin({ onLogin }) {
   const [phone, setPhone] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [location, setLocation] = useState({ latitude: '', longitude: '' });
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const { t } = useTranslation();
   const slideAnim = useState(new Animated.Value(300))[0];
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -46,6 +47,7 @@ function ShopLogin({ onLogin }) {
   }, []);
 
   const getCurrentLocation = async () => {
+    setLoadingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -61,6 +63,8 @@ function ShopLogin({ onLogin }) {
       Platform.OS === 'web' ? alert('Localisation obtenue automatiquement') : Alert.alert('Succès', 'Localisation obtenue automatiquement');
     } catch (error) {
       Platform.OS === 'web' ? alert('Impossible d\'obtenir la localisation') : Alert.alert('Erreur', 'Impossible d\'obtenir la localisation');
+    } finally {
+      setLoadingLocation(false);
     }
   };
 
@@ -321,15 +325,18 @@ function ShopLogin({ onLogin }) {
                   <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                     <TouchableOpacity 
                       style={[styles.submitBtn, { 
-                        backgroundColor: '#4CAF50', 
+                        backgroundColor: loadingLocation ? '#ccc' : '#4CAF50', 
                         marginTop: 0,
                         marginBottom: 0,
                         paddingVertical: 15,
                         borderRadius: 12
                       }]} 
                       onPress={getCurrentLocation}
+                      disabled={loadingLocation}
                     >
-                      <Text style={[styles.submitText, { fontSize: 16 }]}>📍 {t('getLocation')}</Text>
+                      <Text style={[styles.submitText, { fontSize: 16 }]}>
+                        {loadingLocation ? '🔄 ' + t('loading') + '...' : '📍 ' + t('getLocation')}
+                      </Text>
                     </TouchableOpacity>
                     {(location.latitude && location.longitude) ? (
                       <Text style={{ marginTop: 10, color: '#333', fontSize: 15 }}>

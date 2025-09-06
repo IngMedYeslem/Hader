@@ -46,7 +46,7 @@ const clearCache = async () => {
 export default function App() {
   const { t } = useTranslation();
   const [currentShop, setCurrentShop] = useState(null);
-  const [showGlobalInterface, setShowGlobalInterface] = useState(true);
+  const [currentView, setCurrentView] = useState('global'); // 'global', 'shopLogin', 'shopDashboard'
   
   // Injecter le CSS pour le curseur RTL sur le web
   useRTLCursor();
@@ -106,6 +106,7 @@ export default function App() {
         if (savedShop) {
           const shop = JSON.parse(savedShop);
           setCurrentShop(shop);
+          setCurrentView('shopDashboard');
           
           if (Platform.OS !== 'web') {
             const AsyncStorage = require('@react-native-async-storage/async-storage').default;
@@ -125,6 +126,7 @@ export default function App() {
   
   const handleLogin = async (shop) => {
     setCurrentShop(shop);
+    setCurrentView('shopDashboard');
     // Sauvegarder pour restauration après rechargement
     if (Platform.OS === 'web') {
       localStorage.setItem('currentShop', JSON.stringify(shop));
@@ -138,6 +140,7 @@ export default function App() {
   
   const handleLogout = () => {
     setCurrentShop(null);
+    setCurrentView('global');
     if (Platform.OS === 'web') {
       localStorage.removeItem('currentShop');
       localStorage.removeItem('currentPage');
@@ -146,41 +149,35 @@ export default function App() {
   };
 
   const renderContent = () => {
-    if (showGlobalInterface) {
-      return (
-        <GlobalInterface 
-          onShopLogin={() => setShowGlobalInterface(false)}
-        />
-      );
+    switch (currentView) {
+      case 'shopDashboard':
+        return (
+          <ShopDashboard 
+            shop={currentShop} 
+            onLogout={handleLogout}
+          />
+        );
+      
+      case 'shopLogin':
+        return (
+          <View style={{ flex: 1 }}>
+            <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 15, paddingTop: Platform.OS === 'ios' ? 45 : 15 }]}>
+              <TouchableOpacity onPress={() => setCurrentView('global')}>
+                <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold', textShadowColor: 'rgba(0, 0, 0, 0.8)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 }}>
+                  ← {t('backToMarketplace')}
+                </Text>
+              </TouchableOpacity>
+              <View />
+            </View>
+            <ShopLogin onLogin={handleLogin} />
+          </View>
+        );
+      
+      default:
+        return (
+          <GlobalInterface onShopLogin={() => setCurrentView('shopLogin')} />
+        );
     }
-    
-    if (currentShop) {
-      return (
-        <ShopDashboard 
-          shop={currentShop} 
-          onLogout={() => {
-            handleLogout();
-            setShowGlobalInterface(true);
-          }} 
-        />
-      );
-    }
-    
-    return (
-      <View style={{ flex: 1 }}>
-        <View style={[styles.headerGlobal, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 15, paddingTop: Platform.OS === 'ios' ? 45 : 15 }]}>
-          <TouchableOpacity 
-            onPress={() => setShowGlobalInterface(true)}
-          >
-            <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold', textShadowColor: 'rgba(0, 0, 0, 0.8)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 }}>
-              ← {t('backToMarketplace')}
-            </Text>
-          </TouchableOpacity>
-          <View />
-        </View>
-        <ShopLogin onLogin={handleLogin} />
-      </View>
-    );
   };
 
   return (

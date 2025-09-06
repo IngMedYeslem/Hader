@@ -156,7 +156,14 @@ const translations = {
     locationSet: 'Localisation définie avec succès',
     shopValidationMessage: 'Bonjour, je viens de créer ma boutique et j\'aimerais des informations sur la validation.',
     shopAccountValidationMessage: 'Bonjour, je souhaite faire valider mon compte boutique.',
-    viewOnMapCoords: 'Voir sur la carte'
+    viewOnMapCoords: 'Voir sur la carte',
+    accountRejected: 'Compte rejeté',
+    rejectionReason: 'Raison du rejet',
+    noReasonProvided: 'Aucune raison fournie',
+    contactAdminForClarification: 'Contactez l\'administrateur pour plus d\'informations',
+    enterRejectionReason: 'Saisir une raison',
+    rejectionReasonPlaceholder: 'Informations incomplètes ou incorrectes',
+    confirmReject: 'Confirmer le rejet'
   },
   en: {
     loading: 'Loading...',
@@ -303,7 +310,14 @@ const translations = {
     locationSet: 'Location set successfully',
     shopValidationMessage: 'Hello, I just created my shop and would like information about validation.',
     shopAccountValidationMessage: 'Hello, I would like to validate my shop account.',
-    viewOnMapCoords: 'View on map'
+    viewOnMapCoords: 'View on map',
+    accountRejected: 'Account rejected',
+    rejectionReason: 'Rejection reason',
+    noReasonProvided: 'No reason provided',
+    contactAdminForClarification: 'Contact administrator for more information',
+    enterRejectionReason: 'Enter rejection reason',
+    rejectionReasonPlaceholder: 'Incomplete or incorrect information',
+    confirmReject: 'Confirm rejection'
   },
   ar: {
     loading: 'جاري التحميل...',
@@ -450,7 +464,14 @@ const translations = {
     locationSet: 'تم تحديد الموقع بنجاح',
     shopValidationMessage: 'مرحباً، لقد أنشأت متجري للتو وأود الحصول على معلومات حول التحقق.',
     shopAccountValidationMessage: 'مرحباً، أود التحقق من حساب متجري.',
-    viewOnMapCoords: 'عرض على الخريطة'
+    viewOnMapCoords: 'عرض على الخريطة',
+    accountRejected: 'تم رفض الحساب',
+    rejectionReason: 'سبب الرفض',
+    noReasonProvided: 'لم يتم تقديم سبب',
+    contactAdminForClarification: 'اتصل بالمدير للحصول على مزيد من المعلومات',
+    enterRejectionReason: 'أدخل سبب الرفض',
+    rejectionReasonPlaceholder: 'معلومات غير مكتملة أو غير صحيحة',
+    confirmReject: 'تأكيد الرفض'
   }
 };
 

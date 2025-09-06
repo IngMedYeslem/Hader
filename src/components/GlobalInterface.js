@@ -15,6 +15,8 @@ import styles from './styles';
 
 export default function GlobalInterface({ onShopLogin }) {
   const { t } = useTranslation();
+  
+  console.log('🌍 GlobalInterface render');
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState('');

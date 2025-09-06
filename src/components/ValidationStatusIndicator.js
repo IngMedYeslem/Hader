@@ -2,21 +2,24 @@ import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useTranslation } from '../translations';
 
-const ValidationStatusIndicator = ({ isApproved, isChecking, style }) => {
+const ValidationStatusIndicator = ({ isApproved, isRejected, isChecking, style }) => {
   const { t } = useTranslation();
 
   const getStatusColor = () => {
     if (isChecking) return '#007AFF';
+    if (isRejected) return '#f44336';
     return isApproved ? '#4CAF50' : '#FF9800';
   };
 
   const getStatusText = () => {
     if (isChecking) return t('checking');
+    if (isRejected) return 'Rejetée';
     return isApproved ? t('approved') : t('pending');
   };
 
   const getStatusIcon = () => {
     if (isChecking) return '🔄';
+    if (isRejected) return '❌';
     return isApproved ? '✅' : '⏳';
   };
 

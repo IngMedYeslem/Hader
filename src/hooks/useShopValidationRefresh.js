@@ -4,6 +4,7 @@ const API_URL = 'http://172.20.10.6:3000/api';
 
 export const useShopValidationRefresh = (shopId, onValidationChange) => {
   const [isApproved, setIsApproved] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
 
   const checkValidationStatus = useCallback(async () => {
     if (!shopId) return;
@@ -17,24 +18,36 @@ export const useShopValidationRefresh = (shopId, onValidationChange) => {
         );
         
         const newApprovalStatus = linkedUser ? linkedUser.isApproved === true : false;
+        const newRejectedStatus = linkedUser ? linkedUser.isRejected === true : false;
         
-        if (newApprovalStatus && !isApproved && onValidationChange) {
-          setIsApproved(newApprovalStatus);
-          onValidationChange(newApprovalStatus);
-        } else {
-          setIsApproved(newApprovalStatus);
+        console.log('🔍 Vérification statut pour boutique:', shopId, {
+          linkedUser: linkedUser ? linkedUser.username : 'aucun',
+          isApproved: linkedUser?.isApproved,
+          isRejected: linkedUser?.isRejected,
+          newApprovalStatus,
+          newRejectedStatus
+        });
+        
+        const statusChanged = (newApprovalStatus !== isApproved) || (newRejectedStatus !== isRejected);
+        
+        setIsApproved(newApprovalStatus);
+        setIsRejected(newRejectedStatus);
+        
+        if (statusChanged && onValidationChange) {
+          console.log('🔄 Changement détecté:', { newApprovalStatus, newRejectedStatus });
+          onValidationChange(newApprovalStatus, newRejectedStatus);
         }
       }
     } catch (error) {
       console.log('❌ Erreur vérification statut validation:', error);
     }
-  }, [shopId, isApproved, onValidationChange]);
+  }, [shopId, isApproved, isRejected, onValidationChange]);
 
   useEffect(() => {
-    const interval = setInterval(checkValidationStatus, 5000);
     checkValidationStatus();
+    const interval = setInterval(checkValidationStatus, 10000);
     return () => clearInterval(interval);
   }, [checkValidationStatus]);
 
-  return { isApproved, checkValidationStatus };
+  return { isApproved, isRejected, checkValidationStatus };
 };

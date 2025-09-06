@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema({
   approvedAt: { type: Date },
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   linkedShopId: { type: mongoose.Schema.Types.ObjectId, ref: "Shop" }, // 🔹 Liaison avec une boutique
-  expoPushToken: { type: String } // 🔹 Token Expo pour notifications push
+  expoPushToken: { type: String }, // 🔹 Token Expo pour notifications push
+  isRejected: { type: Boolean, default: false }, // 🔹 Statut de rejet
+  rejectionReason: { type: String }, // 🔹 Raison du rejet
+  rejectedAt: { type: Date } // 🔹 Date de rejet
 });
 
 const User = mongoose.model("User", userSchema);

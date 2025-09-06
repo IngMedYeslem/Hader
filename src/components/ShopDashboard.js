@@ -33,12 +33,9 @@ function ShopDashboard({ shop, onLogout }) {
   const { currentPage, navigateTo } = useNavigation();
   
   // Hook pour l'actualisation automatique du statut de validation
-  const { isApproved: autoRefreshApproved } = useShopValidationRefresh(
+  const { isApproved: autoRefreshApproved, isRejected: autoRefreshRejected } = useShopValidationRefresh(
     shop._id,
-    () => {
-      setIsApproved(true);
-      window.location.reload();
-    }
+    null
   );
 
   const handleEditProduct = (product) => {
@@ -88,8 +85,10 @@ function ShopDashboard({ shop, onLogout }) {
   
   // Synchroniser le statut avec le hook d'actualisation automatique
   useEffect(() => {
-    setIsApproved(autoRefreshApproved);
-  }, [autoRefreshApproved]);
+    if (autoRefreshApproved !== isApproved) {
+      setIsApproved(autoRefreshApproved);
+    }
+  }, [autoRefreshApproved, isApproved]);
   
   const checkApprovalStatus = async () => {
     try {
@@ -353,6 +352,7 @@ function ShopDashboard({ shop, onLogout }) {
               </Text>
               <ValidationStatusIndicator 
                 isApproved={isApproved} 
+                isRejected={autoRefreshRejected}
                 isChecking={false}
               />
             </View>
@@ -448,6 +448,37 @@ function ShopDashboard({ shop, onLogout }) {
                   <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
                   <Text style={styles.emptySubText}>{t('tapPlusToAdd')}</Text>
                 </>
+              ) : autoRefreshRejected ? (
+                <View style={styles.card}>
+                  <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15, textAlign: 'center', color: '#dc3545' }]}>
+                    ❌ {t('accountRejected')}
+                  </Text>
+                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
+                    {t('rejectionReason')}:
+                  </Text>
+                  <View style={{ backgroundColor: '#f8d7da', padding: 15, borderRadius: 8, marginBottom: 20 }}>
+                    <Text style={{ color: '#721c24', fontSize: 14, textAlign: 'center' }}>
+                      {shop.rejectionReason || t('noReasonProvided')}
+                    </Text>
+                  </View>
+                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 20 }]}>
+                    {t('contactAdminForClarification')}
+                  </Text>
+                  
+                  <TouchableOpacity 
+                    style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
+                    onPress={() => {
+                      const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopAccountValidationMessage'))}`;
+                      Linking.openURL(whatsappUrl).catch(() => {
+                        Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
+                      });
+                    }}
+                  >
+                    <Text style={styles.submitText}>
+                      📱 {t('contactWhatsApp')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <View style={styles.card}>
                   <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>

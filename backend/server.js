@@ -195,7 +195,10 @@ app.get('/api/users', async (req, res) => {
       email: user.email,
       roles: user.roles.map(role => role.name),
       isApproved: user.isApproved,
+      isRejected: user.isRejected,
+      rejectionReason: user.rejectionReason,
       approvedAt: user.approvedAt,
+      rejectedAt: user.rejectedAt,
       approvedBy: user.approvedBy?.username,
       linkedShop: user.linkedShopId ? {
         id: user.linkedShopId._id,
@@ -259,6 +262,25 @@ app.post('/api/users/:userId/approve', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Erreur approbation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/users/:userId/reject', async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    user.isRejected = true;
+    user.rejectionReason = reason || 'Compte rejeté par l\'administrateur';
+    user.rejectedAt = new Date();
+    await user.save();
+
+    res.json({ message: `Utilisateur ${user.username} rejeté` });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -753,6 +775,8 @@ app.post('/api/shops/login', async (req, res) => {
       res.json({
         ...shop.toObject(),
         isApproved: user ? user.isApproved : false,
+        isRejected: user ? user.isRejected : false,
+        rejectionReason: user ? user.rejectionReason : null,
         approvedAt: user ? user.approvedAt : null,
         userRoles: user ? user.roles.map(role => role.name) : []
       });

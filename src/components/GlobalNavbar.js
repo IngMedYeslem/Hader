@@ -8,6 +8,8 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
   const { t, setLanguage, currentLanguage } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
   
+  console.log('🧭 GlobalNavbar render');
+  
   const handleLanguageChange = () => {
     const nextLang = currentLanguage === 'fr' ? 'en' : currentLanguage === 'en' ? 'ar' : 'fr';
     setLanguage(nextLang);
@@ -65,7 +67,10 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
           </TouchableOpacity>
           
           <TouchableOpacity 
-            onPress={onShopLogin} 
+            onPress={() => {
+              console.log('💆 Clic bouton espace boutique');
+              onShopLogin();
+            }} 
             style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
           >
             <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
