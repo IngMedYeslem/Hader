@@ -66,7 +66,7 @@ function ShopDashboard({ shop, onLogout }) {
   const checkWelcomePage = async () => {
     try {
       const shouldShow = await AsyncStorage.getItem('showWelcomePage');
-      if (shouldShow === 'true' && !isApproved) {
+      if (shouldShow === 'true' && !isApproved && !autoRefreshRejected) {
         setShowWelcomePage(true);
       }
     } catch (error) {
@@ -88,7 +88,11 @@ function ShopDashboard({ shop, onLogout }) {
     if (autoRefreshApproved !== isApproved) {
       setIsApproved(autoRefreshApproved);
     }
-  }, [autoRefreshApproved, isApproved]);
+    // Si le compte est rejeté, masquer la page de bienvenue
+    if (autoRefreshRejected && showWelcomePage) {
+      setShowWelcomePage(false);
+    }
+  }, [autoRefreshApproved, autoRefreshRejected, isApproved, showWelcomePage]);
   
   const checkApprovalStatus = async () => {
     try {
@@ -153,8 +157,8 @@ function ShopDashboard({ shop, onLogout }) {
     }
   };
 
-  // Afficher la page d'accueil pour les boutiques non validées
-  if (showWelcomePage && !isApproved) {
+  // Afficher la page d'accueil pour les boutiques non validées (mais pas rejetées)
+  if (showWelcomePage && !isApproved && !autoRefreshRejected) {
     return (
       <View style={styles.wrapper}>
         <ImageBackground 
