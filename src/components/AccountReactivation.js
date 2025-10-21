@@ -43,20 +43,39 @@ export const AccountReactivation = ({ shopId, onStatusChange }) => {
       <Text style={{ marginBottom: 15 }}>
         Votre boutique a été suspendue. Réglez les problèmes identifiés et demandez la réactivation.
       </Text>
-      <TouchableOpacity
-        onPress={handleReactivationRequest}
-        disabled={isRequesting}
-        style={{
-          backgroundColor: '#007bff',
-          padding: 12,
-          borderRadius: 6,
-          alignItems: 'center'
-        }}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>
-          {isRequesting ? 'En cours...' : 'Demander la réactivation'}
-        </Text>
-      </TouchableOpacity>
+      
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <TouchableOpacity
+          onPress={() => onStatusChange?.('edit')}
+          style={{
+            flex: 1,
+            backgroundColor: '#C8A55F',
+            padding: 12,
+            borderRadius: 6,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+            Modifier infos
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          onPress={handleReactivationRequest}
+          disabled={isRequesting}
+          style={{
+            flex: 1,
+            backgroundColor: '#007bff',
+            padding: 12,
+            borderRadius: 6,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+            {isRequesting ? 'En cours...' : 'Demander réactivation'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

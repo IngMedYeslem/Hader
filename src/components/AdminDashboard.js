@@ -4,7 +4,7 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 
-const API_URL = 'http://172.20.10.6:3000/api';
+const API_URL = 'http://172.20.10.5:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -447,6 +447,14 @@ export default function AdminDashboard() {
               <Text style={{ color: '#721c24', fontSize: 12, marginTop: 2 }}>
                 {item.rejectionReason || 'Aucune raison spécifiée'}
               </Text>
+              {item.missingDataNote && (
+                <View style={{ marginTop: 8, backgroundColor: '#fff3cd', padding: 8, borderRadius: 5 }}>
+                  <Text style={{ color: '#856404', fontSize: 11, fontWeight: 'bold' }}>Note admin:</Text>
+                  <Text style={{ color: '#856404', fontSize: 11, marginTop: 2 }}>
+                    {item.missingDataNote}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
           

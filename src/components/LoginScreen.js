@@ -74,7 +74,7 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.container}>
         <Card style={styles.card}>
           <Image 
-            source={require('../../assets/logo.png')}
+            source={require('../../assets/logof.png')}
             style={[styles.productImage, { textAlign: "left" }]} 
           />
           

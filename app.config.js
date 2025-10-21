@@ -13,7 +13,7 @@ export default {
         [
           "expo-notifications",
           {
-            icon: "./assets/logo.png",
+            icon: "./assets/logof.png",
             color: "#C8A55F"
           }
         ],
@@ -46,16 +46,16 @@ export default {
           "WAKE_LOCK"
         ],
         adaptiveIcon: {
-          foregroundImage: "./assets/logo.png",
+          foregroundImage: "./assets/logof.png",
           backgroundColor: "#FFFFFF"
         },
         useNextNotificationsApi: true
       },
       web: {
-        favicon: "./assets/logo.png"
+        favicon: "./assets/logof.png"
       },
       extra: {
-        API_URL: process.env.API_URL || "http://172.20.10.6:3000", // Utilisation d'une variable d'environnement si elle est définie
+        API_URL: process.env.API_URL || "http://172.20.10.5:3000", // Utilisation d'une variable d'environnement si elle est définie
         eas: {
           projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a"
         }

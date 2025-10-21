@@ -96,7 +96,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const checkApprovalStatus = async () => {
     try {
-      const response = await fetch(`http://172.20.10.6:3000/api/shops/${shop._id}`);
+      const response = await fetch(`http://172.20.10.5:3000/api/shops/${shop._id}`);
       if (response.ok) {
         const shopData = await response.json();
         console.log('🔄 Statut approbation vérifié:', shopData.isApproved);
@@ -469,8 +469,39 @@ function ShopDashboard({ shop, onLogout }) {
                     {t('contactAdminForClarification')}
                   </Text>
                   
+                  <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+                    <TouchableOpacity 
+                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#C8A55F' }]}
+                      onPress={() => setShopInfoVisible(true)}
+                    >
+                      <Text style={[styles.submitText, { fontSize: 12 }]}>
+                        ✏️ Modifier infos
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#007bff' }]}
+                      onPress={async () => {
+                        try {
+                          const response = await fetch(`http://172.20.10.5:3000/api/shops/${shop._id}/reactivate`, {
+                            method: 'POST'
+                          });
+                          if (response.ok) {
+                            Alert.alert('Succès', 'Demande de réactivation envoyée');
+                          }
+                        } catch (error) {
+                          Alert.alert('Erreur', 'Impossible d\'envoyer la demande');
+                        }
+                      }}
+                    >
+                      <Text style={[styles.submitText, { fontSize: 12 }]}>
+                        🔄 Réactiver
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  
                   <TouchableOpacity 
-                    style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
+                    style={[styles.submitBtn, { backgroundColor: '#25D366' }]}
                     onPress={() => {
                       const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopAccountValidationMessage'))}`;
                       Linking.openURL(whatsappUrl).catch(() => {
@@ -620,6 +651,7 @@ function ShopDashboard({ shop, onLogout }) {
           shop={shop}
           visible={shopInfoVisible}
           onClose={() => setShopInfoVisible(false)}
+          allowEdit={autoRefreshRejected}
         />
 
         {/* Modal des notifications */}

@@ -14,7 +14,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
 
   const checkStatus = async () => {
     try {
-      const response = await fetch(`http://172.20.10.6:3000/api/shops/${shopId}/status`);
+      const response = await fetch(`http://172.20.10.5:3000/api/shops/${shopId}/status`);
       const data = await response.json();
       setShopStatus(data.status);
     } catch (error) {
@@ -26,7 +26,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
   const requestReactivation = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://172.20.10.6:3000/api/shops/${shopId}/reactivate`, {
+      const response = await fetch(`http://172.20.10.5:3000/api/shops/${shopId}/reactivate`, {
         method: 'POST'
       });
       

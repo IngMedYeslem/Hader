@@ -79,7 +79,7 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
           </TouchableOpacity>
           
           <Image 
-            source={require('../../assets/okaadh.png')} 
+            source={require('../../assets/logof.png')} 
             style={{ 
               width: 80, 
               height: 30, 

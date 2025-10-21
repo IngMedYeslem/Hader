@@ -24,7 +24,7 @@ const SimpleNavbar = () => {
         onPress={() => navigateTo('dashboard')}
       >
         <Image
-          source={require('../../assets/logo.png')}
+          source={require('../../assets/logof.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />

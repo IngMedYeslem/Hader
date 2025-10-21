@@ -68,7 +68,7 @@ const Navbar = () => {
       {/* === Logo centré === */}
         <TouchableOpacity  style={styles.logoButton} onPress={() => navigation.navigate("HomeScreen")}>
           <Image
-            source={require("../../assets/logo.png")}
+            source={require("../../assets/logof.png")}
             style={styles.logoImage}
             resizeMode="contain"
           />

@@ -11,6 +11,7 @@ const shopSchema = new mongoose.Schema({
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },
+  missingDataNote: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
