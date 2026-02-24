@@ -1,24 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { VideoView, useVideoPlayer } from 'expo-video';
 import { productAPI } from '../services/api';
 import { showAlert } from '../utils/alert';
+import VideoThumbnail from './VideoThumbnail';
 import styles from './styles';
 
 // Composant séparé pour chaque vidéo
 const VideoItem = ({ uri, index, onDelete, deleting }) => {
-  const player = useVideoPlayer(uri, (player) => {
-    player.loop = false;
-    player.muted = true;
-  });
-
   return (
     <View style={styles.mediaItem}>
-      <VideoView
-        player={player}
+      <VideoThumbnail
+        uri={uri}
         style={styles.mediaPreview}
-        contentFit="contain"
-        nativeControls={false}
+        showPlayButton={true}
       />
       <TouchableOpacity 
         style={[

@@ -55,7 +55,7 @@ export default {
         favicon: "./assets/logof.png"
       },
       extra: {
-        API_URL: process.env.API_URL || "http://172.20.10.5:3000", // Utilisation d'une variable d'environnement si elle est définie
+        API_URL: process.env.API_URL || "http://192.168.0.138:3000", // Utilisation d'une variable d'environnement si elle est définie
         eas: {
           projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a"
         }

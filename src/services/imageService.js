@@ -1,14 +1,15 @@
 import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // URL API dynamique
 const getApiUrl = () => {
   return __DEV__ && Platform.OS !== 'web' 
-    ? 'http://172.20.10.5:3000/api'
+    ? 'http://192.168.0.138:3000/api'
     : 'http://localhost:3000/api';
 };
 
 export const imageService = {
-  // Convertir une image locale en base64 avec compression
+  // Convertir une image locale en base64 avec compression - Version améliorée
   convertToBase64: async (uri) => {
     try {
       console.log('🔄 Conversion image:', uri.substring(0, 50) + '...');
@@ -28,22 +29,46 @@ export const imageService = {
       // Pour mobile, utiliser ImageManipulator pour compresser
       const ImageManipulator = require('expo-image-manipulator');
       
+      // Réduire la compression pour éviter les images trop dégradées
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         uri,
-        [{ resize: { width: 800 } }], // Redimensionner à 800px de largeur max
+        [{ resize: { width: 800 } }], // Taille plus grande pour garder la qualité
         { 
-          compress: 0.7, // Compression à 70%
+          compress: 0.7, // Compression moins agressive
           format: ImageManipulator.SaveFormat.JPEG 
         }
       );
       
-      const FileSystem = require('expo-file-system');
       const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64'
       });
+      
+      // Vérifier que l'image base64 est valide
+      if (!base64 || base64.length < 100) {
+        console.error('❌ Image base64 trop courte ou vide, tentative sans compression...');
+        
+        // Tentative sans compression
+        try {
+          const originalBase64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: 'base64'
+          });
+          
+          if (originalBase64 && originalBase64.length > 100) {
+            const dataUri = `data:image/jpeg;base64,${originalBase64}`;
+            console.log('✅ Image originale utilisée sans compression');
+            return dataUri;
+          }
+        } catch (originalError) {
+          console.error('❌ Échec lecture image originale:', originalError);
+        }
+        
+        return uri; // Retourner l'URI originale
+      }
       
       const dataUri = `data:image/jpeg;base64,${base64}`;
       console.log('✅ Conversion et compression réussies:', dataUri.substring(0, 50) + '...');
+      console.log('📊 Taille base64:', base64.length, 'caractères');
+      
       return dataUri;
     } catch (error) {
       console.error('❌ Erreur conversion base64:', error);
@@ -60,7 +85,7 @@ export const imageService = {
       
       img.onload = () => {
         // Redimensionner si trop grande
-        const maxWidth = 800;
+        const maxWidth = 600;
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
         
         canvas.width = img.width * ratio;
@@ -68,16 +93,24 @@ export const imageService = {
         
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Compresser à 70%
-        const compressedDataUri = canvas.toDataURL('image/jpeg', 0.7);
-        resolve(compressedDataUri);
+        // Compresser à 50% pour réduire la taille
+        const compressedDataUri = canvas.toDataURL('image/jpeg', 0.7); // Compression moins agressive
+        
+        // Vérifier que l'image compressée est valide
+        if (!compressedDataUri || compressedDataUri.length < 100 || !compressedDataUri.startsWith('data:image/')) {
+          console.error('❌ Image compressée invalide, utilisation de l\'originale');
+          resolve(dataUri); // Retourner l'image originale
+        } else {
+          console.log('✅ Compression web réussie, taille:', compressedDataUri.length);
+          resolve(compressedDataUri);
+        }
       };
       
       img.src = dataUri;
     });
   },
 
-  // Traiter un tableau d'images
+  // Traiter un tableau d'images - Version simplifiée
   processImages: async (images) => {
     if (!images || images.length === 0) return [];
     
@@ -88,19 +121,10 @@ export const imageService = {
       const image = images[i];
       console.log(`Image ${i + 1}:`, image.substring(0, 50) + '...');
       
-      if (image.startsWith('file://')) {
-        console.log('📱 Conversion image locale nécessaire');
-        const base64Image = await imageService.convertToBase64(image);
-        if (base64Image && base64Image.startsWith('data:')) {
-          processedImages.push(base64Image);
-          console.log('✅ Image convertie en base64');
-        } else {
-          console.log('❌ Échec conversion, image ignorée');
-        }
-      } else if (image.startsWith('data:') || image.startsWith('http')) {
-        // Images déjà en base64 ou URLs web
+      // Accepter toutes les images valides sans conversion automatique
+      if (image.startsWith('file://') || image.startsWith('data:') || image.startsWith('http') || image.startsWith('/uploads/')) {
         processedImages.push(image);
-        console.log('✅ Image déjà compatible');
+        console.log('✅ Image acceptée');
       } else {
         console.log('⚠️ Format image non reconnu, ignorée');
       }

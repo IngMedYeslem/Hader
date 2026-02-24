@@ -150,10 +150,10 @@ class PushNotificationService {
       console.log('Notification cliquée:', response);
     });
     
-    // Vérification périodique pour le web
+    // Vérification périodique pour le web (réduite à 30 secondes)
     setInterval(() => {
       this.checkForWebNotifications();
-    }, 10000); // Toutes les 10 secondes
+    }, 30000); // Toutes les 30 secondes au lieu de 10
   }
   
   async checkForWebNotifications() {
@@ -161,20 +161,26 @@ class PushNotificationService {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5s
+      
       const notifications = await this.getAllNotifications();
+      clearTimeout(timeoutId);
       
       for (const notification of notifications) {
         if (!notification.read) {
-          // Simuler une notification web
           console.log('🔔 NOTIFICATION WEB:', notification.title);
           console.log('💬 MESSAGE:', notification.body);
           
-          // Marquer comme lue
           await this.markNotificationAsRead(notification._id);
         }
       }
     } catch (error) {
-      console.error('Erreur vérification notifications web:', error);
+      if (error.name === 'AbortError') {
+        console.log('⏱️ Timeout vérification notifications (ignoré)');
+      } else {
+        console.error('Erreur vérification notifications web:', error);
+      }
     }
   }
   
@@ -264,8 +270,14 @@ class PushNotificationService {
       if (!userId && shopData) {
         try {
           const shop = JSON.parse(shopData);
-          // Chercher l'utilisateur lié à cette boutique
-          const response = await fetch(`${API_CONFIG.BASE_URL}/users`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
+          const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          
           if (response.ok) {
             const users = await response.json();
             const linkedUser = users.find(user => 
@@ -278,19 +290,30 @@ class PushNotificationService {
             }
           }
         } catch (e) {
-          console.error('Erreur parsing shop data:', e);
+          if (e.name === 'AbortError') {
+            console.log('⏱️ Timeout récupération utilisateurs');
+          }
+          return [];
         }
       }
       
       if (!targetId) return [];
       
-      console.log(`📱 Récupération notifications pour: ${targetId}`);
-      const response = await fetch(`${API_CONFIG.BASE_URL}/users/${targetId}/notifications`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/users/${targetId}/notifications`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
       if (!response.ok) return [];
       
       return await response.json();
     } catch (error) {
-      console.error('Erreur récupération notifications:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Erreur récupération notifications:', error);
+      }
       return [];
     }
   }

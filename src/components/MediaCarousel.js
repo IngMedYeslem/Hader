@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, Text, Platform } from 'react-native';
 import { getMediaUrl } from '../services/api';
+import VideoThumbnail from './VideoThumbnail';
 import styles from './styles';
 
 const VideoPlayer = ({ uri, style }) => {
@@ -11,14 +12,16 @@ const VideoPlayer = ({ uri, style }) => {
         style={style}
         controls
         preload="metadata"
+        playsInline
       />
     );
   }
   
   const { VideoView, useVideoPlayer } = require('expo-video');
   const player = useVideoPlayer(uri, (player) => {
-    player.loop = true;
-    player.muted = true;
+    player.loop = false;
+    player.muted = false;
+    player.volume = 1.0;
   });
   
   return (
@@ -26,9 +29,9 @@ const VideoPlayer = ({ uri, style }) => {
       player={player}
       style={[style, { height: 250 }]}
       contentFit="contain"
-      nativeControls
-      allowsFullscreen
-      allowsPictureInPicture
+      nativeControls={true}
+      allowsFullscreen={true}
+      allowsPictureInPicture={true}
     />
   );
 };
@@ -94,9 +97,10 @@ export default function MediaCarousel({ images = [], videos = [] }) {
               onPress={() => setCurrentIndex(index)}
             >
               {media.type === 'video' ? (
-                <VideoPlayer 
+                <VideoThumbnail 
                   uri={media.uri}
                   style={styles.thumbnailImage}
+                  showPlayButton={false}
                 />
               ) : (
                 <Image 

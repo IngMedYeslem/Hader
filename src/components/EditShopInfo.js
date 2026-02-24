@@ -8,7 +8,10 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
     email: shop.email || '',
     address: shop.address || '',
     phone: shop.phone || '',
-    whatsapp: shop.whatsapp || ''
+    whatsapp: shop.whatsapp || '',
+    description: shop.description || '',
+    stock: shop.stock?.toString() || '0',
+    category: shop.category || ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,10 +23,15 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`http://172.20.10.5:3000/api/shops/${shop._id}`, {
+      const dataToSend = {
+        ...formData,
+        stock: parseInt(formData.stock) || 0
+      };
+
+      const response = await fetch(`http://192.168.0.138:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(dataToSend)
       });
 
       if (response.ok) {
@@ -87,6 +95,33 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           onChangeText={(text) => setFormData({...formData, whatsapp: text})}
           placeholder="Numéro WhatsApp"
           keyboardType="phone-pad"
+        />
+
+        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Description</Text>
+        <TextInput
+          style={[styles.input, { height: 80 }]}
+          value={formData.description}
+          onChangeText={(text) => setFormData({...formData, description: text})}
+          placeholder="Description de la boutique"
+          multiline
+          numberOfLines={3}
+        />
+
+        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Stock disponible</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.stock}
+          onChangeText={(text) => setFormData({...formData, stock: text})}
+          placeholder="Quantité en stock"
+          keyboardType="numeric"
+        />
+
+        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Catégorie</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.category}
+          onChangeText={(text) => setFormData({...formData, category: text})}
+          placeholder="Catégorie de la boutique"
         />
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>

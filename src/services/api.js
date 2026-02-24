@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Utiliser l'IP locale pour les smartphones
 const API_URL = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://172.20.10.5:3000/api'  // Remplacez par votre IP locale
+  ? 'http://192.168.0.138:3000/api'  // Remplacez par votre IP locale
   : 'http://localhost:3000/api';
 
 // Nettoyer les boutiques locales fantômes
@@ -38,22 +38,32 @@ export const showPendingShops = async () => {
 };
 
 console.log('API_URL:', API_URL);
+console.log('Base URL pour médias:', Platform.OS !== 'web' ? 'http://192.168.0.138:3000' : 'http://localhost:3000');
 
 // Construire l'URL complète pour les médias
 export const getMediaUrl = (mediaPath) => {
   if (!mediaPath) return null;
   
-  // Si c'est déjà une URL complète, vérifier si elle utilise localhost sur mobile
+  console.log('🔗 Construction URL pour:', mediaPath);
+  
+  // Si c'est déjà une URL complète
   if (mediaPath.startsWith('http')) {
     if (Platform.OS !== 'web' && mediaPath.includes('localhost')) {
-      return mediaPath.replace('localhost', '172.20.10.5');
+      const correctedUrl = mediaPath.replace('localhost', '192.168.0.138');
+      console.log('✅ URL corrigée:', correctedUrl);
+      return correctedUrl;
     }
+    console.log('✅ URL déjà complète:', mediaPath);
     return mediaPath;
   }
   
-  // Construire l'URL avec la base API
-  const baseUrl = API_URL.replace('/api', '');
-  return `${baseUrl}/${mediaPath}`;
+  // Construire l'URL complète pour les chemins relatifs
+  const baseUrl = Platform.OS !== 'web' ? 'http://192.168.0.138:3000' : 'http://localhost:3000';
+  const cleanPath = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
+  const fullUrl = `${baseUrl}${cleanPath}`;
+  
+  console.log('✅ URL construite:', fullUrl);
+  return fullUrl;
 };
 
 export const shopAPI = {
@@ -104,30 +114,30 @@ export const productAPI = {
   create: async (product) => {
     try {
       console.log('=== Envoi produit ===');
-      console.log('URL API:', API_URL);
       console.log('Produit:', { name: product.name, price: product.price, shopId: product.shopId });
-      console.log('Images à envoyer:', product.images?.length || 0);
-      console.log('Vidéos à envoyer:', product.videos?.length || 0);
+      console.log('Images à traiter:', product.images?.length || 0);
+      console.log('Vidéos à traiter:', product.videos?.length || 0);
       
-      // Vérifier la taille des images et vidéos
-      if (product.images) {
-        product.images.forEach((img, i) => {
-          console.log(`Image ${i + 1}: ${img.substring(0, 30)}... (${img.length} chars)`);
-        });
-      }
-      if (product.videos) {
-        product.videos.forEach((vid, i) => {
-          console.log(`Vidéo ${i + 1}: ${vid.substring(0, 30)}... (${vid.length} chars)`);
-        });
-      }
+      // Convertir tous les médias en URLs avant envoi
+      const { uploadService } = require('./uploadService');
+      const { images: imageUrls, videos: videoUrls } = await uploadService.processMediaToUrls(
+        product.images || [], 
+        product.videos || []
+      );
+      
+      const productData = {
+        ...product,
+        images: imageUrls,
+        videos: videoUrls
+      };
+      
+      console.log('URLs finales - Images:', imageUrls.length, 'Vidéos:', videoUrls.length);
       
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product),
+        body: JSON.stringify(productData),
       });
-      
-      console.log('Réponse status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -138,8 +148,8 @@ export const productAPI = {
       const result = await response.json();
       console.log('=== Produit créé ===');
       console.log('ID:', result._id);
-      console.log('Images sauvegardées:', result.images?.length || 0);
-      console.log('Vidéos sauvegardées:', result.videos?.length || 0);
+      console.log('URLs images:', result.images?.length || 0);
+      console.log('URLs vidéos:', result.videos?.length || 0);
       return result;
     } catch (error) {
       console.error('❌ Erreur création produit:', error);
@@ -159,16 +169,39 @@ export const productAPI = {
     return response.json();
   },
 
-  uploadVideo: async (videoData) => {
-    const formData = new FormData();
-    const blob = await fetch(videoData).then(r => r.blob());
-    formData.append('video', blob, 'video.mp4');
-    
-    const response = await fetch(`${API_URL}/upload-video`, {
-      method: 'POST',
-      body: formData
-    });
-    return response.json();
+  uploadMedia: async (mediaData, mediaType = 'image') => {
+    try {
+      const formData = new FormData();
+      
+      if (Platform.OS === 'web') {
+        const blob = await fetch(mediaData).then(r => r.blob());
+        const extension = mediaType === 'video' ? 'mp4' : 'jpg';
+        formData.append('media', blob, `media.${extension}`);
+      } else {
+        const mimeType = mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
+        const extension = mediaType === 'video' ? 'mp4' : 'jpg';
+        
+        formData.append('media', {
+          uri: mediaData,
+          type: mimeType,
+          name: `media.${extension}`,
+        });
+      }
+      
+      const response = await fetch(`${API_URL}/upload-media`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      return response.json();
+    } catch (error) {
+      console.error('❌ Erreur upload média:', error);
+      throw error;
+    }
   },
 
   update: async (productId, productData) => {

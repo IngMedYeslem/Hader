@@ -11,6 +11,7 @@ const notificationService = require('./services/notificationService');
 const notificationRoutes = require('./routes/notifications');
 const reactivationRoutes = require('./routes/reactivation');
 const shopRoutes = require('./routes/shops');
+const productRoutes = require('./routes/products');
 
 // Fonction pour envoyer des notifications push Expo
 async function sendExpoPushNotification(expoPushToken, { title, body, data }) {
@@ -46,24 +47,48 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use('/uploads', express.static('uploads'));
+
 
 // Routes de notifications
 app.use('/api', notificationRoutes);
 app.use('/api', reactivationRoutes);
 app.use('/api', shopRoutes);
+app.use('/api/products', productRoutes);
 
-// Route spécifique pour les images avec headers appropriés
-app.get('/uploads/*.jpg', (req, res) => {
-  const imagePath = path.join(__dirname, req.path);
-  if (fs.existsSync(imagePath)) {
-    res.setHeader('Content-Type', 'image/jpeg');
+// Middleware de debug pour upload
+const debugUpload = (req, res, next) => {
+  console.log('🔍 DEBUG UPLOAD:');
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Content-Length:', req.get('Content-Length'));
+  
+  let totalSize = 0;
+  req.on('data', chunk => {
+    totalSize += chunk.length;
+  });
+  
+  req.on('end', () => {
+    console.log('📊 Total données reçues:', totalSize, 'bytes');
+  });
+  
+  next();
+};
+
+app.use('/api/upload-media', debugUpload);
+
+// Route d'upload média
+const uploadRoutes = require('./routes/upload');
+app.use('/api', uploadRoutes);
+
+// Configuration des headers pour les fichiers statiques
+app.use('/uploads', (req, res, next) => {
+  // Headers pour les images
+  if (req.path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    res.setHeader('Content-Type', req.path.endsWith('.jpg') || req.path.endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=31536000');
-    res.sendFile(imagePath);
-  } else {
-    res.status(404).send('Image non trouvée');
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
-});
+  next();
+}, express.static('uploads'));
 
 // Route spécifique pour les vidéos avec streaming mobile optimisé
 app.get('/uploads/*.mp4', (req, res) => {
@@ -661,9 +686,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       // Corriger les URLs d'images
       if (product.images) {
         product.images = product.images.map(img => {
-          if (img.includes('localhost:3000') || img.includes('172.20.10.5:3000') || img.includes('192.168.1.126:3000')) {
+          if (img.includes('localhost:3000') || img.includes('192.168.0.138:3000') || img.includes('192.168.1.126:3000')) {
             updated = true;
-            return img.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.5:3000');
+            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.138:3000');
           }
           return img;
         });
@@ -673,9 +698,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       if (product.videos) {
         product.videos = product.videos.map(vid => {
           let correctedVid = vid;
-          if (vid.includes('localhost:3000') || vid.includes('172.20.10.5:3000') || vid.includes('192.168.1.126:3000')) {
+          if (vid.includes('localhost:3000') || vid.includes('192.168.0.138:3000') || vid.includes('192.168.1.126:3000')) {
             updated = true;
-            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://172.20.10.5:3000');
+            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.138:3000');
           }
           // Ajouter .mp4 si manquant
           if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
@@ -717,6 +742,18 @@ mongoose.connection.on('error', (err) => {
 
 const Shop = require('./models/Shop');
 const Product = require('./models/Product');
+
+// Route pour récupérer les notifications d'un utilisateur
+app.get('/api/users/:userId/notifications', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const notifications = await notificationService.getUserNotifications(userId);
+    res.json(notifications);
+  } catch (error) {
+    console.error('Erreur récupération notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 
@@ -934,71 +971,27 @@ app.post('/api/products', async (req, res) => {
   try {
     const { name, description, price, category, stock, images, videos, shopId } = req.body;
     
-    console.log('=== Début création produit ===');
-    console.log('Données reçues:', { name, price, shopId });
-    console.log('Nombre d\'images reçues:', images?.length || 0);
-    console.log('Nombre de vidéos reçues:', videos?.length || 0);
+    console.log('=== Création produit ===');
+    console.log('Données:', { name, price, shopId });
+    console.log('URLs images:', images?.length || 0);
+    console.log('URLs vidéos:', videos?.length || 0);
     
-    // S'assurer que images et videos sont des tableaux
-    const imageArray = Array.isArray(images) ? images : (images ? [images] : []);
-    const videoArray = Array.isArray(videos) ? videos : (videos ? [videos] : []);
-    
-    // Convertir les images base64 en fichiers
-    const convertedImages = [];
-    for (let i = 0; i < imageArray.length; i++) {
-      const image = imageArray[i];
-      if (image.startsWith('data:image/')) {
-        try {
-          console.log(`Sauvegarde image ${i + 1}...`);
-          const base64String = image.split(',')[1];
-          const buffer = Buffer.from(base64String, 'base64');
-          const id = Date.now().toString().slice(-8); // 8 derniers chiffres
-          const filename = `img_${id}_${i}.jpg`;
-          const imagePath = path.join('uploads', filename);
-          
-          console.log(`Génération image: filename=${filename}, path=${imagePath}`);
-          fs.writeFileSync(imagePath, buffer);
-          const imageUrl = `http://172.20.10.5:3000/uploads/${filename}`;
-          convertedImages.push(imageUrl);
-          console.log(`Image ${i + 1} sauvegardée: ${imageUrl}`);
-        } catch (error) {
-          console.error(`Erreur sauvegarde image ${i + 1}:`, error);
-          convertedImages.push(image);
-        }
-      } else {
-        convertedImages.push(image);
+    // Valider que ce sont bien des URLs et non du base64
+    const validImages = (images || []).filter(img => {
+      if (img.startsWith('data:')) {
+        console.log('⚠️ Image base64 détectée, ignorée');
+        return false;
       }
-    }
+      return img.startsWith('http') || img.startsWith('/uploads/');
+    });
     
-    // Convertir les vidéos base64 en fichiers MP4
-    const convertedVideos = [];
-    for (let i = 0; i < videoArray.length; i++) {
-      const video = videoArray[i];
-      if (video.startsWith('data:video/')) {
-        try {
-          console.log(`Conversion vidéo ${i + 1}...`);
-          const id = Date.now().toString().slice(-8); // 8 derniers chiffres
-          const filename = `vid_${id}_${i}.mp4`;
-          const outputPath = path.join('uploads', filename);
-          
-          console.log(`Génération vidéo: filename=${filename}, path=${outputPath}`);
-          await convertVideoFromBase64(video, outputPath, {
-            videoCodec: 'h264',
-            audioCodec: 'aac',
-            strict: '-2'
-          });
-          const videoUrl = `http://172.20.10.5:3000/uploads/${filename}`;
-          convertedVideos.push(videoUrl);
-          console.log(`URL vidéo générée: ${videoUrl}`);
-          console.log(`Vidéo ${i + 1} convertie: ${videoUrl}`);
-        } catch (error) {
-          console.error(`Erreur conversion vidéo ${i + 1}:`, error);
-          convertedVideos.push(video);
-        }
-      } else {
-        convertedVideos.push(video);
+    const validVideos = (videos || []).filter(vid => {
+      if (vid.startsWith('data:')) {
+        console.log('⚠️ Vidéo base64 détectée, ignorée');
+        return false;
       }
-    }
+      return vid.startsWith('http') || vid.startsWith('/uploads/');
+    });
     
     const product = new Product({
       name,
@@ -1006,17 +999,17 @@ app.post('/api/products', async (req, res) => {
       price,
       category,
       stock: stock || 0,
-      images: convertedImages,
-      videos: convertedVideos,
+      images: validImages,
+      videos: validVideos,
       shopId
     });
     
     const savedProduct = await product.save();
-    console.log('Produit sauvegardé avec', savedProduct.images.length, 'images et', savedProduct.videos.length, 'vidéos');
+    console.log('✅ Produit sauvegardé avec', savedProduct.images.length, 'URLs images et', savedProduct.videos.length, 'URLs vidéos');
     
     res.json(savedProduct);
   } catch (error) {
-    console.error('Erreur sauvegarde produit:', error);
+    console.error('❌ Erreur sauvegarde produit:', error);
     res.status(500).json({ error: error.message });
   }
 });

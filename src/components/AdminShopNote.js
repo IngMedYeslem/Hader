@@ -7,7 +7,7 @@ export const AdminShopNote = ({ shop, visible, onClose, onSave }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://172.20.10.5:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`http://192.168.0.138:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ missingDataNote: note })

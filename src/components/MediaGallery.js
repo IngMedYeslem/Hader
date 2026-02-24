@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform, Linking, Alert } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
-
+import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
 import styles from './styles';
 
@@ -15,9 +15,15 @@ function MediaGallery({ images = [], videos = [], visible, onClose, productName,
   const [videoError, setVideoError] = useState(false);
   const [showControls, setShowControls] = useState(false);
   
-  // Combiner vidéos et images (vidéos en premier)
-  const allMedia = [...videos.map(v => ({ type: 'video', uri: v })), ...images.map(i => ({ type: 'image', uri: i }))];
+  // Combiner vidéos et images avec URLs complètes (vidéos en premier)
+  const allMedia = [
+    ...videos.map(v => ({ type: 'video', uri: getMediaUrl(v) })), 
+    ...images.map(i => ({ type: 'image', uri: getMediaUrl(i) }))
+  ];
   const currentMedia = allMedia[currentIndex] || { type: 'image', uri: '' };
+  
+  console.log('🎬 MediaGallery - Médias:', allMedia.length);
+  console.log('🎬 Média actuel:', currentMedia);
   
   const player = useVideoPlayer(currentMedia.type === 'video' ? currentMedia.uri : '', (player) => {
     player.loop = true;
