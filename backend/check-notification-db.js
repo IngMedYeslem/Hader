@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function checkNotifications() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connecté à MongoDB');
     
     // Récupérer le modèle Notification

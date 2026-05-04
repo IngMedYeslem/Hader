@@ -37,14 +37,14 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   const handleSave = async () => {
     try {
       // Mettre à jour la boutique
-      const shopResponse = await fetch(`http://192.168.0.138:3000/api/shops/${shop._id}`, {
+      const shopResponse = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData)
       });
       
       // Mettre à jour l'utilisateur lié
-      const userResponse = await fetch(`http://192.168.0.138:3000/api/users/update-by-shop/${shop._id}`, {
+      const userResponse = await fetch(`http://192.168.0.103:3000/api/users/update-by-shop/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: editData.name, email: editData.email })

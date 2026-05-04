@@ -28,7 +28,7 @@ async function testBase64Upload() {
     formData.append('media', blob, 'test.jpg');
     
     // Envoyer
-    const response = await fetch('http://192.168.0.138:3000/api/upload-media', {
+    const response = await fetch('http://192.168.0.146:3000/api/upload-media', {
       method: 'POST',
       body: formData,
     });

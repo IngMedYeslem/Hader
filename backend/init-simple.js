@@ -4,7 +4,7 @@ const Role = require('./models/Role');
 
 async function initData() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connexion à MongoDB réussie');
 
     // Créer les rôles

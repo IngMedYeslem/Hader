@@ -3,7 +3,7 @@ const notificationService = require('./services/notificationService');
 
 async function testAPI() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connexion MongoDB établie');
 
     const userId = '68b4b4ed9123f8409ffa6d20';

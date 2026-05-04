@@ -20,7 +20,7 @@ node server-simple.js &
 echo $! > server.pid
 
 echo "✅ Serveur démarré en arrière-plan"
-echo "📱 Accessible depuis iOS sur: http://192.168.0.138:3000/api"
+echo "📱 Accessible depuis iOS sur: http://192.168.0.146:3000/api"
 echo "💻 Accessible depuis le web sur: http://localhost:3000/api"
 echo ""
 echo "Pour arrêter le serveur: ./stop-api.sh"

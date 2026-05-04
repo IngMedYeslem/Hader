@@ -5,7 +5,7 @@ const path = require('path');
 
 async function convertBase64ToUrls() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connexion MongoDB établie');
 
     const products = await Product.find();

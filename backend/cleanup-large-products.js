@@ -3,7 +3,7 @@ const Product = require('./models/Product');
 
 async function cleanupLargeProducts() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connexion MongoDB établie');
 
     const products = await Product.find();

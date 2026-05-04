@@ -8,6 +8,7 @@ import ShopInfo from "./ShopInfo";
 import ProductThumbnail from "./ProductThumbnail";
 import ShopViewSelector from "./ShopViewSelector";
 import NotificationCenter from "./NotificationCenter";
+import NotificationsList from "./NotificationsList";
 import ValidationStatusIndicator from "./ValidationStatusIndicator";
 import styles from "./styles";
 import { useTranslation } from '../translations';
@@ -29,6 +30,7 @@ function ShopDashboard({ shop, onLogout }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isApproved, setIsApproved] = useState(shop.isApproved || false);
   const [showWelcomePage, setShowWelcomePage] = useState(false);
+  const [userId, setUserId] = useState(null);
   const { t } = useTranslation();
   const { currentPage, navigateTo } = useNavigation();
   
@@ -61,7 +63,22 @@ function ShopDashboard({ shop, onLogout }) {
     loadProducts();
     checkApprovalStatus();
     checkWelcomePage();
+    fetchUserId();
   }, []);
+  
+  const fetchUserId = async () => {
+    try {
+      const response = await fetch('http://192.168.0.103:3000/api/users');
+      const users = await response.json();
+      const user = users.find(u => u.linkedShop?.id === shop._id);
+      if (user) {
+        setUserId(user.id);
+        console.log('✅ User ID trouvé:', user.id);
+      }
+    } catch (error) {
+      console.log('❌ Erreur récupération userId:', error);
+    }
+  };
   
   const checkWelcomePage = async () => {
     try {
@@ -96,7 +113,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const checkApprovalStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.0.138:3000/api/shops/${shop._id}`);
+      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`);
       if (response.ok) {
         const shopData = await response.json();
         console.log('🔄 Statut approbation vérifié:', shopData.isApproved);
@@ -483,7 +500,7 @@ function ShopDashboard({ shop, onLogout }) {
                       style={[styles.submitBtn, { flex: 1, backgroundColor: '#007bff' }]}
                       onPress={async () => {
                         try {
-                          const response = await fetch(`http://192.168.0.138:3000/api/shops/${shop._id}/reactivate`, {
+                          const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}/reactivate`, {
                             method: 'POST'
                           });
                           if (response.ok) {
@@ -704,10 +721,7 @@ function ShopDashboard({ shop, onLogout }) {
                 </TouchableOpacity>
               </View>
               
-              <NotificationCenter 
-                userId={shop._id}
-                shopId={shop._id}
-              />
+              <NotificationsList userId={userId || shop._id} />
             </View>
           </View>
         )}

@@ -12,6 +12,8 @@ const notificationRoutes = require('./routes/notifications');
 const reactivationRoutes = require('./routes/reactivation');
 const shopRoutes = require('./routes/shops');
 const productRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orders');
+const reviewRoutes = require('./routes/reviews');
 
 // Fonction pour envoyer des notifications push Expo
 async function sendExpoPushNotification(expoPushToken, { title, body, data }) {
@@ -54,6 +56,8 @@ app.use('/api', notificationRoutes);
 app.use('/api', reactivationRoutes);
 app.use('/api', shopRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api', orderRoutes);
+app.use('/api', reviewRoutes);
 
 // Middleware de debug pour upload
 const debugUpload = (req, res, next) => {
@@ -686,9 +690,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       // Corriger les URLs d'images
       if (product.images) {
         product.images = product.images.map(img => {
-          if (img.includes('localhost:3000') || img.includes('192.168.0.138:3000') || img.includes('192.168.1.126:3000')) {
+          if (img.includes('localhost:3000') || img.includes('192.168.0.146:3000') || img.includes('192.168.1.126:3000')) {
             updated = true;
-            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.138:3000');
+            return img.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.146:3000');
           }
           return img;
         });
@@ -698,9 +702,9 @@ app.post('/api/debug/fix-urls', async (req, res) => {
       if (product.videos) {
         product.videos = product.videos.map(vid => {
           let correctedVid = vid;
-          if (vid.includes('localhost:3000') || vid.includes('192.168.0.138:3000') || vid.includes('192.168.1.126:3000')) {
+          if (vid.includes('localhost:3000') || vid.includes('192.168.0.146:3000') || vid.includes('192.168.1.126:3000')) {
             updated = true;
-            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.138:3000');
+            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.146:3000');
           }
           // Ajouter .mp4 si manquant
           if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
@@ -727,7 +731,7 @@ app.post('/api/debug/fix-urls', async (req, res) => {
   }
 });
 
-mongoose.connect('mongodb://localhost:27017/ecommerce', {
+mongoose.connect('mongodb://localhost:27017/hader', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -742,20 +746,6 @@ mongoose.connection.on('error', (err) => {
 
 const Shop = require('./models/Shop');
 const Product = require('./models/Product');
-
-// Route pour récupérer les notifications d'un utilisateur
-app.get('/api/users/:userId/notifications', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const notifications = await notificationService.getUserNotifications(userId);
-    res.json(notifications);
-  } catch (error) {
-    console.error('Erreur récupération notifications:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
 
 // Routes Boutiques
 app.get('/api/shops/:shopId', async (req, res) => {

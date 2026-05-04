@@ -1,6 +1,27 @@
 const express = require('express');
 const Product = require('../models/Product');
+const Shop = require('../models/Shop');
 const router = express.Router();
+
+// Récupérer tous les produits publics (catalogue public)
+router.get('/public', async (req, res) => {
+  try {
+    const products = await Product.find({ stock: { $gt: 0 } }).limit(100);
+    const productsWithShop = await Promise.all(
+      products.map(async (product) => {
+        const shop = await Shop.findById(product.shopId);
+        return {
+          ...product.toObject(),
+          shopName: shop?.name || 'Boutique inconnue'
+        };
+      })
+    );
+    res.json(productsWithShop);
+  } catch (error) {
+    console.error('❌ Erreur catalogue public:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Créer un produit
 router.post('/', async (req, res) => {

@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // Configuration centralisée des URLs API
 const API_URLS = {
-  LOCAL_IP: '192.168.0.138:3000/api',
+  LOCAL_IP: '192.168.0.103:3000/api',
   LOCALHOST: 'localhost:3000/api'
 };
 

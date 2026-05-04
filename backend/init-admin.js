@@ -22,7 +22,7 @@ const User = mongoose.model('User', userSchema);
 
 async function initAdmin() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/ecommerce');
+    await mongoose.connect('mongodb://localhost:27017/hader');
     console.log('✅ Connexion à MongoDB réussie');
 
     // Créer les rôles

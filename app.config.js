@@ -1,7 +1,7 @@
 export default {
     expo: {
-      name: "my-ecommerce-app",
-      slug: "my-ecommerce-app",
+      name: "Hader",
+      slug: "Hader",
       version: "1.0.0",
       projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a",
       orientation: "portrait",
@@ -55,7 +55,7 @@ export default {
         favicon: "./assets/logof.png"
       },
       extra: {
-        API_URL: process.env.API_URL || "http://192.168.0.138:3000", // Utilisation d'une variable d'environnement si elle est définie
+        API_URL: process.env.API_URL || "http://192.168.0.103:3000", // Utilisation d'une variable d'environnement si elle est définie
         eas: {
           projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a"
         }

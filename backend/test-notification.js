@@ -6,7 +6,7 @@ const notificationService = require('./services/notificationService');
 async function testNotification() {
   try {
     // Connexion à MongoDB
-    await mongoose.connect('mongodb://localhost:27017/ecommerce', {
+    await mongoose.connect('mongodb://localhost:27017/hader', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

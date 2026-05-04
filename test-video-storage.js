@@ -14,8 +14,8 @@ async function testVideoStorage() {
       price: 100,
       category: 'Test',
       stock: 10,
-      images: ['http://192.168.0.138:3000/uploads/test_image.jpg'],
-      videos: ['http://192.168.0.138:3000/uploads/test_video.mp4'],
+      images: ['http://192.168.0.146:3000/uploads/test_image.jpg'],
+      videos: ['http://192.168.0.146:3000/uploads/test_video.mp4'],
       shopId: '507f1f77bcf86cd799439011' // ID de test
     });
 

@@ -2,7 +2,7 @@
 const testUrls = [
   '/uploads/img_123.jpg',
   '/uploads/vid_456.mp4',
-  'http://192.168.0.138:3000/uploads/img_789.jpg',
+  'http://192.168.0.146:3000/uploads/img_789.jpg',
   'http://localhost:3000/uploads/vid_012.mp4'
 ];
 
@@ -14,7 +14,7 @@ const getMediaUrl = (mediaPath) => {
   
   if (mediaPath.startsWith('http')) {
     if (mediaPath.includes('localhost')) {
-      const correctedUrl = mediaPath.replace('localhost', '192.168.0.138');
+      const correctedUrl = mediaPath.replace('localhost', '192.168.0.146');
       console.log('✅ URL corrigée:', correctedUrl);
       return correctedUrl;
     }
@@ -22,7 +22,7 @@ const getMediaUrl = (mediaPath) => {
     return mediaPath;
   }
   
-  const baseUrl = 'http://192.168.0.138:3000';
+  const baseUrl = 'http://192.168.0.146:3000';
   const cleanPath = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
   const fullUrl = `${baseUrl}${cleanPath}`;
   

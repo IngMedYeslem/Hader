@@ -33,5 +33,5 @@ eas build --profile development --platform all
 3. Tester les notifications avec le composant NotificationTest
 
 ## URLs utiles :
-- Dashboard EAS : https://expo.dev/accounts/medbit/projects/my-ecommerce-app/builds
+- Dashboard EAS : https://expo.dev/accounts/medbit/projects/my-hader-app/builds
 - Logs de build : Disponibles dans le dashboard

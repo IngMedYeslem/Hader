@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Connexion à MongoDB
-mongoose.connect('mongodb://localhost:27017/ecommerce', {
+mongoose.connect('mongodb://localhost:27017/hader', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

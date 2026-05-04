@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 
 const getApiUrl = () => {
   return __DEV__ && Platform.OS !== 'web' 
-    ? 'http://192.168.0.138:3000/api'
+    ? 'http://192.168.0.103:3000/api'
     : 'http://localhost:3000/api';
 };
 
