@@ -15,6 +15,11 @@ const shopSchema = new mongoose.Schema({
   stock: { type: Number, default: 0 },
   category: { type: String, default: '' },
   missingDataNote: { type: String, default: '' },
+  bankAccounts: [{
+    bankName: { type: String, required: true },
+    accountNumber: { type: String, required: true },
+    accountHolder: { type: String, default: '' }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, RefreshControl, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+const cardWidth = (width - 36) / 2;
 import { useQuery } from '@apollo/client';
 import { GET_ALL_PRODUCTS_WITH_SHOPS } from '../graphql/getAllProductsWithShops';
 import { useTranslation, formatPrice } from '../translations';
@@ -99,7 +102,7 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
         ) : (
           <View style={styles.globalGrid}>
             {products.map((product) => (
-              <View key={product.id} style={[styles.globalCard, { width: '48%' }]}>
+              <TouchableOpacity key={product.id} style={[styles.globalCard, { width: cardWidth }]} activeOpacity={0.92}>
                 <View style={styles.imageContainer}>
                   {product.images && product.images.length > 0 ? (
                     <Image 
@@ -112,6 +115,11 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
                       <Text style={styles.placeholderText}>📷</Text>
                     </View>
                   )}
+                  {product.images && product.images.length > 1 && (
+                    <View style={styles.mediaCounter}>
+                      <Text style={styles.mediaCounterText}>+{product.images.length - 1}</Text>
+                    </View>
+                  )}
                 </View>
                 
                 <View style={styles.productInfo}>
@@ -121,19 +129,16 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
                   <Text style={styles.globalPrice}>
                     {formatPrice(product.price)}
                   </Text>
-                  <View style={styles.shopInfo}>
-                    <Text style={styles.shopName}>
-                      Boutique: {product.shop?.username || 'Non spécifiée'}
-                    </Text>
+                  <View style={styles.shopBadge}>
                     {product.shop?.profileImage && (
-                      <Image 
-                        source={{ uri: product.shop.profileImage }} 
-                        style={styles.shopAvatar}
-                      />
+                      <Image source={{ uri: product.shop.profileImage }} style={styles.shopAvatar} />
                     )}
+                    <Text style={styles.shopBadgeText} numberOfLines={1}>
+                      🏪 {product.shop?.username || 'غير محدد'}
+                    </Text>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}

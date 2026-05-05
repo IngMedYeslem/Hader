@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView } from 'react-native';
 import { useTranslation } from '../translations';
 import styles from './styles';
+import { API_CONFIG } from '../config/api';
+
+const BASE = API_CONFIG.BASE_URL;
 
 const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   const { t } = useTranslation();
@@ -17,6 +20,46 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
     missingDataNote: shop.missingDataNote || ''
   });
   const [updatedShop, setUpdatedShop] = useState(shop);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [showBankEditor, setShowBankEditor] = useState(false);
+  const [newBank, setNewBank] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+
+  useEffect(() => {
+    if (visible && shop._id) {
+      fetch(`${BASE}/shops/${shop._id}/bank-accounts`)
+        .then(r => r.json())
+        .then(data => Array.isArray(data) && setBankAccounts(data))
+        .catch(() => {});
+    }
+  }, [visible, shop._id]);
+
+  const saveBankAccounts = async (accounts) => {
+    try {
+      const res = await fetch(`${BASE}/shops/${shop._id}/bank-accounts`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bankAccounts: accounts }),
+      });
+      if (res.ok) setBankAccounts(accounts);
+    } catch (e) {
+      Alert.alert('Erreur', 'Impossible de sauvegarder');
+    }
+  };
+
+  const addBankAccount = () => {
+    if (!newBank.bankName.trim() || !newBank.accountNumber.trim()) {
+      Alert.alert('', 'اسم البنك ورقم الحساب مطلوبان');
+      return;
+    }
+    const updated = [...bankAccounts, { ...newBank }];
+    saveBankAccounts(updated);
+    setNewBank({ bankName: '', accountNumber: '', accountHolder: '' });
+  };
+
+  const removeBankAccount = (index) => {
+    const updated = bankAccounts.filter((_, i) => i !== index);
+    saveBankAccounts(updated);
+  };
   const handleCall = (number) => {
     Linking.openURL(`tel:${number}`);
   };
@@ -36,15 +79,13 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
 
   const handleSave = async () => {
     try {
-      // Mettre à jour la boutique
-      const shopResponse = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`, {
+      const shopResponse = await fetch(`${BASE}/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData)
       });
       
-      // Mettre à jour l'utilisateur lié
-      const userResponse = await fetch(`http://192.168.0.103:3000/api/users/update-by-shop/${shop._id}`, {
+      const userResponse = await fetch(`${BASE}/users/update-by-shop/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: editData.name, email: editData.email })
@@ -196,6 +237,66 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                     <Text style={[styles.locationBtnText, { color: 'white' }]}>✏️ Modifier</Text>
                   </TouchableOpacity>
                 )}
+
+                {/* Bank Accounts Management */}
+                <View style={{ marginTop: 16 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={[styles.shopInfoLabel, { fontSize: 14, fontWeight: 'bold' }]}>
+                      🏦 أرقام الحسابات البنكية
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowBankEditor(!showBankEditor)}
+                      style={{ backgroundColor: '#3498db', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}
+                    >
+                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                        {showBankEditor ? '× إغلاق' : '+ إضافة'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {bankAccounts.map((acc, i) => (
+                    <View key={i} style={{ backgroundColor: '#f0f7ff', borderRadius: 8, padding: 10, marginBottom: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 13 }}>{acc.bankName}</Text>
+                        <Text style={{ color: '#3498db', fontSize: 13 }}>{acc.accountNumber}</Text>
+                        {acc.accountHolder ? <Text style={{ color: '#666', fontSize: 12 }}>{acc.accountHolder}</Text> : null}
+                      </View>
+                      <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6 }}>
+                        <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  {showBankEditor && (
+                    <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginTop: 4 }}>
+                      <TextInput
+                        placeholder="اسم البنك *"
+                        value={newBank.bankName}
+                        onChangeText={v => setNewBank(p => ({ ...p, bankName: v }))}
+                        style={[styles.input, { marginBottom: 6 }]}
+                      />
+                      <TextInput
+                        placeholder="رقم الحساب *"
+                        value={newBank.accountNumber}
+                        onChangeText={v => setNewBank(p => ({ ...p, accountNumber: v }))}
+                        style={[styles.input, { marginBottom: 6 }]}
+                        keyboardType="numeric"
+                      />
+                      <TextInput
+                        placeholder="اسم صاحب الحساب (اختياري)"
+                        value={newBank.accountHolder}
+                        onChangeText={v => setNewBank(p => ({ ...p, accountHolder: v }))}
+                        style={[styles.input, { marginBottom: 8 }]}
+                      />
+                      <TouchableOpacity
+                        onPress={addBankAccount}
+                        style={{ backgroundColor: '#2ecc71', padding: 10, borderRadius: 8, alignItems: 'center' }}
+                      >
+                        <Text style={{ color: 'white', fontWeight: 'bold' }}>+ حفظ الحساب</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </>
             )}
             

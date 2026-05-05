@@ -60,6 +60,7 @@ function ProductList() {
               <TouchableOpacity 
                 key={product.id} 
                 style={[styles.globalCard, { width: itemWidth }]}
+                activeOpacity={0.9}
                 onPress={() => {
                   setSelectedProduct(product);
                   setShowProductDetail(true);
@@ -79,20 +80,10 @@ function ProductList() {
                     </View>
                   )}
                   <TouchableOpacity 
-                    style={{
-                      position: 'absolute',
-                      top: 5,
-                      right: 5,
-                      backgroundColor: 'rgba(0,0,0,0.7)',
-                      borderRadius: 12,
-                      width: 24,
-                      height: 24,
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}
+                    style={styles.editBadge}
                     onPress={() => handleEditProduct(product)}
                   >
-                    <Text style={{ color: 'white', fontSize: 12 }}>✏️</Text>
+                    <Text style={{ fontSize: 13 }}>✏️</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.productInfo}>

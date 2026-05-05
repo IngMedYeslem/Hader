@@ -8,8 +8,6 @@ export default {
       platforms: ["ios", "android", "web"],
       newArchEnabled: false,
       plugins: [
-        "expo-video",
-        "expo-audio",
         [
           "expo-notifications",
           {

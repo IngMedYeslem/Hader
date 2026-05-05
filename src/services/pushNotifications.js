@@ -1,9 +1,14 @@
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG } from '../config/api';
 
-Notifications.setNotificationHandler({
+let Notifications = null;
+let Device = null;
+try {
+  Notifications = require('expo-notifications');
+  Device = require('expo-device');
+} catch (e) {}
+
+if (Notifications) Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
@@ -13,6 +18,7 @@ Notifications.setNotificationHandler({
 
 // Fonction pour enregistrer les notifications push
 async function registerForPushNotificationsAsync() {
+  if (!Device || !Notifications) return null;
   if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -73,7 +79,7 @@ class PushNotificationService {
 
   async getToken() {
     try {
-      if (!Device.isDevice) {
+      if (!Device || !Device.isDevice) {
         console.log('Mode web - simulation notifications push');
         const webToken = 'web-dev-token-' + Math.random().toString(36).substr(2, 9);
         return webToken;
@@ -142,6 +148,7 @@ class PushNotificationService {
   }
 
   setupMessageHandlers() {
+    if (!Notifications) return;
     Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification reçue:', notification);
     });
@@ -229,7 +236,7 @@ class PushNotificationService {
         if (!notification.read && !this.shownNotifications.has(notification._id)) {
           this.shownNotifications.add(notification._id);
           
-          await Notifications.scheduleNotificationAsync({
+          if (Notifications) await Notifications.scheduleNotificationAsync({
             content: {
               title: notification.title,
               body: notification.body,

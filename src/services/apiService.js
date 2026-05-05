@@ -118,18 +118,26 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
         
         return {
           id: product._id,
+          _id: product._id,
           name: product.name,
+          description: product.description,
           price: product.price,
-          images: (product.images || []).slice(0, 3), // Limiter à 3 images max
-          videos: (product.videos || []).slice(0, 1), // Limiter à 1 vidéo max
+          category: product.category,
+          images: (product.images || []).slice(0, 3),
+          videos: (product.videos || []).slice(0, 1),
           shop: shop ? {
+            _id: shop._id,
             id: shop._id,
             username: shop.name,
+            name: shop.name,
             phone: shop.phone,
             whatsapp: shop.whatsapp,
             email: shop.email,
             address: shop.address,
-            profileImage: null
+            profileImage: shop.profileImage || null,
+            coverImage: shop.coverImage || null,
+            category: shop.category || '',
+            isApproved: shop.isApproved || false,
           } : null
         };
       })

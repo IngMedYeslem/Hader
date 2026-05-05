@@ -1,50 +1,15 @@
 import React, { useState } from 'react';
-import { View, Image, ScrollView, TouchableOpacity, Text, Platform } from 'react-native';
+import { View, Image, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { getMediaUrl } from '../services/api';
-import VideoThumbnail from './VideoThumbnail';
 import styles from './styles';
 
-const VideoPlayer = ({ uri, style }) => {
-  if (Platform.OS === 'web') {
-    return (
-      <video 
-        src={uri}
-        style={style}
-        controls
-        preload="metadata"
-        playsInline
-      />
-    );
-  }
-  
-  const { VideoView, useVideoPlayer } = require('expo-video');
-  const player = useVideoPlayer(uri, (player) => {
-    player.loop = false;
-    player.muted = false;
-    player.volume = 1.0;
-  });
-  
-  return (
-    <VideoView
-      player={player}
-      style={[style, { height: 250 }]}
-      contentFit="contain"
-      nativeControls={true}
-      allowsFullscreen={true}
-      allowsPictureInPicture={true}
-    />
-  );
-};
-
-export default function MediaCarousel({ images = [], videos = [] }) {
+export default function MediaCarousel({ images = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  // Combiner vidéos et images avec URLs complètes
-  const allMedia = [
-    ...videos.map(v => ({ type: 'video', uri: getMediaUrl(v) })), 
-    ...images.map(i => ({ type: 'image', uri: getMediaUrl(i) }))
-  ];
-  
+
+  const allMedia = images
+    .filter(i => i && i.trim() && !i.startsWith('file://'))
+    .map(i => ({ uri: getMediaUrl(i) }));
+
   if (allMedia.length === 0) {
     return (
       <View style={styles.placeholderImageLarge}>
@@ -53,36 +18,24 @@ export default function MediaCarousel({ images = [], videos = [] }) {
     );
   }
 
-  const currentMedia = allMedia[currentIndex];
-
   return (
     <View>
       <View style={styles.productImageLarge}>
-        {currentMedia.type === 'video' ? (
-          <VideoPlayer 
-            uri={currentMedia.uri}
-            style={styles.modalImage}
-          />
-        ) : (
-          <Image 
-            source={{ uri: currentMedia.uri }} 
-            style={styles.modalImage}
-            resizeMode="cover"
-          />
-        )}
-        
+        <Image
+          source={{ uri: allMedia[currentIndex].uri }}
+          style={styles.modalImage}
+          resizeMode="cover"
+        />
         {allMedia.length > 1 && (
           <View style={styles.mediaCounter}>
-            <Text style={styles.mediaCounterText}>
-              {currentIndex + 1} / {allMedia.length}
-            </Text>
+            <Text style={styles.mediaCounterText}>{currentIndex + 1} / {allMedia.length}</Text>
           </View>
         )}
       </View>
-      
+
       {allMedia.length > 1 && (
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.mediaThumbnails}
           contentContainerStyle={styles.thumbnailsContainer}
@@ -90,25 +43,10 @@ export default function MediaCarousel({ images = [], videos = [] }) {
           {allMedia.map((media, index) => (
             <TouchableOpacity
               key={index}
-              style={[
-                styles.thumbnail,
-                currentIndex === index && styles.thumbnailActive
-              ]}
+              style={[styles.thumbnail, currentIndex === index && styles.thumbnailActive]}
               onPress={() => setCurrentIndex(index)}
             >
-              {media.type === 'video' ? (
-                <VideoThumbnail 
-                  uri={media.uri}
-                  style={styles.thumbnailImage}
-                  showPlayButton={false}
-                />
-              ) : (
-                <Image 
-                  source={{ uri: media.uri }} 
-                  style={styles.thumbnailImage}
-                  resizeMode="cover"
-                />
-              )}
+              <Image source={{ uri: media.uri }} style={styles.thumbnailImage} resizeMode="cover" />
             </TouchableOpacity>
           ))}
         </ScrollView>

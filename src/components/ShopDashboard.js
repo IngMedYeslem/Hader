@@ -10,6 +10,7 @@ import ShopViewSelector from "./ShopViewSelector";
 import NotificationCenter from "./NotificationCenter";
 import NotificationsList from "./NotificationsList";
 import ValidationStatusIndicator from "./ValidationStatusIndicator";
+import ShopOrderManagement from "./ShopOrderManagement";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
@@ -27,11 +28,14 @@ function ShopDashboard({ shop, onLogout }) {
   const [editVisible, setEditVisible] = useState(false);
   const [shopInfoVisible, setShopInfoVisible] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [ordersVisible, setOrdersVisible] = useState(false);
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isApproved, setIsApproved] = useState(shop.isApproved || false);
   const [showWelcomePage, setShowWelcomePage] = useState(false);
   const [userId, setUserId] = useState(null);
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  const isRTL = currentLanguage === 'ar';
   const { currentPage, navigateTo } = useNavigation();
   
   // Hook pour l'actualisation automatique du statut de validation
@@ -64,8 +68,20 @@ function ShopDashboard({ shop, onLogout }) {
     checkApprovalStatus();
     checkWelcomePage();
     fetchUserId();
+    fetchNewOrdersCount();
   }, []);
   
+  const fetchNewOrdersCount = async () => {
+    try {
+      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}/orders`);
+      if (response.ok) {
+        const orders = await response.json();
+        const pending = orders.filter(o => o.status === 'pending').length;
+        setNewOrdersCount(pending);
+      }
+    } catch (e) {}
+  };
+
   const fetchUserId = async () => {
     try {
       const response = await fetch('http://192.168.0.103:3000/api/users');
@@ -390,6 +406,34 @@ function ShopDashboard({ shop, onLogout }) {
             borderTopColor: 'rgba(200, 165, 95, 0.2)'
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {isApproved && (
+                <TouchableOpacity 
+                  onPress={() => setOrdersVisible(true)}
+                  style={{ 
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 107, 53, 0.15)', 
+                    paddingHorizontal: 15, 
+                    paddingVertical: 10, 
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 107, 53, 0.3)',
+                    marginRight: 10,
+                    position: 'relative',
+                  }}
+                >
+                  <Text style={{ fontSize: 14, marginRight: 6 }}>📦</Text>
+                  <Text style={{ color: '#FF6B35', fontSize: 12, fontWeight: 'bold' }}>
+                    {isRTL ? 'الطلبات' : 'Commandes'}
+                  </Text>
+                  {newOrdersCount > 0 && (
+                    <View style={{ position: 'absolute', top: -5, right: -5, backgroundColor: '#FF6B35', borderRadius: 10, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{newOrdersCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )}
+
               {Platform.OS !== 'web' && (
                 <TouchableOpacity 
                   onPress={() => setNotificationsVisible(true)}
@@ -426,7 +470,7 @@ function ShopDashboard({ shop, onLogout }) {
                     borderColor: 'rgba(200, 165, 95, 0.3)'
                   }}
                 >
-                  <Text style={{ fontSize: 14, marginRight: 6 }}>ℹ️</Text>
+                  <Text style={{ fontSize: 14, marginRight: 6 }}>&#9432;&#65039;</Text>
                   <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
                     {t('info')}
                   </Text>
@@ -580,11 +624,12 @@ function ShopDashboard({ shop, onLogout }) {
             style={styles.wrapper} 
             contentContainerStyle={styles.contentContainer}
           >
-            <View style={styles.globalGrid}>
+          <View style={styles.globalGrid}>
               {products.map((product) => (
                 <TouchableOpacity 
                   key={product._id} 
                   style={[styles.globalCard, { width: '48%' }]}
+                  activeOpacity={0.9}
                   onPress={() => {
                     setSelectedProduct(product);
                     if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
@@ -599,21 +644,18 @@ function ShopDashboard({ shop, onLogout }) {
                       style={{ width: '100%', height: '100%' }}
                     />
                     <TouchableOpacity 
-                      style={{
-                        position: 'absolute',
-                        top: 5,
-                        right: 5,
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        borderRadius: 12,
-                        width: 24,
-                        height: 24,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
+                      style={styles.editBadge}
                       onPress={() => handleEditProduct(product)}
                     >
-                      <Text style={{ color: 'white', fontSize: 10 }}>✏️</Text>
+                      <Text style={{ fontSize: 13 }}>✏️</Text>
                     </TouchableOpacity>
+                    {((product.images?.length || 0) + (product.videos?.length || 0)) > 1 && (
+                      <View style={styles.mediaCounter}>
+                        <Text style={styles.mediaCounterText}>
+                          +{(product.images?.length || 0) + (product.videos?.length || 0) - 1}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   
                   <View style={styles.productInfo}>
@@ -668,8 +710,18 @@ function ShopDashboard({ shop, onLogout }) {
           shop={shop}
           visible={shopInfoVisible}
           onClose={() => setShopInfoVisible(false)}
-          allowEdit={autoRefreshRejected}
+          allowEdit={true}
         />
+
+        {/* Modal Commandes */}
+        {ordersVisible && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'white', zIndex: 9999 }}>
+            <ShopOrderManagement
+              shopId={shop._id}
+              onClose={() => { setOrdersVisible(false); fetchNewOrdersCount(); }}
+            />
+          </View>
+        )}
 
         {/* Modal des notifications */}
         {notificationsVisible && (
