@@ -7,7 +7,7 @@ export const AdminShopNote = ({ shop, visible, onClose, onSave }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ missingDataNote: note })
@@ -31,7 +31,7 @@ export const AdminShopNote = ({ shop, visible, onClose, onSave }) => {
         <View style={styles.shopInfoContainer}>
           <Text style={styles.shopInfoTitle}>Note pour {shop.name}</Text>
           
-          <Text style={{ color: '#C8A55F', marginBottom: 10 }}>
+          <Text style={{ color: '#FF6B35', marginBottom: 10 }}>
             Expliquer les problèmes ou données manquantes :
           </Text>
           
@@ -45,7 +45,7 @@ export const AdminShopNote = ({ shop, visible, onClose, onSave }) => {
           
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
             <TouchableOpacity 
-              style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#C8A55F' }]} 
+              style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#FF6B35' }]} 
               onPress={handleSave}
             >
               <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>Sauvegarder</Text>

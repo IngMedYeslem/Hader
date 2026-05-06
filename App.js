@@ -145,7 +145,7 @@ function AppContent() {
             paddingTop: Platform.OS === 'ios' ? 45 : 15
           }]}>
             <TouchableOpacity onPress={() => setView('home')}>
-              <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold' }}>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
                 ← {t('backToMarketplace')}
               </Text>
             </TouchableOpacity>

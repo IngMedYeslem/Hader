@@ -6,9 +6,15 @@ const ValidationStatusIndicator = ({ isApproved, isRejected, isChecking, style }
   const { t } = useTranslation();
 
   const getStatusColor = () => {
-    if (isChecking) return '#007AFF';
-    if (isRejected) return '#f44336';
-    return isApproved ? '#4CAF50' : '#FF9800';
+    if (isChecking) return '#FF6B35';
+    if (isRejected) return '#e74c3c';
+    return isApproved ? '#2ecc71' : '#FF6B35';
+  };
+
+  const getBgColor = () => {
+    if (isChecking) return 'rgba(255,107,53,0.1)';
+    if (isRejected) return 'rgba(231,76,60,0.1)';
+    return isApproved ? 'rgba(46,204,113,0.1)' : 'rgba(255,107,53,0.1)';
   };
 
   const getStatusText = () => {
@@ -27,12 +33,12 @@ const ValidationStatusIndicator = ({ isApproved, isRejected, isChecking, style }
     <View style={[{
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: `${getStatusColor()}15`,
+      backgroundColor: getBgColor(),
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: `${getStatusColor()}30`
+      borderColor: getStatusColor(),
     }, style]}>
       {isChecking ? (
         <ActivityIndicator size="small" color={getStatusColor()} style={{ marginRight: 6 }} />

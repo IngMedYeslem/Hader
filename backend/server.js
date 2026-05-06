@@ -748,6 +748,34 @@ const Shop = require('./models/Shop');
 const Product = require('./models/Product');
 
 // Routes Boutiques
+app.get('/api/shops/:shopId/bank-accounts', async (req, res) => {
+  try {
+    console.log('GET bank-accounts for shopId:', req.params.shopId);
+    const shop = await Shop.findById(req.params.shopId).select('bankAccounts');
+    console.log('shop found:', shop ? 'yes' : 'no', 'accounts:', shop?.bankAccounts?.length);
+    if (!shop) return res.status(404).json({ error: 'Boutique non trouvée' });
+    res.json(shop.bankAccounts || []);
+  } catch (error) {
+    console.log('bank-accounts error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/shops/:shopId/bank-accounts', async (req, res) => {
+  try {
+    const { bankAccounts } = req.body;
+    const shop = await Shop.findByIdAndUpdate(
+      req.params.shopId,
+      { bankAccounts },
+      { new: true }
+    ).select('bankAccounts');
+    if (!shop) return res.status(404).json({ error: 'Boutique non trouvée' });
+    res.json(shop.bankAccounts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/api/shops/:shopId', async (req, res) => {
   try {
     const shop = await Shop.findById(req.params.shopId);

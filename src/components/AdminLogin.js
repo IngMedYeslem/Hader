@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ImageBackground, Platform, Animated, ScrollView, KeyboardAvoidingView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Animated, ScrollView, KeyboardAvoidingView, SafeAreaView } from 'react-native';
 import { useTranslation } from '../translations';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 
-const API_URL = 'http://192.168.0.103:3000/api';
+const API_URL = 'http://192.168.0.110:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
   const { t } = useTranslation();
@@ -62,25 +62,23 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/b2.jpeg')} 
-      style={{ flex: 1 }}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
-        <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', backgroundColor: '#FF6B35', borderBottomLeftRadius: 60, borderBottomRightRadius: 60 }} />
+
+      <SafeAreaView style={{ backgroundColor: 'transparent' }}>
+        <View style={[styles.headerGlobal, { backgroundColor: '#FF6B35' }]}>
           {/* Premier niveau - Titre */}
           <View style={{ paddingVertical: 15, paddingHorizontal: 30, alignItems: 'center' }}>
           <Text style={{ 
             fontSize: 16, 
-            color: '#C8A55F', 
+            color: 'white', 
             fontWeight: 'bold'
           }}>
             👨💼 {t('adminLogin')}
           </Text>
           <Text style={{ 
             fontSize: 12, 
-            color: '#C8A55F', 
+            color: 'white', 
             opacity: 0.7,
             marginTop: 4
           }}>
@@ -96,10 +94,10 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
           paddingHorizontal: 20,
           paddingBottom: 12,
           borderTopWidth: 1,
-          borderTopColor: 'rgba(200, 165, 95, 0.2)'
+          borderTopColor: 'rgba(255,107,53,0.15)'
         }}>
           <TouchableOpacity onPress={onBack}>
-            <Text style={[styles.colorText, { fontSize: 16 }]}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
               ← {t('back')}
             </Text>
           </TouchableOpacity>
@@ -129,7 +127,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
           </Text>
 
           <TextInput
-            style={[styles.addProductInput, { color: '#2C3E50' }]}
+            style={[styles.addProductInput, { color: '#333' }]}
             placeholder={t('username')}
             placeholderTextColor="#666"
             value={credentials.username}
@@ -138,7 +136,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
           />
 
           <SimplePasswordInput
-            style={[styles.addProductInput, { color: '#2C3E50' }]}
+            style={[styles.addProductInput, { color: '#333' }]}
             placeholder={t('password')}
             placeholderTextColor="#666"
             value={credentials.password}
@@ -155,14 +153,14 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
             </Text>
           </TouchableOpacity>
 
-          <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 12, borderRadius: 8, marginTop: 15 }}>
-            <Text style={{ color: '#C8A55F', fontSize: 12, textAlign: 'center' }}>
+          <View style={{ backgroundColor: 'transparent', padding: 12, borderRadius: 8, marginTop: 15 }}>
+            <Text style={{ color: '#555', fontSize: 12, textAlign: 'center' }}>
               {t('adminLoginInfo')}
             </Text>
           </View>
         </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ImageBackground>
+    </View>
   );
 }

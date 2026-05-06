@@ -121,11 +121,11 @@ const GuestCheckout = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginBottom: 16 },
+  input: { borderWidth: 1, borderColor: '#FFD4C2', borderRadius: 8, padding: 12, marginBottom: 16 },
   button: { backgroundColor: '#2ecc71', padding: 16, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  otpBox: { backgroundColor: '#f0f0f0', padding: 20, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
-  otpLabel: { fontSize: 14, color: '#666', marginBottom: 8 },
+  otpBox: { backgroundColor: '#FFF0EB', padding: 20, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
+  otpLabel: { fontSize: 14, color: '#555', marginBottom: 8 },
   otpCode: { fontSize: 36, fontWeight: 'bold', color: '#2ecc71', letterSpacing: 4 },
   otpNote: { fontSize: 12, color: '#e74c3c', marginTop: 8 }
 });

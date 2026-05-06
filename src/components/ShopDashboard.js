@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Alert, Linking, Platform, SafeAreaView } from 'react-native';
+import { Text, View, Image, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Platform, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
@@ -73,7 +73,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const fetchNewOrdersCount = async () => {
     try {
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}/orders`);
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}/orders`);
       if (response.ok) {
         const orders = await response.json();
         const pending = orders.filter(o => o.status === 'pending').length;
@@ -84,7 +84,7 @@ function ShopDashboard({ shop, onLogout }) {
 
   const fetchUserId = async () => {
     try {
-      const response = await fetch('http://192.168.0.103:3000/api/users');
+      const response = await fetch('http://192.168.0.110:3000/api/users');
       const users = await response.json();
       const user = users.find(u => u.linkedShop?.id === shop._id);
       if (user) {
@@ -129,7 +129,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const checkApprovalStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`);
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}`);
       if (response.ok) {
         const shopData = await response.json();
         console.log('🔄 Statut approbation vérifié:', shopData.isApproved);
@@ -193,79 +193,37 @@ function ShopDashboard({ shop, onLogout }) {
   // Afficher la page d'accueil pour les boutiques non validées (mais pas rejetées)
   if (showWelcomePage && !isApproved && !autoRefreshRejected) {
     return (
-      <View style={styles.wrapper}>
-        <ImageBackground 
-          source={require('../../assets/b2.jpeg')} 
-          style={styles.background}
-          resizeMode="cover"
-        >
-          <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
-            <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50', paddingVertical: 20, paddingHorizontal: 30, alignItems: 'center' }]}>
-              <Text style={{ fontSize: 18, color: '#C8A55F', fontWeight: 'bold', textAlign: 'center' }}>
-                🏠 {t('welcome')} {shop.name}!
-              </Text>
-              <Text style={{ fontSize: 14, color: '#C8A55F', opacity: 0.8, textAlign: 'center', marginTop: 5 }}>
-                {t('shopCreatedSuccessfully')}
-              </Text>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
+          <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14, alignItems: 'center' }}>
+            <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🏪 {shop.name}</Text>
+            <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>{t('shopCreatedSuccessfully')}</Text>
+          </View>
+        </SafeAreaView>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20 }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 16 }}>🎉 {t('congratulations')}!</Text>
+            <Text style={{ color: '#555', fontSize: 15, textAlign: 'center', marginBottom: 16 }}>{t('shopCreatedWaitingValidation')}</Text>
+            <View style={{ backgroundColor: '#fff8e1', padding: 14, borderRadius: 10, marginBottom: 20 }}>
+              <Text style={{ color: '#f57f17', fontSize: 13, marginBottom: 6, fontWeight: '600' }}>🕰️ {t('validationProcess')}:</Text>
+              <Text style={{ color: '#555', fontSize: 13, marginBottom: 5 }}>• {t('adminWillReview')}</Text>
+              <Text style={{ color: '#555', fontSize: 13, marginBottom: 5 }}>• {t('validationWithin24h')}</Text>
+              <Text style={{ color: '#555', fontSize: 13 }}>• {t('canAddProductsAfterValidation')}</Text>
             </View>
-          </SafeAreaView>
-          
-          <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.contentContainer}>
-            <View style={styles.centeredContainer}>
-              <View style={[styles.card, { margin: 20 }]}>
-                <Text style={[styles.authTitle, { fontSize: 20, marginBottom: 20, textAlign: 'center' }]}>
-                  🎉 {t('congratulations')}!
-                </Text>
-                
-                <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
-                  {t('shopCreatedWaitingValidation')}
-                </Text>
-                
-                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 15, borderRadius: 8, marginBottom: 20 }}>
-                  <Text style={[styles.colorText, { textAlign: 'center', fontSize: 14, marginBottom: 10 }]}>
-                    🕰️ {t('validationProcess')}:
-                  </Text>
-                  <Text style={[styles.colorText, { fontSize: 13, marginBottom: 8 }]}>
-                    • {t('adminWillReview')}
-                  </Text>
-                  <Text style={[styles.colorText, { fontSize: 13, marginBottom: 8 }]}>
-                    • {t('validationWithin24h')}
-                  </Text>
-                  <Text style={[styles.colorText, { fontSize: 13 }]}>
-                    • {t('canAddProductsAfterValidation')}
-                  </Text>
-                </View>
-                
-                <Text style={[styles.authTitle, { fontSize: 16, marginBottom: 15, textAlign: 'center' }]}>
-                  📞 {t('needHelp')}?
-                </Text>
-                
-                <TouchableOpacity 
-                  style={[styles.submitBtn, { backgroundColor: '#25D366', marginBottom: 10 }]}
-                  onPress={() => {
-                    const whatsappUrl = `whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopValidationMessage'))}`;
-                    Linking.openURL(whatsappUrl).catch(() => {
-                      Alert.alert('Erreur', 'WhatsApp n\'est pas installé');
-                    });
-                  }}
-                >
-                  <Text style={styles.submitText}>
-                    📱 {t('contactWhatsApp')}
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={[styles.submitBtn, { backgroundColor: '#C8A55F' }]}
-                  onPress={hideWelcomePage}
-                >
-                  <Text style={styles.submitText}>
-                    {t('understood')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </ImageBackground>
+            <TouchableOpacity
+              style={{ backgroundColor: '#25D366', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginBottom: 10 }}
+              onPress={() => Linking.openURL(`whatsapp://send?phone=+22246251999&text=${encodeURIComponent(t('shopValidationMessage'))}`).catch(() => Alert.alert('Erreur', 'WhatsApp n\'est pas installé'))}
+            >
+              <Text style={{ color: 'white', fontSize: 15, fontWeight: 'bold' }}>📱 {t('contactWhatsApp')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ backgroundColor: '#FF6B35', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+              onPress={hideWelcomePage}
+            >
+              <Text style={{ color: 'white', fontSize: 15, fontWeight: 'bold' }}>{t('understood')}</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -356,158 +314,62 @@ function ShopDashboard({ shop, onLogout }) {
   }
 
   return (
-    <View style={styles.wrapper}>
-      <ImageBackground 
-        source={require('../../assets/b2.jpeg')} 
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
-          <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
-            {/* Premier niveau - Titre */}
-            <View style={{ paddingVertical: 15, paddingHorizontal: 30, alignItems: 'center' }}>
-            <Text style={{ 
-              fontSize: 16, 
-              color: '#C8A55F', 
-              fontWeight: 'bold'
-            }}>
-              🏠 {shop.name}
-            </Text>
-            <View style={{ 
-              flexDirection: 'row', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              marginTop: 8
-            }}>
-              <Text style={{ 
-                fontSize: 12, 
-                color: '#C8A55F', 
-                opacity: 0.7,
-                marginRight: 8
-              }}>
-                {products.length} {t('products')}
-              </Text>
-              <ValidationStatusIndicator 
-                isApproved={isApproved} 
-                isRejected={autoRefreshRejected}
-                isChecking={false}
-              />
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
+        <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🏪 {shop.name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 8 }}>
+                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>{products.length} {t('products')}</Text>
+                <ValidationStatusIndicator isApproved={isApproved} isRejected={autoRefreshRejected} isChecking={false} />
+              </View>
             </View>
-          </View>
-          
-          {/* Deuxième niveau - Boutons */}
-          <View style={{ 
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 15,
-            paddingBottom: 10,
-            borderTopWidth: 1,
-            borderTopColor: 'rgba(200, 165, 95, 0.2)'
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+
+            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
               {isApproved && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setOrdersVisible(true)}
-                  style={{ 
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(255, 107, 53, 0.15)', 
-                    paddingHorizontal: 15, 
-                    paddingVertical: 10, 
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 107, 53, 0.3)',
-                    marginRight: 10,
-                    position: 'relative',
-                  }}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, position: 'relative' }}
                 >
-                  <Text style={{ fontSize: 14, marginRight: 6 }}>📦</Text>
-                  <Text style={{ color: '#FF6B35', fontSize: 12, fontWeight: 'bold' }}>
-                    {isRTL ? 'الطلبات' : 'Commandes'}
-                  </Text>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>📦 {isRTL ? 'الطلبات' : 'Commandes'}</Text>
                   {newOrdersCount > 0 && (
-                    <View style={{ position: 'absolute', top: -5, right: -5, backgroundColor: '#FF6B35', borderRadius: 10, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#FF6B35', borderRadius: 9, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
                       <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{newOrdersCount}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
               )}
-
               {Platform.OS !== 'web' && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setNotificationsVisible(true)}
-                  style={{ 
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(52, 152, 219, 0.15)', 
-                    paddingHorizontal: 15, 
-                    paddingVertical: 10, 
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: 'rgba(52, 152, 219, 0.3)',
-                    marginRight: 10
-                  }}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
                 >
-                  <Text style={{ fontSize: 14, marginRight: 6 }}>🔔</Text>
-                  <Text style={{ color: '#3498db', fontSize: 12, fontWeight: 'bold' }}>
-                    Notifications
-                  </Text>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🔔</Text>
                 </TouchableOpacity>
               )}
-              
               {isApproved && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setShopInfoVisible(true)}
-                  style={{ 
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(200, 165, 95, 0.15)', 
-                    paddingHorizontal: 15, 
-                    paddingVertical: 10, 
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    borderColor: 'rgba(200, 165, 95, 0.3)'
-                  }}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
                 >
-                  <Text style={{ fontSize: 14, marginRight: 6 }}>&#9432;&#65039;</Text>
-                  <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
-                    {t('info')}
-                  </Text>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>&#9432;</Text>
                 </TouchableOpacity>
               )}
+              <TouchableOpacity
+                onPress={onLogout}
+                style={{ backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
+              >
+                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{t('logout')}</Text>
+              </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity 
-              onPress={onLogout}
-              style={{ 
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: 'rgba(220, 53, 69, 0.15)', 
-                paddingHorizontal: 15, 
-                paddingVertical: 10, 
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: 'rgba(220, 53, 69, 0.3)'
-              }}
-            >
-              <Text style={{ fontSize: 14, marginRight: 6 }}>🚪</Text>
-              <Text style={{ color: '#dc3545', fontSize: 12, fontWeight: 'bold' }}>
-                {t('logout')}
-              </Text>
-            </TouchableOpacity>
           </View>
-          </View>
-        </SafeAreaView>
+        </View>
+      </SafeAreaView>
 
-        
-        {products.length === 0 ? (
-          <ScrollView 
-            style={styles.scrollContainer} 
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.centeredContainer}>
+      {products.length === 0 ? (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          <View style={styles.centeredContainer}>
               {isApproved ? (
                 <>
                   <Text style={styles.emptyText}>{t('noProductsInShop')}</Text>
@@ -515,7 +377,7 @@ function ShopDashboard({ shop, onLogout }) {
                 </>
               ) : autoRefreshRejected ? (
                 <View style={styles.card}>
-                  <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15, textAlign: 'center', color: '#dc3545' }]}>
+                  <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 15, textAlign: 'center', color: '#FF6B35' }]}>
                     ❌ {t('accountRejected')}
                   </Text>
                   <Text style={[styles.colorText, { textAlign: 'center', fontSize: 16, marginBottom: 15 }]}>
@@ -532,7 +394,7 @@ function ShopDashboard({ shop, onLogout }) {
                   
                   <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
                     <TouchableOpacity 
-                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#C8A55F' }]}
+                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#FF6B35' }]}
                       onPress={() => setShopInfoVisible(true)}
                     >
                       <Text style={[styles.submitText, { fontSize: 12 }]}>
@@ -541,10 +403,10 @@ function ShopDashboard({ shop, onLogout }) {
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
-                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#007bff' }]}
+                      style={[styles.submitBtn, { flex: 1, backgroundColor: '#FF6B35' }]}
                       onPress={async () => {
                         try {
-                          const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}/reactivate`, {
+                          const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}/reactivate`, {
                             method: 'POST'
                           });
                           if (response.ok) {
@@ -603,7 +465,7 @@ function ShopDashboard({ shop, onLogout }) {
                   </TouchableOpacity>
                   
                   <TouchableOpacity 
-                    style={[styles.submitBtn, { backgroundColor: '#007AFF' }]}
+                    style={[styles.submitBtn, { backgroundColor: '#FF6B35' }]}
                     onPress={() => {
                       const phoneUrl = `tel:+22236251999`;
                       Linking.openURL(phoneUrl).catch(() => {
@@ -618,12 +480,9 @@ function ShopDashboard({ shop, onLogout }) {
                 </View>
               )}
             </View>
-          </ScrollView>
-        ) : (
-          <ScrollView 
-            style={styles.wrapper} 
-            contentContainerStyle={styles.contentContainer}
-          >
+        </ScrollView>
+      ) : (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.contentContainer}>
           <View style={styles.globalGrid}>
               {products.map((product) => (
                 <TouchableOpacity 
@@ -669,19 +528,15 @@ function ShopDashboard({ shop, onLogout }) {
                 </TouchableOpacity>
               ))}
             </View>
-          </ScrollView>
-        )}
-        
-        {isApproved && (
-          <TouchableOpacity 
-            style={styles.floatingBtn} 
-            onPress={() => navigateTo('addProduct')}
-          >
-            <Text style={styles.floatingBtnText}>+</Text>
-          </TouchableOpacity>
-        )}
+        </ScrollView>
+      )}
 
-        <MediaGallery
+      {isApproved && (
+        <TouchableOpacity style={styles.floatingBtn} onPress={() => navigateTo('addProduct')}>
+          <Text style={styles.floatingBtnText}>+</Text>
+        </TouchableOpacity>
+      )}
+      <MediaGallery
           visible={galleryVisible}
           images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
           videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
@@ -693,9 +548,8 @@ function ShopDashboard({ shop, onLogout }) {
             setSelectedProduct(null);
           }}
         />
-
-        {selectedProduct && (
-          <EditProduct
+      {selectedProduct && (
+        <EditProduct
             product={selectedProduct}
             visible={editVisible}
             onClose={() => {
@@ -704,80 +558,34 @@ function ShopDashboard({ shop, onLogout }) {
             }}
             onProductUpdated={handleProductUpdated}
           />
-        )}
+      )}
 
-        <ShopInfo
+      <ShopInfo
           shop={shop}
           visible={shopInfoVisible}
           onClose={() => setShopInfoVisible(false)}
           allowEdit={true}
-        />
+      />
 
-        {/* Modal Commandes */}
-        {ordersVisible && (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'white', zIndex: 9999 }}>
-            <ShopOrderManagement
-              shopId={shop._id}
-              onClose={() => { setOrdersVisible(false); fetchNewOrdersCount(); }}
-            />
-          </View>
-        )}
+      {ordersVisible && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'white', zIndex: 9999 }}>
+          <ShopOrderManagement shopId={shop._id} onClose={() => { setOrdersVisible(false); fetchNewOrdersCount(); }} />
+        </View>
+      )}
 
-        {/* Modal des notifications */}
-        {notificationsVisible && (
-          <View style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            <View style={{
-              backgroundColor: 'white',
-              margin: 20,
-              borderRadius: 12,
-              maxHeight: '80%',
-              width: '90%',
-              maxWidth: 400
-            }}>
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 20,
-                borderBottomWidth: 1,
-                borderBottomColor: '#eee'
-              }}>
-                <Text style={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#2C3E50'
-                }}>
-                  Notifications
-                </Text>
-                <TouchableOpacity 
-                  onPress={() => setNotificationsVisible(false)}
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 15,
-                    backgroundColor: '#f0f0f0',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>×</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <NotificationsList userId={userId || shop._id} />
+      {notificationsVisible && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: 'white', margin: 20, borderRadius: 12, maxHeight: '80%', width: '90%', maxWidth: 400 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#eee', backgroundColor: '#FF6B35', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>Notifications</Text>
+              <TouchableOpacity onPress={() => setNotificationsVisible(false)} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>×</Text>
+              </TouchableOpacity>
             </View>
+            <NotificationsList userId={userId || shop._id} />
           </View>
-        )}
-      </ImageBackground>
+        </View>
+      )}
     </View>
   );
 }

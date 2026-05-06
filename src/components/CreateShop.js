@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.0.103:3000/api';
+const API_URL = 'http://192.168.0.110:3000/api';
+
+const SHOP_CATEGORIES = [
+  { id: 'food', label: 'طعام / Food', icon: '🍔' },
+  { id: 'grocery', label: 'بقالة / Épicerie', icon: '🛒' },
+  { id: 'pharmacy', label: 'صيدلية / Pharmacie', icon: '💊' },
+  { id: 'electronics', label: 'إلكترونيات / Électronique', icon: '📱' },
+  { id: 'fashion', label: 'أزياء / Mode', icon: '👗' },
+  { id: 'other', label: 'أخرى / Autre', icon: '📦' },
+];
 
 export default function CreateShop({ onBack, onShopCreated }) {
   const { t } = useTranslation();
@@ -16,13 +25,14 @@ export default function CreateShop({ onBack, onShopCreated }) {
     phone: '',
     whatsapp: '',
     latitude: '',
-    longitude: ''
+    longitude: '',
+    category: ''
   });
   const [loading, setLoading] = useState(false);
 
   const handleCreateShop = async () => {
     // Validation - tous les champs sont obligatoires
-    if (!formData.name || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude) {
+    if (!formData.name || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude || !formData.category) {
       Platform.OS === 'web' ? alert('Tous les champs sont obligatoires') : Alert.alert('Erreur', 'Tous les champs sont obligatoires');
       return;
     }
@@ -68,6 +78,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
           address: formData.address,
           phone: formData.phone,
           whatsapp: formData.whatsapp,
+          category: formData.category,
           location: {
             latitude: parseFloat(formData.latitude),
             longitude: parseFloat(formData.longitude)
@@ -81,15 +92,8 @@ export default function CreateShop({ onBack, onShopCreated }) {
         if (Platform.OS === 'web') {
           alert(`Boutique "${formData.name}" créée avec succès`);
           setFormData({ 
-            name: '', 
-            email: '', 
-            password: '', 
-            confirmPassword: '', 
-            address: '', 
-            phone: '', 
-            whatsapp: '',
-            latitude: '',
-            longitude: ''
+            name: '', email: '', password: '', confirmPassword: '',
+            address: '', phone: '', whatsapp: '', latitude: '', longitude: '', category: ''
           });
           onShopCreated && onShopCreated();
         } else {
@@ -101,15 +105,8 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 text: 'OK',
                 onPress: () => {
                   setFormData({ 
-                    name: '', 
-                    email: '', 
-                    password: '', 
-                    confirmPassword: '', 
-                    address: '', 
-                    phone: '', 
-                    whatsapp: '',
-                    latitude: '',
-                    longitude: ''
+                    name: '', email: '', password: '', confirmPassword: '',
+                    address: '', phone: '', whatsapp: '', latitude: '', longitude: '', category: ''
                   });
                   onShopCreated && onShopCreated();
                 }
@@ -128,33 +125,25 @@ export default function CreateShop({ onBack, onShopCreated }) {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ImageBackground 
-        source={require('../../assets/b2.jpeg')} 
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <View style={[styles.headerGlobal, { 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: 10,
-          paddingTop: Platform.OS === 'ios' ? 50 : 10
-        }]}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '35%', backgroundColor: '#FF6B35', borderBottomLeftRadius: 60, borderBottomRightRadius: 60 }} />
+
+      <View style={{ backgroundColor: 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, paddingTop: Platform.OS === 'ios' ? 55 : 15 }}>
           <TouchableOpacity onPress={onBack} style={{ marginRight: 10 }}>
-            <Text style={styles.colorText}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
               {t('back')}
             </Text>
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={[styles.textcoprit, { fontSize: 14 }]}>🏪 {t('createShop')}</Text>
-            <Text style={{ color: '#C8A55F', fontSize: 10, opacity: 0.8 }}>
+            <Text style={{ color: '#FF6B35', fontSize: 10, opacity: 0.8 }}>
               {t('newShopRegistration')}
             </Text>
           </View>
         </View>
 
         <View style={styles.centeredContainer}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
           <View style={styles.card}>
             <Text style={[styles.authTitle, { fontSize: 24, marginBottom: 30 }]}>
               {t('createShop')}
@@ -223,6 +212,31 @@ export default function CreateShop({ onBack, onShopCreated }) {
               keyboardType="phone-pad"
             />
 
+            {/* Category Selector */}
+            <Text style={{ color: '#777', fontSize: 13, marginBottom: 6, marginTop: 4 }}>
+              صنف المتجر / Catégorie *
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {SHOP_CATEGORIES.map(cat => (
+                <TouchableOpacity
+                  key={cat.id}
+                  onPress={() => setFormData({...formData, category: cat.id})}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center',
+                    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                    backgroundColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                    borderWidth: 1,
+                    borderColor: formData.category === cat.id ? '#C8A55F' : 'rgba(255,107,53,0.2)',
+                  }}
+                >
+                  <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+                  <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                    {cat.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <TextInput
               style={styles.addProductInput}
               placeholder="Latitude (ex: 5.3364) *"
@@ -251,17 +265,17 @@ export default function CreateShop({ onBack, onShopCreated }) {
               </Text>
             </TouchableOpacity>
 
-            <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 20 }}>
-              <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 15, borderRadius: 8, marginTop: 20 }}>
+              <Text style={{ color: '#FF6B35', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
                 ⚠️ {t('important')}
               </Text>
-              <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
+              <Text style={{ color: '#FF6B35', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
                 {t('allFieldsRequired')}
               </Text>
             </View>
           </View>
+          </ScrollView>
         </View>
-      </ImageBackground>
     </View>
   );
 }

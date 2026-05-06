@@ -32,20 +32,20 @@ export default function ShopListView({ products, onProductPress, onEditProduct }
           </View>
           
           <View style={{ flex: 1, marginLeft: 15, justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#2C3E50' }} numberOfLines={2}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }} numberOfLines={2}>
               {product.name}
             </Text>
             <Text style={{ fontSize: 14, color: '#7F8C8D', marginVertical: 5 }} numberOfLines={2}>
               {product.description}
             </Text>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#C8A55F' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF6B35' }}>
               {product.price} MRU
             </Text>
           </View>
           
           <TouchableOpacity 
             style={{
-              backgroundColor: 'rgba(200, 165, 95, 0.2)',
+              backgroundColor: 'rgba(255,255,255,0.2)',
               borderRadius: 20,
               width: 40,
               height: 40,

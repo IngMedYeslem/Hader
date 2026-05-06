@@ -33,7 +33,7 @@ export default function ShopViewSelector({ products, onProductPress, onEditProdu
         <TouchableOpacity
           key={key}
           style={{
-            backgroundColor: viewMode === key ? '#C8A55F' : 'transparent',
+            backgroundColor: viewMode === key ? '#FF6B35' : 'transparent',
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 15,
@@ -43,7 +43,7 @@ export default function ShopViewSelector({ products, onProductPress, onEditProdu
         >
           <Text style={{ fontSize: 16, marginBottom: 2 }}>{icon}</Text>
           <Text style={{
-            color: viewMode === key ? '#2C3E50' : '#C8A55F',
+            color: viewMode === key ? 'white' : '#FF6B35',
             fontSize: 10,
             fontWeight: 'bold'
           }}>
@@ -117,7 +117,7 @@ export default function ShopViewSelector({ products, onProductPress, onEditProdu
                     <Text style={{ 
                       fontSize: 14, 
                       fontWeight: 'bold', 
-                      color: '#2C3E50',
+                      color: '#333',
                       textAlign: 'center'
                     }} numberOfLines={2}>
                       {product.name}
@@ -125,7 +125,7 @@ export default function ShopViewSelector({ products, onProductPress, onEditProdu
                     <Text style={{ 
                       fontSize: 13, 
                       fontWeight: 'bold', 
-                      color: '#C8A55F',
+                      color: '#FF6B35',
                       textAlign: 'center',
                       marginTop: 5
                     }}>

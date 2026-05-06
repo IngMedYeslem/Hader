@@ -172,7 +172,7 @@ const cardStyles = {
     color: '#333',
   },
   inputSection: {
-    backgroundColor: 'rgba(200, 165, 95, 0.1)',
+    backgroundColor: 'rgba(255,107,53,0.08)',
     padding: 10,
     borderRadius: 8,
     marginBottom: 15,

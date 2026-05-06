@@ -23,8 +23,8 @@ const CATEGORIES = [
 
 const BANNERS = [
   { id: 1, title: 'توصيل سريع', subtitle: 'في أقل من 30 دقيقة', color: '#FF6B35', icon: '🚀' },
-  { id: 2, title: 'عروض حصرية', subtitle: 'خصومات تصل إلى 50%', color: '#C8A55F', icon: '🎁' },
-  { id: 3, title: 'متاجر متنوعة', subtitle: 'اختر من أفضل المتاجر', color: '#2C3E50', icon: '🏪' },
+  { id: 2, title: 'عروض حصرية', subtitle: 'خصومات تصل إلى 50%', color: '#FF6B35', icon: '🎁' },
+  { id: 3, title: 'متاجر متنوعة', subtitle: 'اختر من أفضل المتاجر', color: '#333', icon: '🏪' },
 ];
 
 export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess, onOpenCart }) {
@@ -89,6 +89,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
       shop.username?.toLowerCase().includes(searchText.toLowerCase()) ||
       shop.name?.toLowerCase().includes(searchText.toLowerCase());
     const matchCategory = selectedCategory === 'all' ||
+      (shop.category || '').toLowerCase() === selectedCategory ||
       (shop.category || '').toLowerCase().includes(selectedCategory);
     return matchSearch && matchCategory;
   });
@@ -97,7 +98,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
   const isRTL = currentLanguage === 'ar';
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
       {/* Header */}
@@ -133,7 +134,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
             {cartCount > 0 && (
               <View style={{
                 position: 'absolute', top: -5, right: -5,
-                backgroundColor: '#2C3E50', borderRadius: 10,
+                backgroundColor: '#FF6B35', borderRadius: 10,
                 width: 20, height: 20, justifyContent: 'center', alignItems: 'center'
               }}>
                 <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{cartCount}</Text>
@@ -190,7 +191,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 
         {/* Categories */}
         <View style={{ marginBottom: 8 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2C3E50', marginHorizontal: 16, marginBottom: 12 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginHorizontal: 16, marginBottom: 12 }}>
             {isRTL ? 'التصنيفات' : 'Catégories'}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
@@ -204,7 +205,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
                   borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
                   shadowOpacity: 0.1, shadowRadius: 2, elevation: 2,
                   borderWidth: selectedCategory === cat.id ? 0 : 1,
-                  borderColor: '#eee',
+                  borderColor: '#FFD4C2',
                 }}
               >
                 <Text style={{ fontSize: 20 }}>{cat.icon}</Text>
@@ -219,35 +220,90 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
           </ScrollView>
         </View>
 
-        {/* Shops Section */}
+        {/* Shops / Products Section */}
         <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2C3E50' }}>
-              {isRTL ? '🏪 المتاجر المتاحة' : '🏪 Restaurants disponibles'}
-            </Text>
-            <Text style={{ fontSize: 13, color: '#FF6B35' }}>
-              {filteredShops.length} {isRTL ? 'متجر' : 'restaurants'}
-            </Text>
-          </View>
-
-          {loading ? (
-            <View style={{ padding: 40, alignItems: 'center' }}>
-              <Text style={{ fontSize: 30 }}>⏳</Text>
-              <Text style={{ color: '#999', marginTop: 10 }}>
-                {isRTL ? 'جاري التحميل...' : 'Chargement...'}
-              </Text>
-            </View>
-          ) : filteredShops.length === 0 ? (
-            <View style={{ padding: 40, alignItems: 'center' }}>
-              <Text style={{ fontSize: 40 }}>🏪</Text>
-              <Text style={{ color: '#999', marginTop: 10, textAlign: 'center' }}>
-                {isRTL ? 'لا توجد متاجر متاحة' : 'Aucun restaurant disponible'}
-              </Text>
-            </View>
+          {selectedCategory === 'grocery' ? (
+            <>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                  🛒 {isRTL ? 'المتاجر المتاحة' : 'Produits épicerie'}
+                </Text>
+                <Text style={{ fontSize: 13, color: '#FF6B35' }}>
+                  {products.filter(p => (p.shop?.category || '').toLowerCase() === 'grocery').length} {isRTL ? 'منتج' : 'produits'}
+                </Text>
+              </View>
+              {loading ? (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 30 }}>⏳</Text>
+                </View>
+              ) : (
+                products
+                  .filter(p => (p.shop?.category || '').toLowerCase() === 'grocery')
+                  .filter(p => !searchText || p.name?.toLowerCase().includes(searchText.toLowerCase()))
+                  .map(product => (
+                    <TouchableOpacity
+                      key={product._id}
+                      onPress={() => onSelectShop(product.shop)}
+                      style={{
+                        backgroundColor: 'white', borderRadius: 12, marginBottom: 10,
+                        flexDirection: isRTL ? 'row-reverse' : 'row', overflow: 'hidden',
+                        shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
+                      }}
+                    >
+                      <View style={{ width: 90, height: 90, backgroundColor: 'white' }}>
+                        {product.images?.[0] ? (
+                          <Image source={{ uri: getMediaUrl(product.images[0]) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                        ) : (
+                          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ fontSize: 28 }}>🛒</Text>
+                          </View>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
+                          {product.name}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#777', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={1}>
+                          🏪 {product.shop?.name || product.shop?.username}
+                        </Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#FF6B35' }}>
+                          {product.price} MRU
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+              )}
+            </>
           ) : (
-            filteredShops.map(shop => (
-              <ShopCard key={shop._id} shop={shop} onPress={() => onSelectShop(shop)} isRTL={isRTL} />
-            ))
+            <>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                  {isRTL ? '🏪 المتاجر المتاحة' : '🏪 Restaurants disponibles'}
+                </Text>
+                <Text style={{ fontSize: 13, color: '#FF6B35' }}>
+                  {filteredShops.length} {isRTL ? 'متجر' : 'restaurants'}
+                </Text>
+              </View>
+              {loading ? (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 30 }}>⏳</Text>
+                  <Text style={{ color: '#777', marginTop: 10 }}>
+                    {isRTL ? 'جاري التحميل...' : 'Chargement...'}
+                  </Text>
+                </View>
+              ) : filteredShops.length === 0 ? (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 40 }}>🏪</Text>
+                  <Text style={{ color: '#777', marginTop: 10, textAlign: 'center' }}>
+                    {isRTL ? 'لا توجد متاجر متاحة' : 'Aucun restaurant disponible'}
+                  </Text>
+                </View>
+              ) : (
+                filteredShops.map(shop => (
+                  <ShopCard key={shop._id} shop={shop} onPress={() => onSelectShop(shop)} isRTL={isRTL} />
+                ))
+              )}
+            </>
           )}
         </View>
 
@@ -256,23 +312,23 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
           <TouchableOpacity
             onPress={onShopLogin}
             style={{
-              flex: 1, backgroundColor: '#2C3E50', padding: 14,
+              flex: 1, backgroundColor: '#FF6B35', padding: 14,
               borderRadius: 12, alignItems: 'center',
             }}
           >
-            <Text style={{ color: '#C8A55F', fontWeight: 'bold', fontSize: 13 }}>
+            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
               🏪 {isRTL ? 'مساحة المتجر' : 'Espace Boutique'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onAdminAccess}
             style={{
-              flex: 1, backgroundColor: '#fff', padding: 14,
+              flex: 1, backgroundColor: 'white', padding: 14,
               borderRadius: 12, alignItems: 'center',
-              borderWidth: 1, borderColor: '#ddd',
+              borderWidth: 1.5, borderColor: '#FF6B35',
             }}
           >
-            <Text style={{ color: '#dc3545', fontWeight: 'bold', fontSize: 13 }}>
+            <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 13 }}>
               👨‍💼 {isRTL ? 'الإدارة' : 'Admin'}
             </Text>
           </TouchableOpacity>
@@ -289,7 +345,9 @@ function ShopCard({ shop, onPress, isRTL }) {
   const deliveryTime = Math.floor(15 + Math.random() * 30);
   const deliveryFee = Math.floor(5 + Math.random() * 20);
 
-  const coverUri = shop.coverImage ? getMediaUrl(shop.coverImage) : null;
+  const coverUri = shop.mainImage
+    ? (shop.mainImage.startsWith('/uploads') ? getMediaUrl(shop.mainImage) : shop.mainImage)
+    : (shop.coverImage ? getMediaUrl(shop.coverImage) : null);
   const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
 
   return (
@@ -302,7 +360,7 @@ function ShopCard({ shop, onPress, isRTL }) {
       }}
     >
       {/* Cover Image */}
-      <View style={{ height: 140, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ height: 140, backgroundColor: '#FFF0EB', justifyContent: 'center', alignItems: 'center' }}>
         {coverUri ? (
           <Image source={{ uri: coverUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         ) : (
@@ -334,21 +392,21 @@ function ShopCard({ shop, onPress, isRTL }) {
                 </Text>
               </View>
             )}
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#2C3E50', flex: 1 }} numberOfLines={1}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', flex: 1 }} numberOfLines={1}>
               {shop.username || shop.name}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF8E7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}>
             <Text style={{ fontSize: 12 }}>⭐</Text>
-            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#C8A55F', marginLeft: 2 }}>{rating}</Text>
+            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#FF6B35', marginLeft: 2 }}>{rating}</Text>
           </View>
         </View>
 
         <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', marginTop: 8, gap: 12 }}>
-          <Text style={{ fontSize: 12, color: '#888' }}>
+          <Text style={{ fontSize: 12, color: '#777' }}>
             📦 {shop.productCount} {isRTL ? 'منتج' : 'produits'}
           </Text>
-          <Text style={{ fontSize: 12, color: '#888' }}>
+          <Text style={{ fontSize: 12, color: '#777' }}>
             🛵 {deliveryFee} MRU {isRTL ? 'توصيل' : 'livraison'}
           </Text>
           {shop.minPrice !== Infinity && (

@@ -20,6 +20,7 @@ const shopSchema = new mongoose.Schema({
     accountNumber: { type: String, required: true },
     accountHolder: { type: String, default: '' }
   }],
+  mainImage: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 

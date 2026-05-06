@@ -36,8 +36,8 @@ function MediaGallery({ images = [], visible, onClose, productName, productPrice
         {/* Header */}
         <View style={[styles.galleryHeader, { backgroundColor: 'rgba(44, 62, 80, 0.95)', paddingVertical: 20 }]}>
           <View style={{ flex: 1 }}>
-            <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 15, alignSelf: 'flex-start', marginBottom: 8 }}>
-              <Text style={{ fontSize: 20, color: '#C8A55F', fontWeight: 'bold' }}>{productName}</Text>
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 15, alignSelf: 'flex-start', marginBottom: 8 }}>
+              <Text style={{ fontSize: 20, color: '#FF6B35', fontWeight: 'bold' }}>{productName}</Text>
             </View>
             {productPrice && (
               <Text style={{ fontSize: 18, color: '#ff6b35', fontWeight: 'bold', marginBottom: 5 }}>
@@ -45,8 +45,8 @@ function MediaGallery({ images = [], visible, onClose, productName, productPrice
               </Text>
             )}
             {shop && (
-              <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, alignSelf: 'flex-start' }}>
-                <Text style={{ fontSize: 14, color: '#C8A55F', fontWeight: '600' }}>🏦 {shop.username}</Text>
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, alignSelf: 'flex-start' }}>
+                <Text style={{ fontSize: 14, color: '#FF6B35', fontWeight: '600' }}>🏦 {shop.username}</Text>
               </View>
             )}
           </View>
@@ -102,7 +102,7 @@ function MediaGallery({ images = [], visible, onClose, productName, productPrice
             {allMedia.map((_, index) => (
               <TouchableOpacity
                 key={`dot-${index}`}
-                style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: currentIndex === index ? '#C8A55F' : 'rgba(255,255,255,0.6)', marginHorizontal: 8, borderWidth: 2, borderColor: currentIndex === index ? '#FFD700' : 'rgba(255,255,255,0.9)' }}
+                style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: currentIndex === index ? '#FF6B35' : 'rgba(255,255,255,0.6)', marginHorizontal: 8, borderWidth: 2, borderColor: currentIndex === index ? '#FFD700' : 'rgba(255,255,255,0.9)' }}
                 onPress={() => setCurrentIndex(index)}
               />
             ))}

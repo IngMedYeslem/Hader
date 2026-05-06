@@ -33,7 +33,7 @@ export default function ShopCategoryView({ products, onProductPress, onEditProdu
           <TouchableOpacity
             key={category}
             style={{
-              backgroundColor: selectedCategory === category ? '#C8A55F' : 'rgba(255,255,255,0.2)',
+              backgroundColor: selectedCategory === category ? '#FF6B35' : 'rgba(255,255,255,0.2)',
               paddingHorizontal: 15,
               paddingVertical: 8,
               borderRadius: 20,
@@ -42,7 +42,7 @@ export default function ShopCategoryView({ products, onProductPress, onEditProdu
             onPress={() => setSelectedCategory(category)}
           >
             <Text style={{
-              color: selectedCategory === category ? '#2C3E50' : '#C8A55F',
+              color: selectedCategory === category ? 'white' : '#FF6B35',
               fontWeight: 'bold',
               fontSize: 12
             }}>
@@ -75,12 +75,12 @@ export default function ShopCategoryView({ products, onProductPress, onEditProdu
                   position: 'absolute',
                   top: 5,
                   left: 5,
-                  backgroundColor: 'rgba(200, 165, 95, 0.9)',
+                  backgroundColor: 'rgba(255,107,53,0.9)',
                   borderRadius: 8,
                   paddingHorizontal: 6,
                   paddingVertical: 2
                 }}>
-                  <Text style={{ color: '#2C3E50', fontSize: 8, fontWeight: 'bold' }}>
+                  <Text style={{ color: '#333', fontSize: 8, fontWeight: 'bold' }}>
                     {product.category || 'autres'}
                   </Text>
                 </View>

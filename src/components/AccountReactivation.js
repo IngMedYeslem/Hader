@@ -36,7 +36,7 @@ export const AccountReactivation = ({ shopId, onStatusChange }) => {
   if (status === 'approved') return null;
 
   return (
-    <View style={{ padding: 20, backgroundColor: '#fff3cd', margin: 10, borderRadius: 8 }}>
+    <View style={{ padding: 20, backgroundColor: 'rgba(255,255,255,0.1)', margin: 10, borderRadius: 8 }}>
       <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>
         Compte suspendu
       </Text>
@@ -49,7 +49,7 @@ export const AccountReactivation = ({ shopId, onStatusChange }) => {
           onPress={() => onStatusChange?.('edit')}
           style={{
             flex: 1,
-            backgroundColor: '#C8A55F',
+            backgroundColor: '#FF6B35',
             padding: 12,
             borderRadius: 6,
             alignItems: 'center'
@@ -65,7 +65,7 @@ export const AccountReactivation = ({ shopId, onStatusChange }) => {
           disabled={isRequesting}
           style={{
             flex: 1,
-            backgroundColor: '#007bff',
+            backgroundColor: '#FF6B35',
             padding: 12,
             borderRadius: 6,
             alignItems: 'center'

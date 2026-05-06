@@ -1,313 +1,206 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Platform, PanResponder } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
 import GlobalNavbar from './GlobalNavbar';
-import SearchBar from './SearchBar';
-import ProductModal from './ProductModal';
-import ProductDetailModal from './ProductDetailModal';
-import ShopSummary from './ShopSummary';
-import ProductThumbnail from './ProductThumbnail';
-import MediaGallery from './MediaGallery';
 import AdminInterface from './AdminInterface';
-import { fetchProductsWithShops, checkServerHealth } from '../services/apiService';
+import RestaurantScreen from './RestaurantScreen';
+import CartScreen from './CartScreen';
+import { fetchProductsWithShops } from '../services/apiService';
 import { getServerStatus } from '../services/serverCheck';
+import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
+import { useCart } from '../contexts/CartContext';
 import styles from './styles';
 
+const { width } = Dimensions.get('window');
+
 export default function GlobalInterface({ onShopLogin }) {
-  const { t } = useTranslation();
-  
-  console.log('🌍 GlobalInterface render');
+  const { t, currentLanguage } = useTranslation();
+  const { getTotalItems } = useCart();
+  const isRTL = currentLanguage === 'ar';
+
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [selectedShop, setSelectedShop] = useState(null);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [galleryVisible, setGalleryVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [shops, setShops] = useState([]);
   const [serverAvailable, setServerAvailable] = useState(false);
-  const [error, setError] = useState(null);
   const [showAdminInterface, setShowAdminInterface] = useState(false);
-  const [showShopSummary, setShowShopSummary] = useState(true);
-  const [summaryPosition, setSummaryPosition] = useState('top'); // 'top' ou 'bottom'
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
         const status = await getServerStatus();
         setServerAvailable(status.isAvailable);
-        setError(status.isAvailable ? null : 'Serveur non disponible');
-        
         if (status.isAvailable) {
-          try {
-            const realProducts = await fetchProductsWithShops();
-            setProducts(realProducts);
-            setFilteredProducts(realProducts);
-          } catch (fetchError) {
-            console.log('Erreur fetch produits:', fetchError);
-            setServerAvailable(false);
-            setProducts([]);
-            setFilteredProducts([]);
+          // جلب المتاجر مباشرة
+          const shopsRes = await fetch('http://192.168.0.110:3000/api/shops');
+          if (shopsRes.ok) {
+            const shopsData = await shopsRes.json();
+            setShops(Array.isArray(shopsData) ? shopsData : []);
           }
-        } else {
-          setProducts([]);
-          setFilteredProducts([]);
+          // جلب المنتجات لحساب عدد منتجات كل متجر
+          const data = await fetchProductsWithShops();
+          setProducts(data);
         }
       } catch (error) {
-        console.error('Erreur chargement produits:', error);
-        setError('Erreur de connexion au serveur');
+        console.error('Erreur chargement:', error);
         setServerAvailable(false);
-        setProducts([]);
-        setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
     };
-    
-    loadProducts();
+    loadData();
   }, []);
-
-  // Filtrer les produits selon la recherche et la boutique sélectionnée
-  useEffect(() => {
-    let filtered = products;
-    
-    // Filtrer par texte de recherche
-    if (searchText) {
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-    
-    // Filtrer par boutique
-    if (selectedShop) {
-      filtered = filtered.filter(product => 
-        product.shop?.username === selectedShop
-      );
-    }
-    
-    setFilteredProducts(filtered);
-  }, [products, searchText, selectedShop]);
-
-  // Obtenir la liste unique des boutiques
-  const shops = [...new Set(products.map(p => p.shop?.username).filter(Boolean))];
-  const shopCount = shops.length;
-
-  const handleSearchChange = (text) => {
-    setSearchText(text);
-  };
-
-  const handleShopFilter = (shop) => {
-    setSelectedShop(shop);
-  };
-
-  const handleProductPress = (product) => {
-    setSelectedProduct(product);
-    setShowShopSummary(false); // Masquer le résumé lors de la navigation
-    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
-      setGalleryVisible(true);
-    } else {
-      setModalVisible(true);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedProduct(null);
-    setShowShopSummary(true); // Réafficher le résumé après fermeture
-  };
-  
-  const handleCloseGallery = () => {
-    setGalleryVisible(false);
-    setSelectedProduct(null);
-    setShowShopSummary(true); // Réafficher le résumé après fermeture
-  };
-  
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dy) > 10;
-    },
-    onPanResponderMove: (evt, gestureState) => {},
-    onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dy > 50) {
-        setSummaryPosition('bottom');
-      } else if (gestureState.dy < -50) {
-        setSummaryPosition('top');
-      }
-    },
-  });
-
-  const productsPanResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dy) > 10;
-    },
-    onPanResponderMove: (evt, gestureState) => {
-      if (Math.abs(gestureState.dy) > 20) {
-        setShowShopSummary(false);
-      }
-    },
-    onPanResponderRelease: () => {},
-  });
 
   if (showAdminInterface) {
     return <AdminInterface onBack={() => setShowAdminInterface(false)} />;
   }
 
-  if (loading) return (
-    <ImageBackground 
-      source={require('../../assets/b2.jpeg')} 
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <GlobalNavbar 
-        onShopLogin={onShopLogin} 
-        onAdminAccess={() => setShowAdminInterface(true)}
-        productCount={0} 
+  if (selectedShop) {
+    if (showCart) {
+      return (
+        <CartScreen
+          onBack={() => setShowCart(false)}
+          onCheckout={() => {}}
+        />
+      );
+    }
+    return (
+      <RestaurantScreen
+        shop={selectedShop}
+        onBack={() => setSelectedShop(null)}
+        onOpenCart={() => setShowCart(true)}
       />
-      <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
-    </ImageBackground>
-  );
+    );
+  }
+
+  const cartCount = getTotalItems();
 
   return (
-    <ImageBackground 
-      source={require('../../assets/b2.jpeg')} 
+    <ImageBackground
+      source={require('../../assets/b2.jpeg')}
       style={styles.background}
       resizeMode="cover"
     >
-      <GlobalNavbar 
-        onShopLogin={onShopLogin} 
+      <GlobalNavbar
+        onShopLogin={onShopLogin}
         onAdminAccess={() => setShowAdminInterface(true)}
-        productCount={filteredProducts.length} 
-        shopCount={shopCount} 
+        shopCount={shops.length}
       />
-      
-      {!serverAvailable && (
+
+      {!serverAvailable && !loading && (
         <View style={{ backgroundColor: 'rgba(255,0,0,0.1)', margin: 10, padding: 10, borderRadius: 5 }}>
           <Text style={{ color: 'red', fontSize: 12, textAlign: 'center' }}>
-            ❌ Serveur non disponible
+            ❌ {isRTL ? 'الخادم غير متاح' : 'Serveur non disponible'}
           </Text>
         </View>
       )}
-      
 
-      
-      <SearchBar 
-        searchText={searchText}
-        onSearchChange={handleSearchChange}
-        selectedShop={selectedShop}
-        onShopFilter={handleShopFilter}
-        shops={shops}
-      />
-      
-      {showShopSummary && summaryPosition === 'top' && (
-        <View {...panResponder.panHandlers}>
-          <ShopSummary products={products} />
-        </View>
-      )}
-      
-      <ScrollView 
-        style={styles.wrapper} 
-        contentContainerStyle={styles.contentContainer}
-        onScroll={() => setShowShopSummary(false)}
-        scrollEventThrottle={16}
-      >
-        {showShopSummary && summaryPosition === 'bottom' && (
-          <View {...panResponder.panHandlers}>
-            <ShopSummary products={products} />
-          </View>
-        )}
-        
-        {!serverAvailable ? (
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: 'red', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
-              🔌 Connexion au serveur impossible
-            </Text>
-            <Text style={{ color: 'red', fontSize: 14, textAlign: 'center' }}>
-              Veuillez vérifier votre connexion et réessayer
-            </Text>
-          </View>
-        ) : filteredProducts.length === 0 ? (
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: '#C8A55F', fontSize: 16, textAlign: 'center' }}>
-              Aucun produit trouvé
+      <ScrollView style={styles.wrapper} contentContainerStyle={{ padding: 15 }}>
+        {loading ? (
+          <Text style={[styles.loadingText, { textAlign: 'center', marginTop: 40 }]}>
+            {t('loadingProducts')}
+          </Text>
+        ) : shops.length === 0 ? (
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <Text style={{ fontSize: 40 }}>🏪</Text>
+            <Text style={{ color: '#FF6B35', fontSize: 16, marginTop: 10, textAlign: 'center' }}>
+              {isRTL ? 'لا توجد متاجر متاحة' : 'Aucune boutique disponible'}
             </Text>
           </View>
         ) : (
-          <View 
-            style={styles.globalGrid} 
-            {...productsPanResponder.panHandlers}
-            onWheel={() => setShowShopSummary(false)}
-            onTouchMove={() => setShowShopSummary(false)}
-          >
-            {filteredProducts.map((product) => (
-            <TouchableOpacity 
-              key={product.id} 
-              style={[styles.globalCard, { width: '48%' }]}
-              onPress={() => {
-                setSelectedProduct(product);
-                setDetailModalVisible(true);
-              }}
-            >
-              <View style={styles.imageContainer}>
-                <ProductThumbnail 
-                  product={product} 
-                  style={{ width: '100%', height: '100%' }}
-                />
-              </View>
-              
-              <View style={styles.productInfo}>
-                <Text style={styles.globalProductName} numberOfLines={2}>
-                  {product.name}
-                </Text>
-                <Text style={styles.globalPrice}>
-                  {product.price} MRU
-                </Text>
-                <View style={styles.shopInfo}>
-                  <Text style={styles.shopName}>
-                    Boutique: {product.shop?.username || 'Non spécifiée'}
-                  </Text>
-                  {product.shop?.profileImage && (
-                    <Image 
-                      source={{ uri: product.shop.profileImage }} 
-                      style={styles.shopAvatar}
-                    />
+          shops.map((shop) => {
+            const shopProducts = products.filter(p => p.shop?._id === shop._id);
+            const coverUri = shop.coverImage ? getMediaUrl(shop.coverImage)
+              : shop.mainImage ? getMediaUrl(shop.mainImage) : null;
+            const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
+            return (
+              <TouchableOpacity
+                key={shop._id}
+                onPress={() => setSelectedShop({
+                  ...shop,
+                  username: shop.name,  // RestaurantScreen يستخدم username
+                })}
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 16,
+                  marginBottom: 16,
+                  overflow: 'hidden',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 6,
+                  elevation: 4,
+                }}
+              >
+                {/* غلاف المتجر */}
+                <View style={{ height: 120, backgroundColor: '#FF6B35' }}>
+                  {coverUri ? (
+                    <Image source={{ uri: coverUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 40 }}>🏪</Text>
+                    </View>
                   )}
                 </View>
-              </View>
-            </TouchableOpacity>
-            ))}
-          </View>
+
+                {/* معلومات المتجر */}
+                <View style={{ padding: 14, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                  {avatarUri ? (
+                    <Image
+                      source={{ uri: avatarUri }}
+                      style={{ width: 48, height: 48, borderRadius: 24, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0, borderWidth: 2, borderColor: '#FF6B35' }}
+                    />
+                  ) : (
+                    <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }}>
+                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 20 }}>
+                        {(shop.name || '?')[0].toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
+                      {shop.name}
+                    </Text>
+                    {shop.address && (
+                      <Text style={{ fontSize: 12, color: '#777', marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                        📍 {shop.address}
+                      </Text>
+                    )}
+                    <Text style={{ fontSize: 12, color: '#FF6B35', marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                      {shopProducts.length > 0 ? `${shopProducts.length} ${isRTL ? 'منتج' : 'produits'}` : (isRTL ? 'متجر جديد' : 'Nouveau magasin')}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 20, color: '#FF6B35' }}>{isRTL ? '←' : '→'}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })
         )}
       </ScrollView>
-      
-      <MediaGallery
-        visible={galleryVisible}
-        images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
-        videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
-        productName={selectedProduct?.name}
-        productPrice={selectedProduct?.price}
-        shop={selectedProduct?.shop}
-        onClose={handleCloseGallery}
-      />
-      
-      <ProductModal 
-        visible={modalVisible}
-        product={selectedProduct}
-        onClose={handleCloseModal}
-      />
-      
-      <ProductDetailModal
-        visible={detailModalVisible}
-        onClose={() => {
-          setDetailModalVisible(false);
-          setSelectedProduct(null);
-        }}
-        product={selectedProduct}
-        shop={selectedProduct?.shop}
-      />
+
+      {/* زر السلة العائم */}
+      {cartCount > 0 && (
+        <TouchableOpacity
+          onPress={() => setShowCart(true)}
+          style={{
+            position: 'absolute', bottom: 20, right: 20,
+            backgroundColor: '#FF6B35', borderRadius: 30, width: 60, height: 60,
+            justifyContent: 'center', alignItems: 'center',
+            shadowColor: '#FF6B35', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+          }}
+        >
+          <Text style={{ fontSize: 24 }}>🛒</Text>
+          <View style={{
+            position: 'absolute', top: 4, right: 4,
+            backgroundColor: 'white', borderRadius: 8, width: 16, height: 16,
+            justifyContent: 'center', alignItems: 'center',
+          }}>
+            <Text style={{ color: '#FF6B35', fontSize: 9, fontWeight: 'bold' }}>{cartCount}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
     </ImageBackground>
   );
 }

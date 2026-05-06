@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
   starsContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 20 },
   star: { fontSize: 40, marginHorizontal: 8 },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginBottom: 16, height: 100, textAlignVertical: 'top' },
+  input: { borderWidth: 1, borderColor: '#FFD4C2', borderRadius: 8, padding: 12, marginBottom: 16, height: 100, textAlignVertical: 'top' },
   button: { backgroundColor: '#2ecc71', padding: 16, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });

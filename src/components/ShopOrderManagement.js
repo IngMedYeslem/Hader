@@ -35,16 +35,17 @@ export default function ShopOrderManagement({ shopId, onClose }) {
       const response = await fetch(`${BASE}/shops/${shopId}/orders`);
       if (response.ok) {
         const data = await response.json();
+        const ordersArray = Array.isArray(data) ? data : (data.orders || []);
         // Detect new orders
         if (prevOrderIds.current.size > 0) {
-          const newOrders = data.filter(o => !prevOrderIds.current.has(o._id) && o.status === 'pending');
+          const newOrders = ordersArray.filter(o => !prevOrderIds.current.has(o._id) && o.status === 'pending');
           if (newOrders.length > 0) {
             Vibration.vibrate([0, 400, 200, 400]);
             setNewOrderAlert(newOrders[0]);
           }
         }
-        prevOrderIds.current = new Set(data.map(o => o._id));
-        setOrders(data);
+        prevOrderIds.current = new Set(ordersArray.map(o => o._id));
+        setOrders(ordersArray);
       }
     } catch (e) {
       console.log('Orders fetch error:', e);
@@ -74,12 +75,49 @@ export default function ShopOrderManagement({ shopId, onClose }) {
     }
   };
 
+  const acceptOrder = async (orderId) => {
+    try {
+      const response = await fetch(`${BASE}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'confirmed', shopId }),
+      });
+      if (response.ok) {
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'confirmed' } : o));
+        if (selectedOrder?._id === orderId) setSelectedOrder(prev => ({ ...prev, status: 'confirmed' }));
+        Alert.alert(
+          isRTL ? 'تم القبول' : 'Accepté',
+          isRTL ? 'تم قبول الطلب بنجاح' : 'Commande acceptée avec succès'
+        );
+      } else {
+        const err = await response.json().catch(() => ({}));
+        Alert.alert(isRTL ? 'خطأ' : 'Erreur', err.message || (isRTL ? 'فشل التحديث' : 'Mise à jour échouée'));
+      }
+    } catch (e) {
+      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال بالإنترنت' : 'Vérifiez votre connexion');
+    }
+  };
+
+  const rejectOrder = async (orderId) => {
+    Alert.alert(
+      isRTL ? 'رفض الطلب' : 'Refuser la commande',
+      isRTL ? 'هل تريد رفض هذه الطلبية؟' : 'Voulez-vous refuser cette commande?',
+      [
+        { text: isRTL ? 'إلغاء' : 'Annuler', style: 'cancel' },
+        {
+          text: isRTL ? 'رفض' : 'Refuser', style: 'destructive',
+          onPress: () => updateStatus(orderId, 'cancelled')
+        }
+      ]
+    );
+  };
+
   const updateStatus = async (orderId, newStatus) => {
     try {
       const response = await fetch(`${BASE}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, shopId }),
       });
       if (response.ok) {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
@@ -99,11 +137,11 @@ export default function ShopOrderManagement({ shopId, onClose }) {
   if (selectedOrder) {
     const status = getStatus(selectedOrder.status);
     const nextStatuses = STATUS_FLOW.filter(s =>
-      s.id !== selectedOrder.status && s.id !== 'pending' && s.id !== 'cancelled'
+      s.id !== selectedOrder.status && s.id !== 'pending' && s.id !== 'confirmed' && s.id !== 'cancelled'
     );
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <View style={{ backgroundColor: '#FF6B35', padding: 16, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
           <TouchableOpacity onPress={() => setSelectedOrder(null)}>
             <Text style={{ color: 'white', fontSize: 22 }}>←</Text>
@@ -126,7 +164,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
 
           {/* Customer Info */}
           <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-            <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+            <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
               {isRTL ? '👤 معلومات العميل' : '👤 Informations client'}
             </Text>
             <InfoRow label={isRTL ? 'الهاتف' : 'Téléphone'} value={selectedOrder.phoneNumber} isRTL={isRTL} />
@@ -137,7 +175,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
           {/* Payment Receipt */}
           {selectedOrder.paymentMethod === 'bank' && (
             <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-              <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
                 {isRTL ? '🧾 إيصال الدفع البنكي' : '🧾 Reçu de virement'}
               </Text>
               {selectedOrder.paymentReceiptUrl ? (
@@ -183,8 +221,8 @@ export default function ShopOrderManagement({ shopId, onClose }) {
                   )}
                 </>
               ) : (
-                <View style={{ backgroundColor: '#fff3cd', padding: 12, borderRadius: 8, alignItems: 'center' }}>
-                  <Text style={{ color: '#856404' }}>
+                <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 8, alignItems: 'center' }}>
+                  <Text style={{ color: '#FF6B35' }}>
                     {isRTL ? '⏳ في انتظار رفع الإيصال من الزبون' : '⏳ En attente du reçu du client'}
                   </Text>
                 </View>
@@ -194,7 +232,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
 
           {/* Order Items */}
           <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-            <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+            <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
               {isRTL ? '🛒 المنتجات' : '🛒 Produits'}
             </Text>
             {(selectedOrder.items || []).map((item, i) => (
@@ -208,15 +246,42 @@ export default function ShopOrderManagement({ shopId, onClose }) {
               </View>
             ))}
             <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#eee' }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#2C3E50' }}>{isRTL ? 'الإجمالي' : 'Total'}</Text>
+              <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#333' }}>{isRTL ? 'الإجمالي' : 'Total'}</Text>
               <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#FF6B35' }}>{selectedOrder.totalAmount} MRU</Text>
             </View>
           </View>
 
+          {/* Accept / Reject for pending orders */}
+          {selectedOrder.status === 'pending' && (
+            <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? '❓ هل تقبل هذه الطلبية؟' : '❓ Accepter cette commande?'}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => acceptOrder(selectedOrder._id)}
+                  style={{ flex: 1, backgroundColor: '#2ecc71', padding: 14, borderRadius: 12, alignItems: 'center' }}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                    ✅ {isRTL ? 'قبول الطلب' : 'Accepter'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => rejectOrder(selectedOrder._id)}
+                  style={{ flex: 1, backgroundColor: '#e74c3c', padding: 14, borderRadius: 12, alignItems: 'center' }}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                    ❌ {isRTL ? 'رفض الطلب' : 'Refuser'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           {/* Update Status */}
           {!['delivered', 'cancelled'].includes(selectedOrder.status) && (
             <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 16 }}>
-              <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
                 {isRTL ? '🔄 تحديث الحالة' : '🔄 Mettre à jour le statut'}
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -249,7 +314,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
 
   // ── Orders List View ──
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       {/* New Order Alert Banner */}
       {newOrderAlert && (
         <TouchableOpacity
@@ -307,7 +372,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
         ListEmptyComponent={
           <View style={{ padding: 60, alignItems: 'center' }}>
             <Text style={{ fontSize: 50 }}>📭</Text>
-            <Text style={{ color: '#999', marginTop: 12, fontSize: 15, textAlign: 'center' }}>
+            <Text style={{ color: '#777', marginTop: 12, fontSize: 15, textAlign: 'center' }}>
               {isRTL ? 'لا توجد طلبات بعد' : 'Aucune commande pour l\'instant'}
             </Text>
           </View>
@@ -326,7 +391,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
             >
               <View style={{ padding: 14 }}>
                 <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#2C3E50' }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333' }}>
                     #{item.orderNumber}
                     {isNew && <Text style={{ color: '#FF6B35', fontSize: 12 }}> 🆕</Text>}
                   </Text>
@@ -338,7 +403,7 @@ export default function ShopOrderManagement({ shopId, onClose }) {
                 </View>
 
                 <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 16 }}>
-                  <Text style={{ color: '#888', fontSize: 13 }}>📞 {item.phoneNumber}</Text>
+                  <Text style={{ color: '#777', fontSize: 13 }}>📞 {item.phoneNumber}</Text>
                   <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 13 }}>
                     {item.totalAmount} MRU
                   </Text>
@@ -353,6 +418,28 @@ export default function ShopOrderManagement({ shopId, onClose }) {
                 <Text style={{ color: '#ccc', fontSize: 11, marginTop: 6, textAlign: isRTL ? 'right' : 'left' }}>
                   {new Date(item.createdAt).toLocaleString()}
                 </Text>
+
+                {/* Quick Accept/Reject for pending */}
+                {item.status === 'pending' && (
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                    <TouchableOpacity
+                      onPress={() => acceptOrder(item._id)}
+                      style={{ flex: 1, backgroundColor: '#2ecc71', padding: 10, borderRadius: 10, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
+                        ✅ {isRTL ? 'قبول' : 'Accepter'}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => rejectOrder(item._id)}
+                      style={{ flex: 1, backgroundColor: '#e74c3c', padding: 10, borderRadius: 10, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
+                        ❌ {isRTL ? 'رفض' : 'Refuser'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </TouchableOpacity>
           );
@@ -366,8 +453,8 @@ function InfoRow({ label, value, isRTL }) {
   if (!value) return null;
   return (
     <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', marginBottom: 8 }}>
-      <Text style={{ color: '#888', fontSize: 13, minWidth: 80, textAlign: isRTL ? 'right' : 'left' }}>{label}:</Text>
-      <Text style={{ color: '#2C3E50', fontSize: 13, flex: 1, textAlign: isRTL ? 'right' : 'left' }}>{value}</Text>
+      <Text style={{ color: '#777', fontSize: 13, minWidth: 80, textAlign: isRTL ? 'right' : 'left' }}>{label}:</Text>
+      <Text style={{ color: '#333', fontSize: 13, flex: 1, textAlign: isRTL ? 'right' : 'left' }}>{value}</Text>
     </View>
   );
 }

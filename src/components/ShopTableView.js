@@ -12,16 +12,16 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
         {/* En-tête du tableau */}
         <View style={{
           flexDirection: 'row',
-          backgroundColor: '#2C3E50',
+          backgroundColor: '#FF6B35',
           paddingVertical: 12,
           paddingHorizontal: 10
         }}>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 60, textAlign: 'center' }}>Image</Text>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 120, paddingLeft: 10 }}>Nom</Text>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 80, textAlign: 'center' }}>Prix</Text>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 100, textAlign: 'center' }}>Catégorie</Text>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 80, textAlign: 'center' }}>Stock</Text>
-          <Text style={{ color: '#C8A55F', fontWeight: 'bold', width: 60, textAlign: 'center' }}>Actions</Text>
+          <Text style={{ color: 'white', fontWeight: 'bold', width: 60, textAlign: 'center' }}>Image</Text>
+          <Text style={{ color: 'white', fontWeight: 'bold', width: 120, paddingLeft: 10 }}>Nom</Text>
+          <Text style={{ color: '#FF6B35', fontWeight: 'bold', width: 80, textAlign: 'center' }}>Prix</Text>
+          <Text style={{ color: 'white', fontWeight: 'bold', width: 100, textAlign: 'center' }}>Catégorie</Text>
+          <Text style={{ color: '#FF6B35', fontWeight: 'bold', width: 80, textAlign: 'center' }}>Stock</Text>
+          <Text style={{ color: '#FF6B35', fontWeight: 'bold', width: 60, textAlign: 'center' }}>Actions</Text>
         </View>
 
         {/* Lignes du tableau */}
@@ -36,7 +36,7 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
                 paddingHorizontal: 10,
                 alignItems: 'center',
                 borderBottomWidth: 1,
-                borderBottomColor: 'rgba(200, 165, 95, 0.2)'
+                borderBottomColor: 'rgba(255,107,53,0.15)'
               }}
               onPress={() => onProductPress(product)}
             >
@@ -50,7 +50,7 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
                 width: 120, 
                 paddingLeft: 10, 
                 fontSize: 12, 
-                color: '#2C3E50',
+                color: '#333',
                 fontWeight: '500'
               }} numberOfLines={2}>
                 {product.name}
@@ -60,7 +60,7 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
                 width: 80, 
                 textAlign: 'center', 
                 fontSize: 12, 
-                color: '#C8A55F',
+                color: '#FF6B35',
                 fontWeight: 'bold'
               }}>
                 {product.price} MRU
@@ -88,7 +88,7 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
               <View style={{ width: 60, alignItems: 'center' }}>
                 <TouchableOpacity
                   style={{
-                    backgroundColor: 'rgba(200, 165, 95, 0.2)',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
                     borderRadius: 15,
                     width: 30,
                     height: 30,
@@ -112,24 +112,24 @@ export default function ShopTableView({ products, onProductPress, onEditProduct 
           justifyContent: 'space-around'
         }}>
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold' }}>
+            <Text style={{ color: '#FF6B35', fontSize: 16, fontWeight: 'bold' }}>
               {products.length}
             </Text>
-            <Text style={{ color: '#C8A55F', fontSize: 10 }}>Produits</Text>
+            <Text style={{ color: '#FF6B35', fontSize: 10 }}>Produits</Text>
           </View>
           
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold' }}>
+            <Text style={{ color: '#FF6B35', fontSize: 16, fontWeight: 'bold' }}>
               {products.reduce((sum, p) => sum + (p.stock || 0), 0)}
             </Text>
-            <Text style={{ color: '#C8A55F', fontSize: 10 }}>Stock Total</Text>
+            <Text style={{ color: '#FF6B35', fontSize: 10 }}>Stock Total</Text>
           </View>
           
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: '#C8A55F', fontSize: 16, fontWeight: 'bold' }}>
+            <Text style={{ color: '#FF6B35', fontSize: 16, fontWeight: 'bold' }}>
               {Math.round(products.reduce((sum, p) => sum + (p.price || 0), 0) / products.length) || 0} MRU
             </Text>
-            <Text style={{ color: '#C8A55F', fontSize: 10 }}>Prix Moyen</Text>
+            <Text style={{ color: '#FF6B35', fontSize: 10 }}>Prix Moyen</Text>
           </View>
         </View>
       </View>

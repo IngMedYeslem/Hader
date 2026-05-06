@@ -79,7 +79,7 @@ export default function UserAdminScreen() {
         <ScrollView contentContainerStyle={styles.container}>
           
           <TouchableOpacity 
-            style={[styles.contactBtn, { marginHorizontal: 20, marginBottom: 20, backgroundColor: '#C8A55F' }]}
+            style={[styles.contactBtn, { marginHorizontal: 20, marginBottom: 20, backgroundColor: '#FF6B35' }]}
             onPress={() => navigation.navigate('AdminDashboard')}
           >
             <Text style={styles.contactBtnText}>🏪 Administration des boutiques</Text>

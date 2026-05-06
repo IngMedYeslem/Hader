@@ -76,7 +76,7 @@ router.post('/orders/guest', async (req, res) => {
       deviceId: deviceId || 'app',
       softOtp,
       otpExpiresAt,
-      otpStatus: 'verified', // Auto-verify for app orders
+      otpStatus: 'verified',
       shopId,
       items: orderItems,
       totalAmount: clientTotal || calcTotal,

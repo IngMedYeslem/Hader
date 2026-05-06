@@ -60,7 +60,7 @@ export default function ShopCardView({ products, onProductPress, onEditProduct }
               <Text style={{ 
                 fontSize: 12, 
                 fontWeight: 'bold', 
-                color: '#2C3E50',
+                color: '#333',
                 textAlign: 'center'
               }} numberOfLines={1}>
                 {product.name}
@@ -68,7 +68,7 @@ export default function ShopCardView({ products, onProductPress, onEditProduct }
               <Text style={{ 
                 fontSize: 11, 
                 fontWeight: 'bold', 
-                color: '#C8A55F',
+                color: '#FF6B35',
                 textAlign: 'center',
                 marginTop: 3
               }}>

@@ -56,6 +56,16 @@ router.post("/upload-media", upload.single("media"), (req, res) => {
   }
 });
 
+// Upload shop main image
+router.post("/upload-shop-image", upload.single("mainImage"), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Aucun fichier" });
+    res.json({ imagePath: `/uploads/${req.file.filename}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Upload payment receipt
 router.post("/upload-receipt", upload.single("receipt"), (req, res) => {
   try {

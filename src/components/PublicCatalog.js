@@ -53,7 +53,7 @@ const PublicCatalog = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: 'white' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   productCard: { flex: 1, margin: 8, backgroundColor: '#fff', borderRadius: 8, padding: 12 },
   productImage: { width: '100%', height: 150, borderRadius: 8 },

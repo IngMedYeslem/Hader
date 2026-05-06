@@ -4,7 +4,7 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 
-const API_URL = 'http://192.168.0.103:3000/api';
+const API_URL = 'http://192.168.0.110:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -282,81 +282,31 @@ export default function AdminDashboard() {
 
   const renderUser = ({ item }) => {
     const isShop = item.roles.includes('AJOUT-PROD');
-    const isAdmin = item.roles.includes('ADMIN');
     const needsApproval = isShop && !item.isApproved;
 
     return (
-      <View style={[styles.card, { marginHorizontal: 8, marginBottom: 8 }]}>
-        <View style={{ padding: 10 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#C8A55F', marginBottom: 6 }}>{item.username}</Text>
-          <Text style={{ color: '#C8A55F', marginBottom: 5 }}>{item.email}</Text>
-          <Text style={{ color: '#C8A55F', marginBottom: 5 }}>
-            Rôles: {item.roles.join(', ')}
-          </Text>
-          
+      <View style={{ backgroundColor: 'white', borderRadius: 12, marginBottom: 10, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 }}>
+        <View style={{ padding: 14 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333' }}>{item.username}</Text>
+            {item.isApproved ? (
+              <View style={{ backgroundColor: '#e8f5e9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                <Text style={{ color: '#2e7d32', fontSize: 11, fontWeight: 'bold' }}>✅ Approuvé</Text>
+              </View>
+            ) : item.isRejected ? (
+              <View style={{ backgroundColor: '#fdecea', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                <Text style={{ color: '#c62828', fontSize: 11, fontWeight: 'bold' }}>❌ Rejeté</Text>
+              </View>
+            ) : needsApproval ? (
+              <View style={{ backgroundColor: '#fff8e1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                <Text style={{ color: '#f57f17', fontSize: 11, fontWeight: 'bold' }}>⏳ En attente</Text>
+              </View>
+            ) : null}
+          </View>
+          <Text style={{ color: '#555', fontSize: 13, marginBottom: 3 }}>{item.email}</Text>
+          <Text style={{ color: '#777', fontSize: 12 }}>{item.roles.join(', ')}</Text>
           {item.linkedShop && (
-            <Text style={{ color: '#C8A55F', marginBottom: 5, fontSize: 12 }}>
-              🏪 Lié à: {item.linkedShop.name}
-            </Text>
-          )}
-          
-          {item.isApproved ? (
-            <View style={{ backgroundColor: '#d4edda', padding: 8, borderRadius: 5 }}>
-              <Text style={{ color: '#155724', fontWeight: 'bold' }}>
-                ✅ Approuvé
-              </Text>
-              {item.approvedAt && (
-                <Text style={{ color: '#155724', fontSize: 12 }}>
-                  Le {new Date(item.approvedAt).toLocaleDateString()}
-                  {item.approvedBy && ` par ${item.approvedBy}`}
-                </Text>
-              )}
-            </View>
-          ) : item.isRejected ? (
-            <View style={{ backgroundColor: '#f8d7da', padding: 8, borderRadius: 5, marginBottom: 10 }}>
-              <Text style={{ color: '#721c24', fontWeight: 'bold' }}>
-                ❌ Rejetée
-              </Text>
-              {item.rejectionReason && (
-                <Text style={{ color: '#721c24', fontSize: 12, marginTop: 4 }}>
-                  Raison: {item.rejectionReason}
-                </Text>
-              )}
-            </View>
-          ) : needsApproval ? (
-            <View>
-              <View style={{ backgroundColor: '#fff3cd', padding: 8, borderRadius: 5, marginBottom: 10 }}>
-                <Text style={{ color: '#856404', fontWeight: 'bold' }}>
-                  ⏳ En attente d'approbation
-                </Text>
-              </View>
-              
-
-
-              
-              {isShop && !item.linkedShop && shops.length > 0 && (
-                <View style={{ marginTop: 10 }}>
-                  <Text style={{ fontSize: 12, marginBottom: 5, color: '#C8A55F' }}>Boutiques disponibles: {shops.length}</Text>
-                </View>
-              )}
-            </View>
-          ) : (
-            <View>
-              <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', padding: 8, borderRadius: 5, marginBottom: 10 }}>
-                <Text style={{ color: '#C8A55F' }}>Utilisateur standard</Text>
-              </View>
-              
-              {item.linkedShop && (
-                <TouchableOpacity
-                  style={{ backgroundColor: '#f44336', padding: 8, borderRadius: 5 }}
-                  onPress={() => handleUnlinkShop(item.id, item.username)}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
-                    Délier de {item.linkedShop.name}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            <Text style={{ color: '#FF6B35', fontSize: 12, marginTop: 4 }}>🏪 {item.linkedShop.name}</Text>
           )}
         </View>
       </View>
@@ -367,130 +317,77 @@ export default function AdminDashboard() {
     const isValidated = item.isValidated === true;
     const isRejected = item.isRejected === true;
     const isLocal = item.isLocal || false;
-    
-    const getBorderColor = () => {
-      if (isValidated) return '#4CAF50';
-      if (isRejected) return '#f44336';
-      return '#ff9800';
-    };
-    
-    const getStatusBg = () => {
-      if (isValidated) return '#d4edda';
-      if (isRejected) return '#f8d7da';
-      return '#fff3cd';
-    };
-    
-    const getStatusColor = () => {
-      if (isValidated) return '#155724';
-      if (isRejected) return '#721c24';
-      return '#856404';
-    };
-    
-    const getStatusText = () => {
-      if (isValidated) return '✅ Validée';
-      if (isRejected) return '❌ Rejetée';
-      if (isLocal) return '📱 Locale';
-      return '⏳ Attente';
-    };
-    
+
+    const statusColor = isValidated ? '#2e7d32' : isRejected ? '#c62828' : '#f57f17';
+    const statusBg = isValidated ? '#e8f5e9' : isRejected ? '#fdecea' : '#fff8e1';
+    const statusText = isValidated ? '✅ Validée' : isRejected ? '❌ Rejetée' : '⏳ Attente';
+    const borderColor = isValidated ? '#2ecc71' : isRejected ? '#e74c3c' : '#C8A55F';
+
     return (
-      <View style={[styles.card, { marginHorizontal: 10, marginBottom: 12, borderLeftWidth: 4, borderLeftColor: getBorderColor() }]}>
-        <View style={{ padding: 12 }}>
+      <View style={{ backgroundColor: 'white', borderRadius: 12, marginBottom: 10, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2, borderLeftWidth: 4, borderLeftColor: borderColor }}>
+        <View style={{ padding: 14 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#C8A55F', flex: 1 }} numberOfLines={1}>
-              🏪 {item.name} {isLocal && '📱'}
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333', flex: 1 }} numberOfLines={1}>
+              🏪 {item.name}
             </Text>
-            <View style={{ backgroundColor: getStatusBg(), paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 }}>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: getStatusColor() }}>
-                {getStatusText()}
-              </Text>
+            <View style={{ backgroundColor: statusBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+              <Text style={{ fontSize: 11, fontWeight: 'bold', color: statusColor }}>{statusText}</Text>
             </View>
           </View>
-          
-          <View style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#C8A55F', fontSize: 13, marginBottom: 3 }}>📧 {item.email}</Text>
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
-              <Text style={{ color: '#007AFF', fontSize: 13, marginBottom: 3, textDecorationLine: 'underline' }}>📱 {item.phone}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/${item.whatsapp.replace(/[^0-9]/g, '')}`)}>
-              <Text style={{ color: '#25D366', fontSize: 13, marginBottom: 3, textDecorationLine: 'underline' }}>🟢 {item.whatsapp}</Text>
-            </TouchableOpacity>
-            <Text style={{ color: '#C8A55F', fontSize: 13, marginBottom: 3 }}>📍 {item.address}</Text>
+
+          <Text style={{ color: '#555', fontSize: 13, marginBottom: 2 }}>📧 {item.email}</Text>
+          <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
+            <Text style={{ color: '#FF6B35', fontSize: 13, marginBottom: 2 }}>📱 {item.phone}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/${item.whatsapp?.replace(/[^0-9]/g, '')}`)}>  
+            <Text style={{ color: '#25D366', fontSize: 13, marginBottom: 2 }}>🟢 {item.whatsapp}</Text>
+          </TouchableOpacity>
+          <Text style={{ color: '#777', fontSize: 12, marginBottom: 6 }}>📍 {item.address}</Text>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>
+              <Text style={{ color: '#333', fontSize: 12, fontWeight: '600' }}>📦 {item.productCount} produits</Text>
+            </View>
             {item.location && (
-              <TouchableOpacity 
-                onPress={() => {
-                  const url = `https://www.google.com/maps?q=${item.location.latitude},${item.location.longitude}`;
-                  Linking.openURL(url);
-                }}
-                style={{ marginTop: 4 }}
-              >
-                <Text style={{ color: '#007AFF', fontSize: 12, textDecorationLine: 'underline' }}>
-                  🗺️ {t('viewOnMapCoords')} ({item.location.latitude.toFixed(4)}, {item.location.longitude.toFixed(4)})
-                </Text>
+              <TouchableOpacity onPress={() => Linking.openURL(`https://www.google.com/maps?q=${item.location.latitude},${item.location.longitude}`)}>
+                <Text style={{ color: '#FF6B35', fontSize: 12 }}>🗺️ Carte</Text>
               </TouchableOpacity>
             )}
           </View>
-          
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-              <Text style={{ color: '#C8A55F', fontSize: 12, fontWeight: 'bold' }}>
-                📦 {item.productCount} produits
-              </Text>
-            </View>
-          </View>
-          
-          {isRejected && (
-            <View style={{ backgroundColor: '#f8d7da', padding: 8, borderRadius: 5, marginTop: 8 }}>
-              <Text style={{ color: '#721c24', fontSize: 12, fontWeight: 'bold' }}>
-                Raison du rejet:
-              </Text>
-              <Text style={{ color: '#721c24', fontSize: 12, marginTop: 2 }}>
-                {item.rejectionReason || 'Aucune raison spécifiée'}
-              </Text>
-              {item.missingDataNote && (
-                <View style={{ marginTop: 8, backgroundColor: '#fff3cd', padding: 8, borderRadius: 5 }}>
-                  <Text style={{ color: '#856404', fontSize: 11, fontWeight: 'bold' }}>Note admin:</Text>
-                  <Text style={{ color: '#856404', fontSize: 11, marginTop: 2 }}>
-                    {item.missingDataNote}
-                  </Text>
-                </View>
-              )}
+
+          {isRejected && item.rejectionReason && (
+            <View style={{ backgroundColor: '#fdecea', padding: 10, borderRadius: 8, marginTop: 8 }}>
+              <Text style={{ color: '#c62828', fontSize: 12 }}>Raison: {item.rejectionReason}</Text>
             </View>
           )}
-          
+
           {!isValidated && !isRejected && shopFilter === 'pending' && (
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: '#4CAF50', paddingVertical: 8, borderRadius: 6, alignItems: 'center' }}
+                style={{ flex: 1, backgroundColor: '#2ecc71', paddingVertical: 9, borderRadius: 8, alignItems: 'center' }}
                 onPress={() => handleValidateShop(item._id, item.name)}
               >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>Valider</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>Valider</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: '#f44336', paddingVertical: 8, borderRadius: 6, alignItems: 'center' }}
+                style={{ flex: 1, backgroundColor: '#f44336', paddingVertical: 9, borderRadius: 8, alignItems: 'center' }}
                 onPress={async () => {
-                  const linkedUser = users.find(user => {
-                    return user.linkedShop && (user.linkedShop.id === item._id || user.linkedShop._id === item._id);
-                  });
-                  
-                  if (linkedUser) {
-                    await handleRejectShop(item._id, item.name);
-                  } else {
-                    Platform.OS === 'web' ? alert(`Utilisateur lié non trouvé pour la boutique ${item.name}`) : Alert.alert('Erreur', `Utilisateur lié non trouvé pour la boutique ${item.name}`);
-                  }
+                  const linkedUser = users.find(user => user.linkedShop && (user.linkedShop.id === item._id || user.linkedShop._id === item._id));
+                  if (linkedUser) await handleRejectShop(item._id, item.name);
+                  else Platform.OS === 'web' ? alert(`Utilisateur lié non trouvé`) : Alert.alert('Erreur', `Utilisateur lié non trouvé`);
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>Rejeter</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>Rejeter</Text>
               </TouchableOpacity>
             </View>
           )}
-          
+
           {isRejected && (
             <TouchableOpacity
-              style={{ backgroundColor: '#007bff', paddingVertical: 8, borderRadius: 6, alignItems: 'center', marginTop: 8 }}
+              style={{ backgroundColor: '#FF6B35', paddingVertical: 9, borderRadius: 8, alignItems: 'center', marginTop: 10 }}
               onPress={() => handleValidateShop(item._id, item.name)}
             >
-              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>Réactiver boutique</Text>
+              <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>🔄 Réactiver</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -542,89 +439,58 @@ export default function AdminDashboard() {
   );
 
   return (
-    <View style={styles.wrapper}>
-
-      
-      <View style={{ flexDirection: 'row', marginHorizontal: 15, marginVertical: 8, gap: 8 }}>
+    <View style={{ flex: 1, backgroundColor: '#FF6B35' }}>
+      {/* Tabs */}
+      <View style={{ flexDirection: 'row', backgroundColor: 'white', marginHorizontal: 16, marginTop: 12, borderRadius: 25, padding: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 2 }}>
         <TouchableOpacity
-          style={[styles.filterBtn, { flex: 1, paddingVertical: 10 }, activeTab === 'users' && styles.filterBtnActive]}
+          style={{ flex: 1, paddingVertical: 10, borderRadius: 22, backgroundColor: activeTab === 'users' ? '#FF6B35' : 'transparent', alignItems: 'center' }}
           onPress={() => setActiveTab('users')}
         >
-          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 13 }, activeTab === 'users' && styles.filterTextActive]}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: activeTab === 'users' ? 'white' : '#666' }}>
             👥 {t('users')} ({users.length})
           </Text>
         </TouchableOpacity>
-        
         <TouchableOpacity
-          style={[styles.filterBtn, { flex: 1, paddingVertical: 10 }, activeTab === 'shops' && styles.filterBtnActive]}
+          style={{ flex: 1, paddingVertical: 10, borderRadius: 22, backgroundColor: activeTab === 'shops' ? '#FF6B35' : 'transparent', alignItems: 'center' }}
           onPress={() => setActiveTab('shops')}
         >
-          <Text style={[styles.filterText, { textAlign: 'center', fontSize: 13 }, activeTab === 'shops' && styles.filterTextActive]}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: activeTab === 'shops' ? 'white' : '#666' }}>
             🏪 {t('shops')} ({shops.length + pendingLocalShops.length})
           </Text>
         </TouchableOpacity>
       </View>
-      
+
       {activeTab === 'shops' && (
-        <View style={{ flexDirection: 'row', marginHorizontal: 15, marginBottom: 8, gap: 4 }}>
-          <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'all' && styles.filterBtnActive]}
-            onPress={() => setShopFilter('all')}
-          >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 10 }, shopFilter === 'all' && styles.filterTextActive]}>
-              {t('all')} ({shops.length + pendingLocalShops.length})
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'validated' && styles.filterBtnActive]}
-            onPress={() => setShopFilter('validated')}
-          >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 10 }, shopFilter === 'validated' && styles.filterTextActive]}>
-              ✅ Validées ({shops.filter(s => s.isValidated === true).length})
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'pending' && styles.filterBtnActive]}
-            onPress={() => setShopFilter('pending')}
-          >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 10 }, shopFilter === 'pending' && styles.filterTextActive]}>
-              ⏳ Attente ({shops.filter(s => !s.isValidated && !s.isRejected).length + pendingLocalShops.length})
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterBtn, { flex: 1, paddingVertical: 6 }, shopFilter === 'rejected' && styles.filterBtnActive]}
-            onPress={() => setShopFilter('rejected')}
-          >
-            <Text style={[styles.filterText, { textAlign: 'center', fontSize: 10 }, shopFilter === 'rejected' && styles.filterTextActive]}>
-              ❌ Rejetées ({shops.filter(s => s.isRejected === true).length})
-            </Text>
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'row', marginHorizontal: 16, marginTop: 10, gap: 6 }}>
+          {[['all', t('all'), shops.length + pendingLocalShops.length],
+            ['validated', '✅', shops.filter(s => s.isValidated).length],
+            ['pending', '⏳', shops.filter(s => !s.isValidated && !s.isRejected).length + pendingLocalShops.length],
+            ['rejected', '❌', shops.filter(s => s.isRejected).length]
+          ].map(([key, label, count]) => (
+            <TouchableOpacity
+              key={key}
+              style={{ flex: 1, paddingVertical: 7, borderRadius: 20, backgroundColor: shopFilter === key ? '#2C3E50' : 'white', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2, elevation: 1 }}
+              onPress={() => setShopFilter(key)}
+            >
+              <Text style={{ fontSize: 10, fontWeight: '600', color: shopFilter === key ? 'white' : '#555' }}>{label}</Text>
+              <Text style={{ fontSize: 11, fontWeight: 'bold', color: shopFilter === key ? 'white' : '#FF6B35' }}>{count}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
-      
-
 
       <FlatList
         data={activeTab === 'users' ? users : getFilteredShops()}
         renderItem={activeTab === 'users' ? renderUser : renderShop}
         keyExtractor={(item) => activeTab === 'users' ? item.id : item._id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 5 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor='#FF6B35' />}
+        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16, paddingTop: 12 }}
         ListEmptyComponent={
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ color: '#C8A55F', fontSize: 16, textAlign: 'center' }}>
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <Text style={{ fontSize: 36 }}>🔍</Text>
+            <Text style={{ color: '#777', fontSize: 15, textAlign: 'center', marginTop: 10 }}>
               {activeTab === 'users' ? 'Aucun utilisateur trouvé' : getEmptyMessage()}
             </Text>
-            {activeTab === 'shops' && (
-              <Text style={{ color: '#666', fontSize: 12, textAlign: 'center', marginTop: 10 }}>
-                Vérifiez que le serveur est démarré sur le port 3000
-              </Text>
-            )}
           </View>
         }
       />

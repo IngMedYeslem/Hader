@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground, Platform, Animated, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, Animated, KeyboardAvoidingView } from 'react-native';
 import * as Location from 'expo-location';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
@@ -80,7 +80,7 @@ export default function ShopRegisterScreen({ navigation }) {
           width: 12,
           height: 12,
           borderRadius: 6,
-          backgroundColor: index <= currentStep ? '#C8A55F' : '#ddd',
+          backgroundColor: index <= currentStep ? '#FF6B35' : '#eee',
           marginHorizontal: 4
         }} />
       ))}
@@ -88,20 +88,17 @@ export default function ShopRegisterScreen({ navigation }) {
   );
 
   return (
-    <View style={styles.wrapper}>
-      <ImageBackground 
-        source={require('../../assets/b2.jpeg')} 
-        style={styles.background}
-        resizeMode="cover"
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', backgroundColor: '#FF6B35', borderBottomLeftRadius: 60, borderBottomRightRadius: 60 }} />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <ScrollView
+          contentContainerStyle={styles.centeredContainer}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView 
-            contentContainerStyle={styles.centeredContainer}
-            keyboardShouldPersistTaps="handled"
-          >
             <Animated.View style={[
               styles.card,
               {
@@ -113,11 +110,11 @@ export default function ShopRegisterScreen({ navigation }) {
                 {t('shopRegistration')}
               </Text>
               {renderStepIndicator()}
-              <Text style={{ fontSize: 12, marginBottom: 8, textAlign: 'center', color: '#C8A55F', fontWeight: 'bold' }}>
+              <Text style={{ fontSize: 12, marginBottom: 8, textAlign: 'center', color: '#FF6B35', fontWeight: 'bold' }}>
                 {steps[currentStep].title}
               </Text>
 
-              <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 6, borderRadius: 6, marginBottom: 6 }}>
+              <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 10, padding: 10, marginBottom: 10 }}>
                 {currentStep === 0 && (
                   <>
                     <TextInput
@@ -190,7 +187,7 @@ export default function ShopRegisterScreen({ navigation }) {
                 
                 {currentStep === 3 && (
                   <TouchableOpacity 
-                    style={[styles.submitBtn, { backgroundColor: '#4CAF50', marginBottom: 10 }]} 
+                    style={[styles.submitBtn, { backgroundColor: '#FF6B35', marginBottom: 10 }]} 
                     onPress={async () => {
                       try {
                         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -210,7 +207,7 @@ export default function ShopRegisterScreen({ navigation }) {
                       }
                     }}
                   >
-                    <Text style={[styles.submitText, { fontSize: 14 }]}>📍 Obtenir ma localisation</Text>
+                    <Text style={[styles.submitText, { fontSize: 14, color: '#333' }]}>📍 Obtenir ma localisation</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -218,7 +215,7 @@ export default function ShopRegisterScreen({ navigation }) {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
                 {currentStep > 0 && (
                   <TouchableOpacity
-                    style={[styles.submitBtn, { backgroundColor: '#6c757d', flex: 0.45 }]}
+                    style={[styles.submitBtn, { backgroundColor: 'rgba(255,255,255,0.2)', flex: 0.45 }]}
                     onPress={() => setCurrentStep(currentStep - 1)}
                   >
                     <Text style={styles.submitText}>← Précédent</Text>
@@ -242,14 +239,14 @@ export default function ShopRegisterScreen({ navigation }) {
                 </TouchableOpacity>
               </View>
 
-            <View style={{ backgroundColor: '#fff3cd', padding: 4, borderRadius: 4, marginTop: 6 }}>
-              <Text style={{ color: '#856404', fontSize: 9, textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}>
+            <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', padding: 8, borderRadius: 8, marginTop: 6 }}>
+              <Text style={{ color: '#FF6B35', fontSize: 9, textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}>
                 ⚠️ {t('important')}
               </Text>
-              <Text style={{ color: '#856404', fontSize: 9, textAlign: 'center', marginBottom: 2 }}>
+              <Text style={{ color: '#FF6B35', fontSize: 9, textAlign: 'center', marginBottom: 2 }}>
                 {t('allFieldsRequired')}
               </Text>
-              <Text style={{ color: '#856404', fontSize: 9, textAlign: 'center' }}>
+              <Text style={{ color: '#FF6B35', fontSize: 9, textAlign: 'center' }}>
                 {t('accountPending')}
               </Text>
             </View>
@@ -261,9 +258,8 @@ export default function ShopRegisterScreen({ navigation }) {
               <Text style={styles.colorText}>{t('alreadyAccount')} {t('connect')}</Text>
             </TouchableOpacity>
             </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </ImageBackground>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }

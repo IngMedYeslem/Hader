@@ -28,7 +28,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         stock: parseInt(formData.stock) || 0
       };
 
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)
@@ -49,11 +49,11 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
       <View style={{ padding: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#C8A55F', marginBottom: 20 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF6B35', marginBottom: 20 }}>
           Modifier les informations
         </Text>
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Nom de la boutique</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Nom de la boutique</Text>
         <TextInput
           style={styles.input}
           value={formData.name}
@@ -61,7 +61,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           placeholder="Nom de la boutique"
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Email</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Email</Text>
         <TextInput
           style={styles.input}
           value={formData.email}
@@ -70,7 +70,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           keyboardType="email-address"
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Adresse</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Adresse</Text>
         <TextInput
           style={styles.input}
           value={formData.address}
@@ -79,7 +79,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           multiline
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Téléphone</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Téléphone</Text>
         <TextInput
           style={styles.input}
           value={formData.phone}
@@ -88,7 +88,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           keyboardType="phone-pad"
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>WhatsApp</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>WhatsApp</Text>
         <TextInput
           style={styles.input}
           value={formData.whatsapp}
@@ -97,7 +97,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           keyboardType="phone-pad"
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Description</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Description</Text>
         <TextInput
           style={[styles.input, { height: 80 }]}
           value={formData.description}
@@ -107,7 +107,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           numberOfLines={3}
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Stock disponible</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Stock disponible</Text>
         <TextInput
           style={styles.input}
           value={formData.stock}
@@ -116,7 +116,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
           keyboardType="numeric"
         />
 
-        <Text style={{ color: '#C8A55F', marginBottom: 5 }}>Catégorie</Text>
+        <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Catégorie</Text>
         <TextInput
           style={styles.input}
           value={formData.category}
@@ -126,7 +126,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
           <TouchableOpacity
-            style={{ flex: 1, backgroundColor: '#C8A55F', padding: 15, borderRadius: 8, alignItems: 'center' }}
+            style={{ flex: 1, backgroundColor: '#FF6B35', padding: 15, borderRadius: 8, alignItems: 'center' }}
             onPress={handleSave}
             disabled={isLoading}
           >

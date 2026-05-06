@@ -67,7 +67,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
   const isDelivered = currentStep === ORDER_STEPS.length - 1;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
       {/* Header */}
@@ -100,11 +100,11 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
           <Animated.Text style={{ fontSize: 60, transform: [{ scale: pulseAnim }] }}>
             {currentStepData.icon}
           </Animated.Text>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#2C3E50', marginTop: 12, textAlign: 'center' }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', marginTop: 12, textAlign: 'center' }}>
             {isRTL ? currentStepData.labelAr : currentStepData.labelFr}
           </Text>
           {!isDelivered && (
-            <Text style={{ color: '#888', marginTop: 6, textAlign: 'center' }}>
+            <Text style={{ color: '#777', marginTop: 6, textAlign: 'center' }}>
               {isRTL ? 'يرجى الانتظار...' : 'Veuillez patienter...'}
             </Text>
           )}
@@ -119,7 +119,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
 
         {/* Progress Steps */}
         <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 20 }}>
-          <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#2C3E50', marginBottom: 20, textAlign: isRTL ? 'right' : 'left' }}>
+          <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 20, textAlign: isRTL ? 'right' : 'left' }}>
             {isRTL ? 'مراحل الطلب' : 'Étapes de la commande'}
           </Text>
 
@@ -172,7 +172,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
 
         {/* Delivery Info */}
         <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 16, padding: 16 }}>
-          <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#2C3E50', marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+          <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
             {isRTL ? '📍 معلومات التوصيل' : '📍 Informations de livraison'}
           </Text>
           <InfoRow icon="📞" label={isRTL ? 'الهاتف' : 'Téléphone'} value={order?.phone} isRTL={isRTL} />
@@ -184,7 +184,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
         <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
           <TouchableOpacity
             onPress={() => Linking.openURL('tel:+22200000000').catch(() => {})}
-            style={{ backgroundColor: '#2C3E50', borderRadius: 16, padding: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 10 }}
+            style={{ backgroundColor: '#FF6B35', borderRadius: 16, padding: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 10 }}
           >
             <Text style={{ fontSize: 18 }}>📞</Text>
             <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
@@ -215,8 +215,8 @@ function InfoRow({ icon, label, value, isRTL }) {
   return (
     <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 10 }}>
       <Text style={{ fontSize: 18, marginRight: isRTL ? 0 : 10, marginLeft: isRTL ? 10 : 0 }}>{icon}</Text>
-      <Text style={{ color: '#888', fontSize: 13, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }}>{label}:</Text>
-      <Text style={{ color: '#2C3E50', fontSize: 13, fontWeight: '500', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>{value}</Text>
+      <Text style={{ color: '#777', fontSize: 13, marginRight: isRTL ? 0 : 6, marginLeft: isRTL ? 6 : 0 }}>{label}:</Text>
+      <Text style={{ color: '#333', fontSize: 13, fontWeight: '500', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>{value}</Text>
     </View>
   );
 }

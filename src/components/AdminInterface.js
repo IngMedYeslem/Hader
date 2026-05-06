@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ImageBackground, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import AdminDashboard from './AdminDashboard';
 import AdminLogin from './AdminLogin';
 import CreateAdmin from './CreateAdmin';
@@ -23,17 +23,12 @@ export default function AdminInterface({ onBack }) {
   };
 
   if (!isLoggedIn) {
-    return (
-      <AdminLogin 
-        onLoginSuccess={handleLoginSuccess}
-        onBack={onBack}
-      />
-    );
+    return <AdminLogin onLoginSuccess={handleLoginSuccess} onBack={onBack} />;
   }
 
   if (currentView === 'createAdmin') {
     return (
-      <CreateAdmin 
+      <CreateAdmin
         onBack={() => setCurrentView('dashboard')}
         onAdminCreated={() => setCurrentView('dashboard')}
       />
@@ -41,83 +36,43 @@ export default function AdminInterface({ onBack }) {
   }
 
   return (
-    <ImageBackground 
-      source={require('../../assets/b2.jpeg')} 
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
-        <View style={{ backgroundColor: '#2C3E50' }}>
-          {/* Premier niveau - Titre */}
-          <View style={{ paddingVertical: 20, paddingHorizontal: 30, alignItems: 'center' }}>
-          <Text style={{ 
-            fontSize: 17, 
-            color: '#C8A55F', 
-            fontWeight: 'bold'
-          }}>
-            🛠️ {t('administration')}
-          </Text>
-          <Text style={{ 
-            fontSize: 13, 
-            color: '#C8A55F', 
-            opacity: 0.7,
-            marginTop: 4
-          }}>
-            {adminUser?.username}
-          </Text>
-        </View>
-        
-        {/* Deuxième niveau - Boutons */}
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingBottom: 12,
-          borderTopWidth: 1,
-          borderTopColor: 'rgba(200, 165, 95, 0.2)'
-        }}>
-          <TouchableOpacity onPress={onBack}>
-            <Text style={[styles.colorText, { fontSize: 14 }]}>
-              ← {t('back')}
-            </Text>
-          </TouchableOpacity>
-          
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity 
-              onPress={() => setCurrentView('createAdmin')}
-              style={{ 
-                backgroundColor: '#4CAF50', 
-                paddingHorizontal: 12, 
-                paddingVertical: 8, 
-                borderRadius: 6
-              }}
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
+        <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={onBack}
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20 }}
             >
-              <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>
-                + {t('admin')}
-              </Text>
+              <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>← {t('back')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={handleLogout}
-              style={{
-                backgroundColor: 'rgba(255, 107, 107, 0.2)',
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 6
-              }}
-            >
-              <Text style={{ color: '#ff6b6b', fontSize: 14, fontWeight: 'bold' }}>
-                {t('logout')}
-              </Text>
-            </TouchableOpacity>
+
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🛠️ {t('administration')}</Text>
+              {adminUser?.username && (
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>{adminUser.username}</Text>
+              )}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => setCurrentView('createAdmin')}
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20 }}
+              >
+                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>+ {t('admin')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20 }}
+              >
+                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{t('logout')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-        </View>
       </SafeAreaView>
-      
 
-      
       <AdminDashboard />
-    </ImageBackground>
+    </View>
   );
 }

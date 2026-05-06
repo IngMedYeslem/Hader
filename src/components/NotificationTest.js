@@ -49,7 +49,7 @@ export default function NotificationTest() {
       <TouchableOpacity
         onPress={sendTestNotification}
         style={{
-          backgroundColor: '#C8A55F',
+          backgroundColor: '#FF6B35',
           padding: 15,
           borderRadius: 8,
           alignItems: 'center'

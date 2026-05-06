@@ -166,12 +166,12 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                     📝 Éditer Produit
                   </Text>
                   <TouchableOpacity onPress={onClose}>
-                    <Text style={[styles.closeBtnText, { color: '#2C3E50', fontSize: 24 }]}>✕</Text>
+                    <Text style={[styles.closeBtnText, { color: '#333', fontSize: 24 }]}>✕</Text>
                   </TouchableOpacity>
                 </View>
                 
                 {/* Section Informations de base */}
-                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                   <RTLTextInput
                     style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                     placeholder="Nom du produit *"
@@ -197,7 +197,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                 </View>
                 
                 {/* Section Prix et Stock */}
-                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
                   <RTLTextInput
                     style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
                     placeholder="Prix (MRU) *"
@@ -218,7 +218,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                 </View>
                 
                 {/* Section Catégorie */}
-                <View style={{ backgroundColor: 'rgba(200, 165, 95, 0.1)', padding: 8, borderRadius: 8, marginBottom: 15 }}>
+                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 15 }}>
                   <RTLTextInput
                     style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
                     placeholder="Catégorie"

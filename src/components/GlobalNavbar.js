@@ -35,58 +35,37 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
   }, []);
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#2C3E50' }}>
-      <View style={[styles.headerGlobal, { backgroundColor: '#2C3E50' }]}>
-        {/* Niveau unique - Logo et Boutons */}
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          paddingHorizontal: 15,
-          paddingVertical: 12
-        }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-          <TouchableOpacity 
+    <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
+      <View style={{ backgroundColor: '#FF6B35' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 12 }}>
+          <TouchableOpacity
             onPress={handleLanguageChange}
-            style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
           >
-            <Text style={{ fontSize: 12, color: '#C8A55F' }}>
-              {getLanguageFlag()}
-            </Text>
+            <Text style={{ fontSize: 12, color: 'white' }}>{getLanguageFlag()}</Text>
           </TouchableOpacity>
-        </View>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <TouchableOpacity 
-            onPress={onAdminAccess} 
-            style={{ backgroundColor: 'rgba(220, 53, 69, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
-          >
-            <Text style={{ color: '#dc3545', fontSize: 11, fontWeight: 'bold' }}>
-              👨💼 {t('admin')}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            onPress={() => {
-              console.log('💆 Clic bouton espace boutique');
-              onShopLogin();
-            }} 
-            style={{ backgroundColor: 'rgba(200, 165, 95, 0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
-          >
-            <Text style={{ color: '#C8A55F', fontSize: 11, fontWeight: 'bold' }}>
-              🏪 {t('shopSpace')}
-            </Text>
-          </TouchableOpacity>
-          
-          <Image 
-            source={require('../../assets/logof.png')} 
-            style={{ 
-              width: 80, 
-              height: 30, 
-              resizeMode: 'contain'
-            }}
-          />
-        </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity
+              onPress={onAdminAccess}
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
+            >
+              <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                👨💼 {t('admin')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onShopLogin}
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
+            >
+              <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                🏪 {t('shopSpace')}
+              </Text>
+            </TouchableOpacity>
+
+            <Image source={require('../../assets/logof.png')} style={{ width: 80, height: 30, resizeMode: 'contain' }} />
+          </View>
         </View>
       </View>
     </SafeAreaView>

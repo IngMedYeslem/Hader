@@ -124,7 +124,6 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
           price: product.price,
           category: product.category,
           images: (product.images || []).slice(0, 3),
-          videos: (product.videos || []).slice(0, 1),
           shop: shop ? {
             _id: shop._id,
             id: shop._id,
@@ -138,6 +137,7 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
             coverImage: shop.coverImage || null,
             category: shop.category || '',
             isApproved: shop.isApproved || false,
+            bankAccounts: shop.bankAccounts || [],
           } : null
         };
       })

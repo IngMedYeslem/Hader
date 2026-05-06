@@ -73,9 +73,9 @@ const CartView = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: 'white' },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyText: { fontSize: 18, color: '#666', marginBottom: 20 },
+  emptyText: { fontSize: 18, color: '#555', marginBottom: 20 },
   shopButton: { backgroundColor: '#2ecc71', padding: 16, borderRadius: 8 },
   shopButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   cartItem: { flexDirection: 'row', backgroundColor: '#fff', padding: 12, marginBottom: 8, alignItems: 'center' },

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.0.103:3000/api';
+const API_URL = 'http://192.168.0.110:3000/api';
 
 export default function CreateAdmin({ onBack, onAdminCreated }) {
   const { t } = useTranslation();
@@ -94,15 +94,12 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ImageBackground 
-        source={require('../../assets/b2.jpeg')} 
-        style={styles.background}
-        resizeMode="cover"
-      >
-      <View style={{ backgroundColor: '#2C3E50', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', backgroundColor: '#FF6B35', borderBottomLeftRadius: 60, borderBottomRightRadius: 60 }} />
+
+      <View style={{ backgroundColor: 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, paddingTop: 50 }}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.colorText}>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
             {t('back')}
           </Text>
         </TouchableOpacity>
@@ -111,7 +108,6 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
         </Text>
         <View style={{ width: 50 }} />
       </View>
-
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <View style={styles.card}>
           <Text style={[styles.authTitle, { fontSize: 24, marginBottom: 20 }]}>
@@ -176,7 +172,7 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
           <TouchableOpacity
             style={[styles.submitBtn, { 
               opacity: loading ? 0.7 : 1,
-              backgroundColor: loading ? '#ccc' : '#C8A55F'
+              backgroundColor: loading ? '#ccc' : '#FF6B35'
             }]}
             onPress={() => {
               console.log('🖱️ Bouton pressé!');
@@ -190,17 +186,16 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
             </Text>
           </TouchableOpacity>
 
-          <View style={{ backgroundColor: '#fff3cd', padding: 15, borderRadius: 8, marginTop: 20 }}>
-            <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
+          <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 15, borderRadius: 8, marginTop: 20 }}>
+            <Text style={{ color: '#555', fontSize: 12, textAlign: 'center', fontWeight: 'bold' }}>
               ⚠️ {t('important')}
             </Text>
-            <Text style={{ color: '#856404', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
+            <Text style={{ color: '#555', fontSize: 12, textAlign: 'center', marginTop: 5 }}>
               {t('adminRights')}
             </Text>
           </View>
         </View>
-        </View>
-      </ImageBackground>
+      </View>
     </View>
   );
 }

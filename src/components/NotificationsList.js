@@ -128,12 +128,12 @@ const styles = StyleSheet.create({
   },
   body: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
     marginBottom: 8
   },
   date: {
     fontSize: 12,
-    color: '#999'
+    color: '#777'
   },
   badge: {
     position: 'absolute',
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999'
+    color: '#777'
   }
 });
 

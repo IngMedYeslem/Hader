@@ -28,7 +28,7 @@ const ProductDetailModal = ({ visible, onClose, product, shop }) => {
           <View style={{ flex: 1 }}>
             <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>{product.name}</Text>
             <Text style={{ color: '#ff6b35', fontSize: 18, fontWeight: 'bold' }}>{product.price} MRU</Text>
-            {shop && <Text style={{ color: '#C8A55F', fontSize: 14 }}>🏦 {shop.username}</Text>}
+            {shop && <Text style={{ color: '#FF6B35', fontSize: 14 }}>🏦 {shop.username}</Text>}
           </View>
           <TouchableOpacity onPress={onClose} style={{ padding: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20, width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>✕</Text>
@@ -93,7 +93,7 @@ const ProductDetailModal = ({ visible, onClose, product, shop }) => {
               </TouchableOpacity>
             )}
             {shop.phone && (
-              <TouchableOpacity style={{ backgroundColor: '#007AFF', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 25, flex: 1, maxWidth: 150, justifyContent: 'center', alignItems: 'center' }} onPress={() => Linking.openURL(`tel:${shop.phone}`)}>
+              <TouchableOpacity style={{ backgroundColor: '#FF6B35', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 25, flex: 1, maxWidth: 150, justifyContent: 'center', alignItems: 'center' }} onPress={() => Linking.openURL(`tel:${shop.phone}`)}>
                 <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>📞 Appeler</Text>
               </TouchableOpacity>
             )}

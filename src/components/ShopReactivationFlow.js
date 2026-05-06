@@ -14,7 +14,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
 
   const checkStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shopId}/status`);
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shopId}/status`);
       const data = await response.json();
       setShopStatus(data.status);
     } catch (error) {
@@ -26,7 +26,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
   const requestReactivation = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://192.168.0.103:3000/api/shops/${shopId}/reactivate`, {
+      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shopId}/reactivate`, {
         method: 'POST'
       });
       
@@ -73,7 +73,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
         onPress={requestReactivation}
         disabled={isLoading}
         style={{
-          backgroundColor: '#007bff',
+          backgroundColor: '#FF6B35',
           padding: 12,
           borderRadius: 6,
           alignItems: 'center'

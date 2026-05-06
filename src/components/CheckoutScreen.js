@@ -34,12 +34,17 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
   const shopId = cartShop?._id || cartShop?.id;
 
   useEffect(() => {
-    if (shopId) {
-      fetch(`${API_URL}/api/shops/${shopId}/bank-accounts`)
-        .then(r => r.json())
-        .then(data => Array.isArray(data) && setBankAccounts(data))
-        .catch(() => {});
+    if (!shopId) return;
+    // استخدام bankAccounts من cartShop مباشرة إن وجدت
+    if (cartShop?.bankAccounts?.length > 0) {
+      setBankAccounts(cartShop.bankAccounts);
+      return;
     }
+    // fallback: جلب من API
+    fetch(`${API_URL}/api/shops/${shopId}/bank-accounts`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) && setBankAccounts(data))
+      .catch(() => {});
   }, [shopId]);
 
   const pickReceiptImage = async () => {
@@ -157,19 +162,19 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
         <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
           <Text style={{ fontSize: 22, color: '#333' }}>←</Text>
         </TouchableOpacity>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2C3E50', marginLeft: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginLeft: 8 }}>
           {isRTL ? 'إتمام الطلب' : 'Finaliser la commande'}
         </Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
         {/* Delivery Info */}
         <SectionCard title={isRTL ? '📍 معلومات التوصيل' : '📍 Informations de livraison'} isRTL={isRTL}>
           <InputField placeholder={isRTL ? 'الاسم الكامل (اختياري)' : 'Nom complet (optionnel)'} value={name} onChangeText={setName} isRTL={isRTL} />
@@ -192,7 +197,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
               }}
             >
               <Text style={{ fontSize: 24, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }}>{method.icon}</Text>
-              <Text style={{ flex: 1, fontSize: 15, fontWeight: '500', color: '#2C3E50', textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ flex: 1, fontSize: 15, fontWeight: '500', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
                 {isRTL ? method.label : method.labelFr}
               </Text>
               {paymentMethod === method.id && (
@@ -208,20 +213,20 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
         {paymentMethod === 'bank' && (
           <SectionCard title={isRTL ? '🏦 أرقام الحسابات البنكية' : '🏦 Comptes bancaires'} isRTL={isRTL}>
             {bankAccounts.length === 0 ? (
-              <Text style={{ color: '#999', textAlign: 'center', padding: 10 }}>
+              <Text style={{ color: '#777', textAlign: 'center', padding: 10 }}>
                 {isRTL ? 'لا توجد حسابات بنكية متاحة' : 'Aucun compte bancaire disponible'}
               </Text>
             ) : (
               bankAccounts.map((acc, i) => (
                 <View key={i} style={{ backgroundColor: '#f0f7ff', borderRadius: 10, padding: 14, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#3498db' }}>
-                  <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 14, textAlign: isRTL ? 'right' : 'left' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 14, textAlign: isRTL ? 'right' : 'left' }}>
                     🏦 {acc.bankName}
                   </Text>
                   <Text style={{ color: '#3498db', fontSize: 16, fontWeight: 'bold', marginTop: 4, textAlign: isRTL ? 'right' : 'left', letterSpacing: 1 }}>
                     {acc.accountNumber}
                   </Text>
                   {acc.accountHolder ? (
-                    <Text style={{ color: '#666', fontSize: 13, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                    <Text style={{ color: '#555', fontSize: 13, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                       👤 {acc.accountHolder}
                     </Text>
                   ) : null}
@@ -231,7 +236,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
 
             {/* Receipt Upload */}
             <View style={{ marginTop: 12 }}>
-              <Text style={{ fontWeight: 'bold', color: '#2C3E50', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+              <Text style={{ fontWeight: 'bold', color: '#333', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
                 {isRTL ? '📎 صورة إيصال التحويل *' : '📎 Reçu de virement *'}
               </Text>
               <TouchableOpacity
@@ -255,7 +260,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
                     <Text style={{ color: '#FF6B35', fontWeight: 'bold', marginTop: 8 }}>
                       {isRTL ? 'اضغط لرفع صورة الإيصال' : 'Appuyer pour joindre le reçu'}
                     </Text>
-                    <Text style={{ color: '#999', fontSize: 12, marginTop: 4 }}>
+                    <Text style={{ color: '#777', fontSize: 12, marginTop: 4 }}>
                       {isRTL ? 'صورة من المعاملة البنكية' : 'Capture d\'écran ou photo du reçu'}
                     </Text>
                   </>
@@ -272,21 +277,20 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
               <Text style={{ color: '#555', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
                 {item.name} × {item.quantity}
               </Text>
-              <Text style={{ fontWeight: '600', color: '#2C3E50' }}>{item.price * item.quantity} MRU</Text>
+              <Text style={{ fontWeight: '600', color: '#333' }}>{item.price * item.quantity} MRU</Text>
             </View>
           ))}
           <View style={{ height: 1, backgroundColor: '#eee', marginVertical: 10 }} />
           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-            <Text style={{ color: '#888' }}>{isRTL ? 'رسوم التوصيل' : 'Livraison'}</Text>
-            <Text style={{ color: '#2C3E50' }}>{deliveryFee} MRU</Text>
+            <Text style={{ color: '#777' }}>{isRTL ? 'رسوم التوصيل' : 'Livraison'}</Text>
+            <Text style={{ color: '#333' }}>{deliveryFee} MRU</Text>
           </View>
           <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#2C3E50' }}>{isRTL ? 'الإجمالي' : 'Total'}</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#333' }}>{isRTL ? 'الإجمالي' : 'Total'}</Text>
             <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#FF6B35' }}>{total} MRU</Text>
           </View>
         </SectionCard>
 
-        <View style={{ height: 120 }} />
       </ScrollView>
 
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'white', padding: 16, paddingBottom: 30, borderTopWidth: 1, borderTopColor: '#eee' }}>
@@ -311,7 +315,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
 function SectionCard({ title, children, isRTL }) {
   return (
     <View style={{ backgroundColor: 'white', margin: 16, marginBottom: 0, borderRadius: 16, padding: 16 }}>
-      <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#2C3E50', marginBottom: 14, textAlign: isRTL ? 'right' : 'left' }}>
+      <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 14, textAlign: isRTL ? 'right' : 'left' }}>
         {title}
       </Text>
       {children}
@@ -328,9 +332,9 @@ function InputField({ placeholder, value, onChangeText, keyboardType, multiline,
       keyboardType={keyboardType}
       multiline={multiline}
       style={{
-        borderWidth: 1, borderColor: '#eee', borderRadius: 10,
+        borderWidth: 1, borderColor: '#FFD4C2', borderRadius: 10,
         padding: 12, marginBottom: 10, fontSize: 14, color: '#333',
-        backgroundColor: '#fafafa', textAlign: isRTL ? 'right' : 'left',
+        backgroundColor: 'white', textAlign: isRTL ? 'right' : 'left',
         minHeight: multiline ? 70 : 44,
       }}
     />

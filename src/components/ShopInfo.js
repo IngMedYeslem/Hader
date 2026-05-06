@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '../translations';
 import styles from './styles';
 import { API_CONFIG } from '../config/api';
@@ -7,7 +8,8 @@ import { API_CONFIG } from '../config/api';
 const BASE = API_CONFIG.BASE_URL;
 
 const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  const isRTL = currentLanguage === 'ar';
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editData, setEditData] = useState({
@@ -23,6 +25,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [showBankEditor, setShowBankEditor] = useState(false);
   const [newBank, setNewBank] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
+  const [mainImage, setMainImage] = useState(shop.mainImage || null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (visible && shop._id) {
@@ -59,6 +63,30 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   const removeBankAccount = (index) => {
     const updated = bankAccounts.filter((_, i) => i !== index);
     saveBankAccounts(updated);
+  };
+
+  const pickAndUploadMainImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('', 'يجب السماح بالوصول للصور'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+    if (result.canceled || !result.assets?.[0]) return;
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('mainImage', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'main.jpg' });
+      const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+      const uploadData = await uploadRes.json();
+      if (uploadData.imagePath) {
+        await fetch(`${BASE}/shops/${shop._id}/main-image`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mainImage: uploadData.imagePath }),
+        });
+        setMainImage(uploadData.imagePath);
+        Alert.alert('', isRTL ? 'تم رفع الصورة بنجاح' : 'Image mise à jour');
+      }
+    } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
+    finally { setUploadingImage(false); }
   };
   const handleCall = (number) => {
     Linking.openURL(`tel:${number}`);
@@ -183,7 +211,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                 
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
                   <TouchableOpacity 
-                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#C8A55F' }]} 
+                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#FF6B35' }]} 
                     onPress={handleSave}
                   >
                     <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>Sauvegarder</Text>
@@ -212,7 +240,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>📞 {t('phoneLabel')}:</Text>
                   <TouchableOpacity onPress={() => handleCall(shop.phone)}>
-                    <Text style={[styles.shopInfoValue, { color: '#007AFF' }]}>{shop.phone}</Text>
+                    <Text style={[styles.shopInfoValue, { color: '#FF6B35' }]}>{shop.phone}</Text>
                   </TouchableOpacity>
                 </View>
                 
@@ -231,11 +259,36 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                 
                 {allowEdit && (
                   <TouchableOpacity 
-                    style={[styles.locationBtn, { backgroundColor: '#C8A55F', marginTop: 10 }]} 
+                    style={[styles.locationBtn, { backgroundColor: '#FF6B35', marginTop: 10 }]} 
                     onPress={() => setIsEditing(true)}
                   >
                     <Text style={[styles.locationBtnText, { color: 'white' }]}>✏️ Modifier</Text>
                   </TouchableOpacity>
+                )}
+
+                {/* Main Image */}
+                {allowEdit && (
+                  <View style={{ marginTop: 16 }}>
+                    <Text style={[styles.shopInfoLabel, { fontSize: 14, fontWeight: 'bold', marginBottom: 8 }]}>
+                      🖼️ {isRTL ? 'الصورة الرئيسية للمتجر' : 'Image principale'}
+                    </Text>
+                    {mainImage ? (
+                      <Image
+                        source={{ uri: mainImage.startsWith('/uploads') ? `${BASE.replace('/api', '')}${mainImage}` : mainImage }}
+                        style={{ width: '100%', height: 160, borderRadius: 10, marginBottom: 8 }}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                    <TouchableOpacity
+                      onPress={pickAndUploadMainImage}
+                      disabled={uploadingImage}
+                      style={{ backgroundColor: uploadingImage ? '#ccc' : '#3498db', padding: 10, borderRadius: 8, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                        {uploadingImage ? '⏳...' : (mainImage ? (isRTL ? 'تغيير الصورة' : 'Changer l\'image') : (isRTL ? 'إضافة صورة' : 'Ajouter une image'))}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
 
                 {/* Bank Accounts Management */}
@@ -257,9 +310,9 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                   {bankAccounts.map((acc, i) => (
                     <View key={i} style={{ backgroundColor: '#f0f7ff', borderRadius: 8, padding: 10, marginBottom: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: 'bold', color: '#2C3E50', fontSize: 13 }}>{acc.bankName}</Text>
+                        <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 13 }}>{acc.bankName}</Text>
                         <Text style={{ color: '#3498db', fontSize: 13 }}>{acc.accountNumber}</Text>
-                        {acc.accountHolder ? <Text style={{ color: '#666', fontSize: 12 }}>{acc.accountHolder}</Text> : null}
+                        {acc.accountHolder ? <Text style={{ color: '#555', fontSize: 12 }}>{acc.accountHolder}</Text> : null}
                       </View>
                       <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6 }}>
                         <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>
@@ -268,7 +321,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                   ))}
 
                   {showBankEditor && (
-                    <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginTop: 4 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 12, marginTop: 4 }}>
                       <TextInput
                         placeholder="اسم البنك *"
                         value={newBank.bankName}

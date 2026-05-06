@@ -89,17 +89,17 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
       {/* Different Shop Alert */}
       <Modal visible={showDifferentShopAlert} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 12 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 12 }}>
               🛒 {isRTL ? 'سلة من متجر آخر' : 'Panier d\'un autre restaurant'}
             </Text>
-            <Text style={{ color: '#666', textAlign: 'center', lineHeight: 22, marginBottom: 20 }}>
+            <Text style={{ color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 20 }}>
               {isRTL
                 ? 'سلتك تحتوي على منتجات من متجر آخر. هل تريد إفراغها والبدء من هذا المتجر؟'
                 : 'Votre panier contient des articles d\'un autre restaurant. Voulez-vous le vider et recommencer?'}
@@ -116,7 +116,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
               onPress={() => setShowDifferentShopAlert(false)}
               style={{ padding: 14, alignItems: 'center' }}
             >
-              <Text style={{ color: '#666', fontSize: 15 }}>
+              <Text style={{ color: '#555', fontSize: 15 }}>
                 {isRTL ? 'إلغاء' : 'Annuler'}
               </Text>
             </TouchableOpacity>
@@ -131,7 +131,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
             <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }}>
               <ScrollView>
                 {/* Product Image */}
-                <View style={{ height: 220, backgroundColor: '#f0f0f0' }}>
+                <View style={{ height: 220, backgroundColor: '#FFF0EB' }}>
                   {selectedProduct.images?.[0] ? (
                     <Image
                       source={{ uri: getMediaUrl(selectedProduct.images[0]) }}
@@ -157,11 +157,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                 </View>
 
                 <View style={{ padding: 20 }}>
-                  <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#2C3E50', textAlign: isRTL ? 'right' : 'left' }}>
+                  <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
                     {selectedProduct.name}
                   </Text>
                   {selectedProduct.description && (
-                    <Text style={{ color: '#888', marginTop: 8, lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
+                    <Text style={{ color: '#777', marginTop: 8, lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
                       {selectedProduct.description}
                     </Text>
                   )}
@@ -173,11 +173,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 20, gap: 20 }}>
                     <TouchableOpacity
                       onPress={() => setQuantity(q => Math.max(1, q - 1))}
-                      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }}
+                      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF0EB', justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333' }}>−</Text>
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#2C3E50', minWidth: 30, textAlign: 'center' }}>{quantity}</Text>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', minWidth: 30, textAlign: 'center' }}>{quantity}</Text>
                     <TouchableOpacity
                       onPress={() => setQuantity(q => q + 1)}
                       style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' }}
@@ -217,7 +217,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         {/* Shop Header */}
         <View>
           {/* Cover */}
-          <View style={{ height: 200, backgroundColor: '#2C3E50' }}>
+          <View style={{ height: 200, backgroundColor: '#FF6B35' }}>
             {coverUri ? (
               <Image source={{ uri: coverUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
             ) : (
@@ -271,11 +271,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                 </View>
               )}
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#2C3E50', textAlign: isRTL ? 'right' : 'left' }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
                   {shop.username || shop.name}
                 </Text>
                 {shop.address && (
-                  <Text style={{ color: '#888', fontSize: 13, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
+                  <Text style={{ color: '#777', fontSize: 13, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
                     📍 {shop.address}
                   </Text>
                 )}
@@ -284,18 +284,18 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
 
             <View style={{ flexDirection: 'row', marginTop: 12, gap: 16 }}>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#C8A55F' }}>⭐ 4.5</Text>
-                <Text style={{ fontSize: 11, color: '#888' }}>{isRTL ? 'التقييم' : 'Note'}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>⭐ 4.5</Text>
+                <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'التقييم' : 'Note'}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>25 {isRTL ? 'دق' : 'min'}</Text>
-                <Text style={{ fontSize: 11, color: '#888' }}>{isRTL ? 'التوصيل' : 'Livraison'}</Text>
+                <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'التوصيل' : 'Livraison'}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#2C3E50' }}>{products.length}</Text>
-                <Text style={{ fontSize: 11, color: '#888' }}>{isRTL ? 'منتج' : 'Produits'}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>{products.length}</Text>
+                <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'منتج' : 'Produits'}</Text>
               </View>
             </View>
           </View>
@@ -330,14 +330,14 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
           ) : Object.keys(groupedProducts).length === 0 ? (
             <View style={{ padding: 40, alignItems: 'center' }}>
               <Text style={{ fontSize: 40 }}>📦</Text>
-              <Text style={{ color: '#999', marginTop: 10 }}>
+              <Text style={{ color: '#777', marginTop: 10 }}>
                 {isRTL ? 'لا توجد منتجات' : 'Aucun produit'}
               </Text>
             </View>
           ) : (
             Object.entries(groupedProducts).map(([category, items]) => (
               <View key={category} style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2C3E50', marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
                   {category}
                 </Text>
                 {items.map(product => (
@@ -400,7 +400,7 @@ function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd }) {
       }}
     >
       {/* Image */}
-      <View style={{ width: 100, height: 100, backgroundColor: '#f5f5f5' }}>
+      <View style={{ width: 100, height: 100, backgroundColor: 'white' }}>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         ) : (
@@ -412,11 +412,11 @@ function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd }) {
 
       {/* Info */}
       <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 15, fontWeight: '600', color: '#2C3E50', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: '#333', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
           {product.name}
         </Text>
         {product.description && (
-          <Text style={{ fontSize: 12, color: '#999', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
+          <Text style={{ fontSize: 12, color: '#777', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
             {product.description}
           </Text>
         )}

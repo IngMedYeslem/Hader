@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#FF6B35',
     paddingVertical: 0,
     paddingHorizontal: 10,
     width: "100%",
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
       navText: {
         fontSize: 12,
         fontWeight: "bold",
-        color: "#005bb5",
+        color: '#FF6B35',
          marginTop: 5,
       },
       language: {
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
       },
       profileInitials: {
         fontWeight: "bold",
-        color: "#005bb5",
+        color: '#FF6B35',
         fontSize: 16,
       },
       loginText: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
       },
       title: {
         fontSize: 35,
-        color: "#C8A55F",
+        color: '#FF6B35',
         marginBottom: 20,
         textAlign: "center",
         fontWeight: "bold",
@@ -134,20 +134,20 @@ const styles = StyleSheet.create({
         textShadowRadius: 5,
       },
       colorText: {
-        color: "#C8A55F",
+        color: '#FF6B35',
         fontSize: 16,
         fontWeight: '500',
         textAlign: 'center',
       },
 
       input: {
-        color: "#C8A55F", // Couleur du texte saisi
+        color: '#333',
         marginBottom: 15 ,
             
        },
       button: {
         marginTop: 10,
-        backgroundColor: "#C8A55F",
+        backgroundColor: '#FF6B35',
       },
       loader: {
         marginTop: 10,
@@ -181,11 +181,11 @@ const styles = StyleSheet.create({
   card: {
     padding: 25, 
     borderRadius: 20, 
-    backgroundColor: "#2C3E50",
+    backgroundColor: 'white',
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     borderWidth: 0,
     maxWidth: 400,
@@ -214,13 +214,13 @@ const styles = StyleSheet.create({
     fontSize: 22, 
     textAlign: 'center', 
     marginBottom: 25, 
-    color: '#C8A55F',
+    color: '#FF6B35',
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  buttonlogin: { marginTop: 20, padding: 8, backgroundColor: "#C8A55F", borderRadius: 30 },
+  buttonlogin: { marginTop: 20, padding: 8, backgroundColor: '#FF6B35', borderRadius: 30 },
   registerButton: { 
     marginVertical: 20, 
     alignSelf: "center",
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   menuText: {
     marginLeft: 10,
-    color: "#005bb5"
+    color: '#FF6B35'
 
   },
   logoutText: {
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   userImage: {
    
-    color: "#C8A55F",
+    color: '#FF6B35',
    
 
   },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     marginLeft: 8,
     fontSize: 16,
-    color: "#C8A55F",
+    color: '#FF6B35',
     fontWeight: "500",
   },
 
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginLeft: 16,
     marginTop: 40,
-    backgroundColor: "#C8A55F", // ou "transparent" si tu veux juste l'icône
+    backgroundColor: '#FF6B35', // ou "transparent" si tu veux juste l'icône
   },
   header: {
     flexDirection: "row",
@@ -356,9 +356,9 @@ const styles = StyleSheet.create({
   },  
 
   headerGlobal: {
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#FF6B35',
     fontSize: 18,
-    color: "#C8A55F",
+    color: 'white',
     textAlign: "center",
     fontWeight: "bold",
     textShadowColor: "rgba(0, 0, 0, 0.9)",
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },  
   textcoprit: { 
-    color: "#C8A55F", 
+    color: 'white', 
     fontSize: 14, 
     textAlign: "center",
     fontWeight: "bold",
@@ -393,10 +393,16 @@ const styles = StyleSheet.create({
     elevation: 5,
     overflow: "hidden",
   },
+  alibabaImage: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
   imageContainer: {
     width: "100%",
     height: 170,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#FFF0EB",
   },
   globalImage: {
     width: "100%",
@@ -407,11 +413,11 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#FFF0EB",
   },
   placeholderText: {
     fontSize: 40,
-    color: "#ccc",
+    color: "#FF6B35",
   },
   productInfo: {
     padding: 10,
@@ -426,8 +432,8 @@ const styles = StyleSheet.create({
   globalPrice: {
     fontSize: 15,
     fontWeight: "bold",
-    color: "#C8A55F",
-    backgroundColor: "rgba(200,165,95,0.1)",
+    color: '#FF6B35',
+    backgroundColor: "rgba(255,107,53,0.08)",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -435,7 +441,7 @@ const styles = StyleSheet.create({
   },
   addToCartBtn: {
     marginTop: 8,
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#FF6B35',
     borderRadius: 8,
     paddingVertical: 7,
     alignItems: "center",
@@ -473,7 +479,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 50,
     fontSize: 16,
-    color: "#C8A55F",
+    color: '#FF6B35',
   },
   errorText: {
     textAlign: "center",
@@ -501,7 +507,7 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     marginLeft: 5,
     borderWidth: 1,
-    borderColor: "#C8A55F",
+    borderColor: '#FF6B35',
   },
   searchContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -532,7 +538,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   filterBtnActive: {
-    backgroundColor: "#C8A55F",
+    backgroundColor: '#FF6B35',
   },
   filterText: {
     fontSize: 12,
@@ -553,24 +559,24 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#FF6B35',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#C8A55F",
+    color: '#FF6B35',
   },
   closeBtn: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "rgba(200, 165, 95, 0.2)",
+    backgroundColor: "rgba(255,107,53,0.15)",
     justifyContent: "center",
     alignItems: "center",
   },
   closeBtnText: {
     fontSize: 16,
-    color: "#C8A55F",
+    color: '#FF6B35',
     fontWeight: "bold",
   },
   modalContent: {
@@ -677,7 +683,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#2C3E50",
+    color: '#333',
     marginBottom: 10,
   },
   shopSummaryCard: {
@@ -692,7 +698,7 @@ const styles = StyleSheet.create({
   shopSummaryName: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#2C3E50",
+    color: '#333',
     marginBottom: 4,
   },
   shopSummaryCount: {
@@ -702,7 +708,7 @@ const styles = StyleSheet.create({
   },
   shopSummaryPrice: {
     fontSize: 10,
-    color: "#C8A55F",
+    color: '#FF6B35',
     fontWeight: "bold",
   },
   mediaCounter: {
@@ -736,7 +742,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   thumbnailActive: {
-    borderColor: "#C8A55F",
+    borderColor: '#FF6B35',
   },
   thumbnailImage: {
     width: "100%",
@@ -771,7 +777,7 @@ const styles = StyleSheet.create({
   galleryTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#C8A55F",
+    color: '#FF6B35',
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
@@ -810,7 +816,7 @@ const styles = StyleSheet.create({
   addProductTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#C8A55F",
+    color: '#FF6B35',
     textAlign: "center",
     marginBottom: 20,
     textShadowColor: "rgba(0, 0, 0, 0.9)",
@@ -837,7 +843,7 @@ const styles = StyleSheet.create({
   productNumber: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#2C3E50",
+    color: '#333',
   },
   removeBtn: {
     fontSize: 20,
@@ -860,7 +866,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   addMoreBtn: {
-    backgroundColor: "#C8A55F",
+    backgroundColor: '#FF6B35',
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -872,7 +878,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   submitBtn: {
-    backgroundColor: "#2C3E50",
+    backgroundColor: '#FF6B35',
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -898,7 +904,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#C8A55F",
+    backgroundColor: '#FF6B35',
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -919,7 +925,7 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     fontSize: 18,
-    color: "#C8A55F",
+    color: '#FF6B35',
     fontWeight: "bold",
   },
   rtlText: {
@@ -928,7 +934,7 @@ const styles = StyleSheet.create({
   },
   imagePickerBtn: {
     borderWidth: 2,
-    borderColor: "#C8A55F",
+    borderColor: '#FF6B35',
     borderStyle: "dashed",
     borderRadius: 8,
     padding: 15,
@@ -1084,7 +1090,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeIndicator: {
-    backgroundColor: '#C8A55F',
+    backgroundColor: '#FF6B35',
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -1104,7 +1110,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   activeThumbnail: {
-    borderColor: '#C8A55F',
+    borderColor: '#FF6B35',
   },
   thumbnailImage: {
     width: '100%',
@@ -1132,7 +1138,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#C8A55F',
+    borderColor: '#FF6B35',
     marginRight: 10,
     width: 35,
     height: 35,
@@ -1140,14 +1146,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   syncText: {
-    color: '#C8A55F',
+    color: '#FF6B35',
     fontSize: 16,
     fontWeight: 'bold',
   },
   shopTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#C8A55F',
+    color: '#FF6B35',
     textShadowColor: 'rgba(0, 0, 0, 0.9)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 3,
@@ -1157,10 +1163,10 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#C8A55F',
+    borderColor: '#FF6B35',
   },
   logoutText: {
-    color: '#C8A55F',
+    color: '#FF6B35',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -1172,14 +1178,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#C8A55F',
+    color: '#FF6B35',
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
   },
   emptySubText: {
     fontSize: 14,
-    color: 'rgba(200, 165, 95, 0.8)',
+    color: 'rgba(255,107,53,0.8)',
     textAlign: 'center',
   },
 
@@ -1194,7 +1200,7 @@ const styles = StyleSheet.create({
   },
   mediaButton: {
     flex: 1,
-    backgroundColor: '#C8A55F',
+    backgroundColor: '#FF6B35',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -1244,7 +1250,7 @@ const styles = StyleSheet.create({
   mediaManagerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#C8A55F',
+    color: '#FF6B35',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -1254,7 +1260,7 @@ const styles = StyleSheet.create({
   mediaSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: '#333',
     marginBottom: 15,
   },
   deleteButton: {
@@ -1283,7 +1289,7 @@ const styles = StyleSheet.create({
   },
   emptyMediaText: {
     fontSize: 16,
-    color: '#666',
+    color: '#555',
     fontStyle: 'italic',
   },
 
@@ -1310,7 +1316,7 @@ const styles = StyleSheet.create({
   shopInfoTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: '#333',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -1320,7 +1326,7 @@ const styles = StyleSheet.create({
   shopInfoLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#555',
     marginBottom: 5,
   },
   shopInfoValue: {
@@ -1328,7 +1334,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   locationBtn: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#FF6B35',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -1340,7 +1346,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   closeInfoBtn: {
-    backgroundColor: '#C8A55F',
+    backgroundColor: '#FF6B35',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -1402,11 +1408,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: '#333',
   },
   refreshButton: {
     fontSize: 20,
-    color: '#C8A55F',
+    color: '#FF6B35',
   },
   notificationItem: {
     backgroundColor: 'white',
@@ -1423,17 +1429,17 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2C3E50',
+    color: '#333',
     marginBottom: 5,
   },
   notificationBody: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
     lineHeight: 20,
   },
   notificationTime: {
     fontSize: 12,
-    color: '#999',
+    color: '#777',
   },
   unreadIndicator: {
     position: 'absolute',
@@ -1447,13 +1453,13 @@ const styles = StyleSheet.create({
   loadingText: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#666',
+    color: '#555',
     marginTop: 50,
   },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
-    color: '#999',
+    color: '#777',
     marginTop: 50,
     fontStyle: 'italic',
   },
