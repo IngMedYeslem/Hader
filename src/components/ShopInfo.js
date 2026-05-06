@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView, Image, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '../translations';
 import styles from './styles';
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG, getMediaUrl } from '../config/api';
 
 const BASE = API_CONFIG.BASE_URL;
 
@@ -66,15 +66,44 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   };
 
   const pickAndUploadMainImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('', 'يجب السماح بالوصول للصور'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-    if (result.canceled || !result.assets?.[0]) return;
     setUploadingImage(true);
     try {
+      if (Platform.OS === 'web') {
+        // Web: use file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) { setUploadingImage(false); return; }
+          const formData = new FormData();
+          formData.append('mainImage', file);
+          try {
+            const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+            if (uploadData.imagePath) {
+              await fetch(`${BASE}/shops/${shop._id}/main-image`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mainImage: uploadData.imagePath }),
+              });
+              setMainImage(uploadData.imagePath);
+              Alert.alert('', isRTL ? 'تم رفع الصورة بنجاح' : 'Image mise à jour');
+            }
+          } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
+          finally { setUploadingImage(false); }
+        };
+        input.click();
+        return;
+      }
+      // Mobile: use ImagePicker
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('', 'يجب السماح بالوصول للصور'); setUploadingImage(false); return; }
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+      if (result.canceled || !result.assets?.[0]) { setUploadingImage(false); return; }
       const formData = new FormData();
       formData.append('mainImage', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'main.jpg' });
-      const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+      const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData });
       const uploadData = await uploadRes.json();
       if (uploadData.imagePath) {
         await fetch(`${BASE}/shops/${shop._id}/main-image`, {
@@ -274,7 +303,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                     </Text>
                     {mainImage ? (
                       <Image
-                        source={{ uri: mainImage.startsWith('/uploads') ? `${BASE.replace('/api', '')}${mainImage}` : mainImage }}
+                        source={{ uri: getMediaUrl(mainImage) }}
                         style={{ width: '100%', height: 160, borderRadius: 10, marginBottom: 8 }}
                         resizeMode="cover"
                       />

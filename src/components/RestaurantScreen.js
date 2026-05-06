@@ -38,8 +38,13 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const loadShopProducts = async () => {
     try {
       setLoading(true);
-      const all = await fetchProductsWithShops();
-      const shopProducts = all.filter(p => p.shop?._id === shop._id || p.shop?.username === shop.username);
+      const all = await fetchProductsWithShops(true); // force refresh
+      const shopProducts = all.filter(p =>
+        p.shop?._id === shop._id ||
+        p.shop?._id === shop.id ||
+        p.shop?.username === shop.username ||
+        p.shop?.name === shop.name
+      );
       setProducts(shopProducts);
     } catch (e) {
       console.log('Error:', e);
@@ -85,7 +90,9 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const cartCount = getTotalItems();
   const cartTotal = getTotalAmount();
 
-  const coverUri = shop.coverImage ? getMediaUrl(shop.coverImage) : null;
+  const coverUri = (shop.mainImage || shop.coverImage)
+    ? getMediaUrl(shop.mainImage || shop.coverImage)
+    : null;
   const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
 
   return (

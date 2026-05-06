@@ -103,7 +103,7 @@ export default function CreateAdmin({ onBack, onAdminCreated }) {
             {t('back')}
           </Text>
         </TouchableOpacity>
-        <Text style={[styles.authTitle, { fontSize: 16, padding: 8 }]}>
+        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
           👨💼 {t('createAdmin')}
         </Text>
         <View style={{ width: 50 }} />

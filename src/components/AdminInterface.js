@@ -38,34 +38,33 @@ export default function AdminInterface({ onBack }) {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
-        <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
+        <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 12 }}>
+          {/* صف أول: العنوان */}
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }}>
+            🛠️ {t('admin')}
+            {adminUser?.username ? ` • ${adminUser.username}` : ''}
+          </Text>
+          {/* صف ثاني: الأزرار */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <TouchableOpacity
               onPress={onBack}
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20 }}
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 }}
             >
               <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>← {t('back')}</Text>
             </TouchableOpacity>
 
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🛠️ {t('administration')}</Text>
-              {adminUser?.username && (
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>{adminUser.username}</Text>
-              )}
-            </View>
-
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity
                 onPress={() => setCurrentView('createAdmin')}
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20 }}
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 }}
               >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>+ {t('admin')}</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>+ {t('admin')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleLogout}
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20 }}
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 }}
               >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{t('logout')}</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>{t('logout')}</Text>
               </TouchableOpacity>
             </View>
           </View>
