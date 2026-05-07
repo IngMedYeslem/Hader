@@ -4,7 +4,7 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 
-const API_URL = 'http://192.168.0.110:3000/api';
+const API_URL = 'http://192.168.0.132:3000/api';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -343,6 +343,9 @@ export default function AdminDashboard() {
             <Text style={{ color: '#25D366', fontSize: 13, marginBottom: 2 }}>🟢 {item.whatsapp}</Text>
           </TouchableOpacity>
           <Text style={{ color: '#777', fontSize: 12, marginBottom: 6 }}>📍 {item.address}</Text>
+          {item.category ? (
+            <Text style={{ color: '#FF6B35', fontSize: 12, marginBottom: 6 }}>🏷️ {item.category}</Text>
+          ) : null}
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>

@@ -34,7 +34,7 @@ export default function GlobalInterface({ onShopLogin }) {
         setServerAvailable(status.isAvailable);
         if (status.isAvailable) {
           // جلب المتاجر مباشرة
-          const shopsRes = await fetch('http://192.168.0.110:3000/api/shops');
+          const shopsRes = await fetch('http://192.168.0.132:3000/api/shops');
           if (shopsRes.ok) {
             const shopsData = await shopsRes.json();
             setShops(Array.isArray(shopsData) ? shopsData : []);

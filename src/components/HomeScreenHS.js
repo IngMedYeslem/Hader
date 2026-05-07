@@ -242,90 +242,34 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
           </ScrollView>
         </View>
 
-        {/* Shops / Products Section */}
+        {/* Shops Section */}
         <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-          {selectedCategory === 'grocery' ? (
-            <>
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
-                  🛒 {isRTL ? 'المتاجر المتاحة' : 'Produits épicerie'}
-                </Text>
-                <Text style={{ fontSize: 13, color: '#FF6B35' }}>
-                  {products.filter(p => (p.shop?.category || '').toLowerCase() === 'grocery').length} {isRTL ? 'منتج' : 'produits'}
-                </Text>
-              </View>
-              {loading ? (
-                <View style={{ padding: 40, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 30 }}>⏳</Text>
-                </View>
-              ) : (
-                products
-                  .filter(p => (p.shop?.category || '').toLowerCase() === 'grocery')
-                  .filter(p => !searchText || p.name?.toLowerCase().includes(searchText.toLowerCase()))
-                  .map(product => (
-                    <TouchableOpacity
-                      key={product._id}
-                      onPress={() => onSelectShop(product.shop)}
-                      style={{
-                        backgroundColor: 'white', borderRadius: 12, marginBottom: 10,
-                        flexDirection: isRTL ? 'row-reverse' : 'row', overflow: 'hidden',
-                        shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
-                      }}
-                    >
-                      <View style={{ width: 90, height: 90, backgroundColor: 'white' }}>
-                        {product.images?.[0] ? (
-                          <Image source={{ uri: getMediaUrl(product.images[0]) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                        ) : (
-                          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 28 }}>🛒</Text>
-                          </View>
-                        )}
-                      </View>
-                      <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
-                          {product.name}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: '#777', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={1}>
-                          🏪 {product.shop?.name || product.shop?.username}
-                        </Text>
-                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#FF6B35' }}>
-                          {product.price} MRU
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-              )}
-            </>
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+              🏪 {isRTL ? 'المتاجر المتاحة' : 'Boutiques disponibles'}
+            </Text>
+            <Text style={{ fontSize: 13, color: '#FF6B35' }}>
+              {filteredShops.length} {isRTL ? 'متجر' : 'boutiques'}
+            </Text>
+          </View>
+          {loading ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 30 }}>⏳</Text>
+              <Text style={{ color: '#777', marginTop: 10 }}>
+                {isRTL ? 'جاري التحميل...' : 'Chargement...'}
+              </Text>
+            </View>
+          ) : filteredShops.length === 0 ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 40 }}>🏪</Text>
+              <Text style={{ color: '#777', marginTop: 10, textAlign: 'center' }}>
+                {isRTL ? 'لا توجد متاجر في هذا الصنف' : 'Aucune boutique dans cette catégorie'}
+              </Text>
+            </View>
           ) : (
-            <>
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
-                  {isRTL ? '🏪 المتاجر المتاحة' : '🏪 Restaurants disponibles'}
-                </Text>
-                <Text style={{ fontSize: 13, color: '#FF6B35' }}>
-                  {filteredShops.length} {isRTL ? 'متجر' : 'restaurants'}
-                </Text>
-              </View>
-              {loading ? (
-                <View style={{ padding: 40, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 30 }}>⏳</Text>
-                  <Text style={{ color: '#777', marginTop: 10 }}>
-                    {isRTL ? 'جاري التحميل...' : 'Chargement...'}
-                  </Text>
-                </View>
-              ) : filteredShops.length === 0 ? (
-                <View style={{ padding: 40, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 40 }}>🏪</Text>
-                  <Text style={{ color: '#777', marginTop: 10, textAlign: 'center' }}>
-                    {isRTL ? 'لا توجد متاجر متاحة' : 'Aucun restaurant disponible'}
-                  </Text>
-                </View>
-              ) : (
-                filteredShops.map(shop => (
-                  <ShopCard key={shop._id} shop={shop} onPress={() => onSelectShop(shop)} isRTL={isRTL} />
-                ))
-              )}
-            </>
+            filteredShops.map(shop => (
+              <ShopCard key={shop._id} shop={shop} onPress={() => onSelectShop(shop)} isRTL={isRTL} />
+            ))
           )}
         </View>
 

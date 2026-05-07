@@ -21,15 +21,14 @@ router.put('/shops/:shopId/main-image', async (req, res) => {
 // Route pour mettre à jour les informations d'une boutique
 router.put('/shops/:shopId', async (req, res) => {
   try {
-    const { name, email, address, phone, whatsapp, location, missingDataNote } = req.body;
+    const { name, email, address, phone, whatsapp, location, missingDataNote, category, description, stock } = req.body;
     
     const updateData = { name, email, address, phone, whatsapp };
-    if (location) {
-      updateData.location = location;
-    }
-    if (missingDataNote !== undefined) {
-      updateData.missingDataNote = missingDataNote;
-    }
+    if (location) updateData.location = location;
+    if (missingDataNote !== undefined) updateData.missingDataNote = missingDataNote;
+    if (category !== undefined) updateData.category = category;
+    if (description !== undefined) updateData.description = description;
+    if (stock !== undefined) updateData.stock = stock;
     
     const shop = await Shop.findByIdAndUpdate(
       req.params.shopId,

@@ -73,7 +73,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const fetchNewOrdersCount = async () => {
     try {
-      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}/orders`);
+      const response = await fetch(`http://192.168.0.132:3000/api/shops/${shop._id}/orders`);
       if (response.ok) {
         const orders = await response.json();
         const pending = orders.filter(o => o.status === 'pending').length;
@@ -84,7 +84,7 @@ function ShopDashboard({ shop, onLogout }) {
 
   const fetchUserId = async () => {
     try {
-      const response = await fetch('http://192.168.0.110:3000/api/users');
+      const response = await fetch('http://192.168.0.132:3000/api/users');
       const users = await response.json();
       const user = users.find(u => u.linkedShop?.id === shop._id);
       if (user) {
@@ -129,7 +129,7 @@ function ShopDashboard({ shop, onLogout }) {
   
   const checkApprovalStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}`);
+      const response = await fetch(`http://192.168.0.132:3000/api/shops/${shop._id}`);
       if (response.ok) {
         const shopData = await response.json();
         console.log('🔄 Statut approbation vérifié:', shopData.isApproved);
@@ -380,7 +380,7 @@ function ShopDashboard({ shop, onLogout }) {
                       style={[styles.submitBtn, { flex: 1, backgroundColor: '#FF6B35' }]}
                       onPress={async () => {
                         try {
-                          const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}/reactivate`, {
+                          const response = await fetch(`http://192.168.0.132:3000/api/shops/${shop._id}/reactivate`, {
                             method: 'POST'
                           });
                           if (response.ok) {

@@ -7,6 +7,15 @@ import { API_CONFIG, getMediaUrl } from '../config/api';
 
 const BASE = API_CONFIG.BASE_URL;
 
+const SHOP_CATEGORIES = [
+  { id: 'food', icon: '🍔' },
+  { id: 'grocery', icon: '🛒' },
+  { id: 'pharmacy', icon: '💊' },
+  { id: 'electronics', icon: '📱' },
+  { id: 'fashion', icon: '👗' },
+  { id: 'other', icon: '📦' },
+];
+
 const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
   const { t, currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
@@ -19,7 +28,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
     phone: shop.phone || '',
     whatsapp: shop.whatsapp || '',
     location: shop.location || { latitude: '', longitude: '' },
-    missingDataNote: shop.missingDataNote || ''
+    missingDataNote: shop.missingDataNote || '',
+    category: shop.category || ''
   });
   const [updatedShop, setUpdatedShop] = useState(shop);
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -227,6 +237,30 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                   />
                 </View>
                 
+                <View style={styles.shopInfoItem}>
+                  <Text style={styles.shopInfoLabel}>🏷️ {isRTL ? 'الصنف' : 'Catégorie'}:</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 }}>
+                    {SHOP_CATEGORIES.map(cat => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => setEditData({...editData, category: cat.id})}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center',
+                          paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16,
+                          backgroundColor: editData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                          borderWidth: 1,
+                          borderColor: editData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.2)',
+                        }}
+                      >
+                        <Text style={{ fontSize: 13, marginRight: 3 }}>{cat.icon}</Text>
+                        <Text style={{ fontSize: 11, color: editData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                          {cat.id}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                
                 <TouchableOpacity 
                   style={[styles.locationBtn, { marginTop: 10 }]} 
                   onPress={handleLocation}
@@ -279,6 +313,13 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                     <Text style={[styles.shopInfoValue, { color: '#25D366' }]}>{updatedShop.whatsapp}</Text>
                   </TouchableOpacity>
                 </View>
+                
+                {updatedShop.category ? (
+                  <View style={styles.shopInfoItem}>
+                    <Text style={styles.shopInfoLabel}>🏷️ {isRTL ? 'الصنف' : 'Catégorie'}:</Text>
+                    <Text style={[styles.shopInfoValue, { color: '#FF6B35' }]}>{updatedShop.category}</Text>
+                  </View>
+                ) : null}
                 
                 {updatedShop.location?.latitude && updatedShop.location?.longitude && (
                   <TouchableOpacity style={styles.locationBtn} onPress={handleLocation}>

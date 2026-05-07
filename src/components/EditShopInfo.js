@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import styles from './styles';
 
+const SHOP_CATEGORIES = [
+  { id: 'food', icon: '🍔' },
+  { id: 'grocery', icon: '🛒' },
+  { id: 'pharmacy', icon: '💊' },
+  { id: 'electronics', icon: '📱' },
+  { id: 'fashion', icon: '👗' },
+  { id: 'other', icon: '📦' },
+];
+
 export const EditShopInfo = ({ shop, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: shop.name || '',
@@ -28,7 +37,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         stock: parseInt(formData.stock) || 0
       };
 
-      const response = await fetch(`http://192.168.0.110:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`http://192.168.0.132:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)
@@ -117,12 +126,26 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         />
 
         <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Catégorie</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.category}
-          onChangeText={(text) => setFormData({...formData, category: text})}
-          placeholder="Catégorie de la boutique"
-        />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 15 }}>
+          {SHOP_CATEGORIES.map(cat => (
+            <TouchableOpacity
+              key={cat.id}
+              onPress={() => setFormData({...formData, category: cat.id})}
+              style={{
+                flexDirection: 'row', alignItems: 'center',
+                paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                backgroundColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                borderWidth: 1,
+                borderColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.2)',
+              }}
+            >
+              <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+              <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                {cat.id}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
           <TouchableOpacity
