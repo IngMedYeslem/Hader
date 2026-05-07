@@ -53,7 +53,6 @@ export default function ProductModal({ visible, product, onClose }) {
         <ScrollView style={styles.modalContent}>
           <MediaCarousel 
             images={product.images || []} 
-            videos={product.videos || []} 
           />
           
           <View style={styles.productDetails}>

@@ -9,16 +9,14 @@ import styles from "./styles";
 
 
 const Navbar = () => {
-  const { t } = useTranslation();
+  const { t, setLanguage, currentLanguage } = useTranslation();
   const navigation = useNavigation();
-  const [currentLang, setCurrentLang] = useState(getLanguage());
 
   const cycleLanguage = () => {
     const languages = ['fr', 'en', 'ar'];
-    const currentIndex = languages.indexOf(currentLang);
+    const currentIndex = languages.indexOf(currentLanguage);
     const nextIndex = (currentIndex + 1) % languages.length;
     setLanguage(languages[nextIndex]);
-    setCurrentLang(languages[nextIndex]);
   };
   const [user, setUser] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
@@ -75,7 +73,7 @@ const Navbar = () => {
         </TouchableOpacity>
 
       <TouchableOpacity style={styles.navItem} onPress={cycleLanguage}>
-        <Text style={styles.language}>{currentLang.toUpperCase()}</Text>
+        <Text style={styles.language}>{currentLanguage.toUpperCase()}</Text>
       </TouchableOpacity>
 
 <TouchableOpacity

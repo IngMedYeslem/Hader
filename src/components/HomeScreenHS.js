@@ -11,21 +11,9 @@ import { getMediaUrl } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
-const CATEGORIES = [
-  { id: 'all', label: 'الكل', icon: '🏪' },
-  { id: 'food', label: 'طعام', icon: '🍔' },
-  { id: 'grocery', label: 'بقالة', icon: '🛒' },
-  { id: 'pharmacy', label: 'صيدلية', icon: '💊' },
-  { id: 'electronics', label: 'إلكترونيات', icon: '📱' },
-  { id: 'fashion', label: 'أزياء', icon: '👗' },
-  { id: 'other', label: 'أخرى', icon: '📦' },
-];
 
-const BANNERS = [
-  { id: 1, title: 'توصيل سريع', subtitle: 'في أقل من 30 دقيقة', color: '#FF6B35', icon: '🚀' },
-  { id: 2, title: 'عروض حصرية', subtitle: 'خصومات تصل إلى 50%', color: '#FF6B35', icon: '🎁' },
-  { id: 3, title: 'متاجر متنوعة', subtitle: 'اختر من أفضل المتاجر', color: '#333', icon: '🏪' },
-];
+
+
 
 export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess, onOpenCart }) {
   const { t, currentLanguage, setLanguage } = useTranslation();
@@ -96,6 +84,40 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 
   const cartCount = getTotalItems();
   const isRTL = currentLanguage === 'ar';
+
+  const BANNERS = [
+    { 
+      id: 1, 
+      title: isRTL ? 'توصيل سريع' : (currentLanguage === 'fr' ? 'Livraison rapide' : 'Fast Delivery'),
+      subtitle: isRTL ? 'في أقل من 30 دقيقة' : (currentLanguage === 'fr' ? 'En moins de 30 minutes' : 'In less than 30 minutes'),
+      color: '#FF6B35', 
+      icon: '🚀' 
+    },
+    { 
+      id: 2, 
+      title: isRTL ? 'عروض حصرية' : (currentLanguage === 'fr' ? 'Offres exclusives' : 'Exclusive Offers'),
+      subtitle: isRTL ? 'خصومات تصل إلى 50%' : (currentLanguage === 'fr' ? 'Jusqu\'à 50% de réduction' : 'Up to 50% off'),
+      color: '#FF6B35', 
+      icon: '🎁' 
+    },
+    { 
+      id: 3, 
+      title: isRTL ? 'متاجر متنوعة' : (currentLanguage === 'fr' ? 'Boutiques variées' : 'Various Shops'),
+      subtitle: isRTL ? 'اختر من أفضل المتاجر' : (currentLanguage === 'fr' ? 'Choisissez parmi les meilleurs' : 'Choose from the best'),
+      color: '#333', 
+      icon: '🏪' 
+    },
+  ];
+
+  const CATEGORIES = [
+    { id: 'all', label: isRTL ? 'الكل' : (currentLanguage === 'fr' ? 'Tout' : 'All'), icon: '🏪' },
+    { id: 'food', label: isRTL ? 'طعام' : (currentLanguage === 'fr' ? 'Restaurant' : 'Food'), icon: '🍔' },
+    { id: 'grocery', label: isRTL ? 'بقالة' : (currentLanguage === 'fr' ? 'Épicerie' : 'Grocery'), icon: '🛒' },
+    { id: 'pharmacy', label: isRTL ? 'صيدلية' : (currentLanguage === 'fr' ? 'Pharmacie' : 'Pharmacy'), icon: '💊' },
+    { id: 'electronics', label: isRTL ? 'إلكترونيات' : (currentLanguage === 'fr' ? 'Électronique' : 'Electronics'), icon: '📱' },
+    { id: 'fashion', label: isRTL ? 'أزياء' : (currentLanguage === 'fr' ? 'Mode' : 'Fashion'), icon: '👗' },
+    { id: 'other', label: isRTL ? 'أخرى' : (currentLanguage === 'fr' ? 'Autre' : 'Other'), icon: '📦' },
+  ];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>

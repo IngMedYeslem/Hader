@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import ProductThumbnail from './ProductThumbnail';
 import styles from './styles';
@@ -8,14 +8,36 @@ const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
 
 export default function ShopCategoryView({ products, onProductPress, onEditProduct }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [updateKey, setUpdateKey] = useState(0);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    setUpdateKey(prev => prev + 1);
+  }, [currentLanguage]);
 
   // Grouper les produits par catégorie
   const categories = ['all', ...new Set(products.map(p => p.category || 'autres'))];
   const filteredProducts = selectedCategory === 'all' 
     ? products 
     : products.filter(p => (p.category || 'autres') === selectedCategory);
+
+  // Fonction pour traduire les catégories
+  const translateCategory = (category) => {
+    if (category === 'all') return t('all');
+    // Traduire les catégories communes
+    const categoryMap = {
+      'autres': 'autres',
+      'food': 'food',
+      'grocery': 'grocery',
+      'pharmacy': 'pharmacy',
+      'electronics': 'electronics',
+      'fashion': 'fashion',
+      'other': 'other'
+    };
+    return categoryMap[category] ? t(categoryMap[category]) : category;
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -46,7 +68,7 @@ export default function ShopCategoryView({ products, onProductPress, onEditProdu
               fontWeight: 'bold',
               fontSize: 12
             }}>
-              {category === 'all' ? t('all') : category} ({category === 'all' ? products.length : products.filter(p => (p.category || 'autres') === category).length})
+              {translateCategory(category)} ({category === 'all' ? products.length : products.filter(p => (p.category || 'autres') === category).length})
             </Text>
           </TouchableOpacity>
         ))}
@@ -81,7 +103,7 @@ export default function ShopCategoryView({ products, onProductPress, onEditProdu
                   paddingVertical: 2
                 }}>
                   <Text style={{ color: '#333', fontSize: 8, fontWeight: 'bold' }}>
-                    {product.category || 'autres'}
+                    {translateCategory(product.category || 'autres')}
                   </Text>
                 </View>
                 

@@ -116,22 +116,19 @@ export const productAPI = {
       console.log('=== Envoi produit ===');
       console.log('Produit:', { name: product.name, price: product.price, shopId: product.shopId });
       console.log('Images à traiter:', product.images?.length || 0);
-      console.log('Vidéos à traiter:', product.videos?.length || 0);
       
       // Convertir tous les médias en URLs avant envoi
       const { uploadService } = require('./uploadService');
-      const { images: imageUrls, videos: videoUrls } = await uploadService.processMediaToUrls(
-        product.images || [], 
-        product.videos || []
+      const { images: imageUrls } = await uploadService.processMediaToUrls(
+        product.images || []
       );
       
       const productData = {
         ...product,
-        images: imageUrls,
-        videos: videoUrls
+        images: imageUrls
       };
       
-      console.log('URLs finales - Images:', imageUrls.length, 'Vidéos:', videoUrls.length);
+      console.log('URLs finales - Images:', imageUrls.length);
       
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
@@ -149,7 +146,6 @@ export const productAPI = {
       console.log('=== Produit créé ===');
       console.log('ID:', result._id);
       console.log('URLs images:', result.images?.length || 0);
-      console.log('URLs vidéos:', result.videos?.length || 0);
       return result;
     } catch (error) {
       console.error('❌ Erreur création produit:', error);

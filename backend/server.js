@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 const User = require('./models/User');
 const Role = require('./models/Role');
-const { convertVideoFromBase64 } = require('./videoConverter');
 const notificationService = require('./services/notificationService');
 const notificationRoutes = require('./routes/notifications');
 const reactivationRoutes = require('./routes/reactivation');
@@ -93,48 +92,6 @@ app.use('/uploads', (req, res, next) => {
   }
   next();
 }, express.static('uploads'));
-
-// Route spécifique pour les vidéos avec streaming mobile optimisé
-app.get('/uploads/*.mp4', (req, res) => {
-  const videoPath = path.join(__dirname, req.path);
-  if (!fs.existsSync(videoPath)) {
-    return res.status(404).send('Vidéo non trouvée');
-  }
-
-  const stat = fs.statSync(videoPath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
-
-  // Headers communs pour mobile
-  const commonHeaders = {
-    'Content-Type': 'video/mp4',
-    'Accept-Ranges': 'bytes',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Range, Content-Range',
-    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length'
-  };
-
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : Math.min(start + 1024 * 1024, fileSize - 1); // Chunks de 1MB max
-    const chunksize = (end - start) + 1;
-    const file = fs.createReadStream(videoPath, { start, end });
-    
-    res.writeHead(206, {
-      ...commonHeaders,
-      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-      'Content-Length': chunksize
-    });
-    file.pipe(res);
-  } else {
-    res.writeHead(200, {
-      ...commonHeaders,
-      'Content-Length': fileSize
-    });
-    fs.createReadStream(videoPath).pipe(res);
-  }
-});
 
 
 
@@ -698,23 +655,6 @@ app.post('/api/debug/fix-urls', async (req, res) => {
         });
       }
       
-      // Corriger les URLs de vidéos et ajouter .mp4 si manquant
-      if (product.videos) {
-        product.videos = product.videos.map(vid => {
-          let correctedVid = vid;
-          if (vid.includes('localhost:3000') || vid.includes('192.168.0.146:3000') || vid.includes('192.168.1.126:3000')) {
-            updated = true;
-            correctedVid = vid.replace(/http:\/\/[^:]+:3000/, 'http://192.168.0.146:3000');
-          }
-          // Ajouter .mp4 si manquant
-          if (correctedVid.includes('/uploads/vid_') && !correctedVid.endsWith('.mp4')) {
-            correctedVid += '.mp4';
-            updated = true;
-          }
-          return correctedVid;
-        });
-      }
-      
       if (updated) {
         await product.save();
         updatedCount++;
@@ -954,7 +894,7 @@ app.get('/api/products/:shopId', async (req, res) => {
 app.put('/api/products/:productId', async (req, res) => {
   try {
     const { productId } = req.params;
-    const { name, description, price, category, stock, images, videos } = req.body;
+    const { name, description, price, category, stock, images } = req.body;
     
     console.log('=== Mise à jour produit ===');
     console.log('ID produit:', productId);
@@ -973,7 +913,6 @@ app.put('/api/products/:productId', async (req, res) => {
     product.stock = stock !== undefined ? stock : product.stock;
     
     if (images) product.images = images;
-    if (videos) product.videos = videos;
     
     const updatedProduct = await product.save();
     console.log('Produit mis à jour:', updatedProduct.name);
@@ -987,12 +926,11 @@ app.put('/api/products/:productId', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, description, price, category, stock, images, videos, shopId } = req.body;
+    const { name, description, price, category, stock, images, shopId } = req.body;
     
     console.log('=== Création produit ===');
     console.log('Données:', { name, price, shopId });
     console.log('URLs images:', images?.length || 0);
-    console.log('URLs vidéos:', videos?.length || 0);
     
     // Valider que ce sont bien des URLs et non du base64
     const validImages = (images || []).filter(img => {
@@ -1003,14 +941,6 @@ app.post('/api/products', async (req, res) => {
       return img.startsWith('http') || img.startsWith('/uploads/');
     });
     
-    const validVideos = (videos || []).filter(vid => {
-      if (vid.startsWith('data:')) {
-        console.log('⚠️ Vidéo base64 détectée, ignorée');
-        return false;
-      }
-      return vid.startsWith('http') || vid.startsWith('/uploads/');
-    });
-    
     const product = new Product({
       name,
       description,
@@ -1018,12 +948,11 @@ app.post('/api/products', async (req, res) => {
       category,
       stock: stock || 0,
       images: validImages,
-      videos: validVideos,
       shopId
     });
     
     const savedProduct = await product.save();
-    console.log('✅ Produit sauvegardé avec', savedProduct.images.length, 'URLs images et', savedProduct.videos.length, 'URLs vidéos');
+    console.log('✅ Produit sauvegardé avec', savedProduct.images.length, 'URLs images');
     
     res.json(savedProduct);
   } catch (error) {
@@ -1038,17 +967,6 @@ app.post('/api/upload', upload.single('image'), processUploads, (req, res) => {
       return res.status(400).json({ error: 'Aucun fichier uploadé' });
     }
     res.json({ imageUrl: `/uploads/${req.file.filename}` });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/upload-video', upload.single('video'), processUploads, (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Aucune vidéo uploadée' });
-    }
-    res.json({ videoUrl: `/uploads/${req.file.filename}` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1069,14 +987,12 @@ app.delete('/api/products/:productId/media', async (req, res) => {
     
     if (mediaType === 'images' && product.images && product.images[mediaIndex]) {
       product.images.splice(mediaIndex, 1);
-    } else if (mediaType === 'videos' && product.videos && product.videos[mediaIndex]) {
-      product.videos.splice(mediaIndex, 1);
     } else {
       return res.status(400).json({ error: 'Média non trouvé' });
     }
     
     await product.save();
-    console.log(`Média supprimé. Reste ${product.images?.length || 0} images et ${product.videos?.length || 0} vidéos`);
+    console.log(`Média supprimé. Reste ${product.images?.length || 0} images`);
     
     res.json({ 
       message: 'Média supprimé avec succès',
@@ -1109,19 +1025,6 @@ app.delete('/api/products/:productId', async (req, res) => {
           if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
             console.log(`Image supprimée: ${filename}`);
-          }
-        }
-      });
-    }
-    
-    if (product.videos) {
-      product.videos.forEach(videoUrl => {
-        if (videoUrl.includes('/uploads/')) {
-          const filename = videoUrl.split('/uploads/')[1];
-          const filePath = path.join(__dirname, 'uploads', filename);
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            console.log(`Vidéo supprimée: ${filename}`);
           }
         }
       });

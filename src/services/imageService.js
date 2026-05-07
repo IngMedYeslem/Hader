@@ -9,69 +9,75 @@ const getApiUrl = () => {
 };
 
 export const imageService = {
-  // Convertir une image locale en base64 avec compression - Version améliorée
+  // تحويل صورة محلية إلى base64 مع ضغط
   convertToBase64: async (uri) => {
     try {
-      console.log('🔄 Conversion image:', uri.substring(0, 50) + '...');
+      console.log('🔄 تحويل صورة:', uri.substring(0, 50) + '...');
+      
+      // إذا كانت محولة بالفعل
+      if (uri.startsWith('data:')) {
+        console.log('✅ الصورة محولة بالفعل');
+        return uri;
+      }
       
       if (Platform.OS === 'web') {
-        console.log('🌐 Web: Compression image...');
+        console.log('🌐 Web: ضغط الصورة...');
         return await imageService.compressImage(uri);
       }
 
       if (!uri.startsWith('file://')) {
-        console.log('ℹ️ Pas une image locale, retour direct');
+        console.log('ℹ️ ليست صورة محلية، إرجاع مباشر');
         return uri;
       }
       
-      console.log('📱 Traitement image locale mobile...');
+      console.log('📱 معالجة صورة محلية من الهاتف...');
 
-      // Pour mobile, utiliser ImageManipulator pour compresser
+      // للهاتف، استخدام ImageManipulator للضغط
       const ImageManipulator = require('expo-image-manipulator');
       
-      // Réduire la compression pour éviter les images trop dégradées
+      console.log('🔧 ضغط الصورة...');
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         uri,
-        [{ resize: { width: 800 } }], // Taille plus grande pour garder la qualité
+        [{ resize: { width: 1200 } }],
         { 
-          compress: 0.7, // Compression moins agressive
+          compress: 0.8,
           format: ImageManipulator.SaveFormat.JPEG 
         }
       );
       
+      console.log('💾 قراءة الصورة كـ base64...');
       const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
-        encoding: 'base64'
+        encoding: FileSystem.EncodingType.Base64
       });
       
-      // Vérifier que l'image base64 est valide
       if (!base64 || base64.length < 100) {
-        console.error('❌ Image base64 trop courte ou vide, tentative sans compression...');
+        console.error('❌ صورة base64 قصيرة جداً، محاولة بدون ضغط...');
         
-        // Tentative sans compression
         try {
           const originalBase64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: 'base64'
+            encoding: FileSystem.EncodingType.Base64
           });
           
           if (originalBase64 && originalBase64.length > 100) {
             const dataUri = `data:image/jpeg;base64,${originalBase64}`;
-            console.log('✅ Image originale utilisée sans compression');
+            console.log('✅ استخدام الصورة الأصلية بدون ضغط');
             return dataUri;
           }
         } catch (originalError) {
-          console.error('❌ Échec lecture image originale:', originalError);
+          console.error('❌ فشل قراءة الصورة الأصلية:', originalError);
         }
         
-        return uri; // Retourner l'URI originale
+        return uri;
       }
       
       const dataUri = `data:image/jpeg;base64,${base64}`;
-      console.log('✅ Conversion et compression réussies:', dataUri.substring(0, 50) + '...');
-      console.log('📊 Taille base64:', base64.length, 'caractères');
+      console.log('✅ تحويل وضغط ناجح:', dataUri.substring(0, 50) + '...');
+      console.log('📊 حجم base64:', Math.round(base64.length / 1024), 'KB');
       
       return dataUri;
     } catch (error) {
-      console.error('❌ Erreur conversion base64:', error);
+      console.error('❌ خطأ في تحويل base64:', error);
+      console.error('❌ تفاصيل الخطأ:', error.message);
       return uri;
     }
   },

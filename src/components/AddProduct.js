@@ -5,14 +5,25 @@ import styles from './styles';
 import { useTranslation, isCurrentLanguageRTL } from '../translations';
 import { RTLTextInput, RTLFormField } from './RTLInput';
 import { RTLView, RTLText } from './RTLComponents';
+import { imageService } from '../services/imageService';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 function AddProduct({ onBack, onAdd }) {
   const [products, setProducts] = useState([{ name: '', description: '', price: '', category: '', stock: '', images: [] }]);
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const slideAnim = useState(new Animated.Value(300))[0];
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const [updateKey, setUpdateKey] = useState(0);
+
+  const CATEGORIES = [
+    { id: 'food', icon: '🍔' },
+    { id: 'grocery', icon: '🛒' },
+    { id: 'pharmacy', icon: '💊' },
+    { id: 'electronics', icon: '📱' },
+    { id: 'fashion', icon: '👗' },
+    { id: 'other', icon: '📦' },
+  ];
 
   useEffect(() => {
     Animated.parallel([
@@ -28,6 +39,12 @@ function AddProduct({ onBack, onAdd }) {
       })
     ]).start();
   }, []);
+
+  // Force re-render when language changes
+  useEffect(() => {
+    console.log('📝 AddProduct: Language changed to', currentLanguage);
+    setUpdateKey(prev => prev + 1);
+  }, [currentLanguage]);
 
   const addProductField = () => {
     setProducts([...products, { name: '', description: '', price: '', category: '', stock: '', images: [] }]);
@@ -134,33 +151,22 @@ function AddProduct({ onBack, onAdd }) {
     setProducts(products.filter((_, i) => i !== index));
   };
 
-  const convertToBase64 = async (uri, isVideo = false) => {
-    if (Platform.OS === 'web' || uri.startsWith('data:')) {
-      return uri; // Déjà en base64 sur web
-    }
-    
-    try {
-      const FileSystem = require('expo-file-system');
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
-      return `data:${mimeType};base64,${base64}`;
-    } catch (error) {
-      console.log('Erreur conversion:', error);
-      return uri;
-    }
-  };
-
   const handleSubmit = async () => {
     try {
       for (const product of products) {
         if (product.name && product.price && onAdd) {
-          // Convertir TOUTES les images en base64
+          // استخدام imageService لتحويل الصور
           const convertedImages = [];
           for (const img of product.images || []) {
-            const base64Img = await convertToBase64(img, false);
-            convertedImages.push(base64Img);
+            console.log('🔄 معالجة صورة:', img.substring(0, 50));
+            const base64Img = await imageService.convertToBase64(img);
+            if (base64Img && base64Img.startsWith('data:')) {
+              convertedImages.push(base64Img);
+              console.log('✅ صورة محولة بنجاح');
+            } else {
+              console.log('⚠️ فشل تحويل الصورة، استخدام الأصلية');
+              convertedImages.push(img);
+            }
           }
           
           await onAdd({
@@ -255,13 +261,29 @@ function AddProduct({ onBack, onAdd }) {
                   </View>
 
                   {/* Catégorie */}
-                  <RTLTextInput
-                    style={[styles.addProductInput, { fontSize: 15, paddingVertical: 13, height: 50, marginBottom: 10 }]}
-                    placeholder={t('category')}
-                    placeholderTextColor="#aaa"
-                    value={product.category}
-                    onChangeText={(text) => updateProduct(index, 'category', text)}
-                  />
+                  <Text style={{ color: '#777', fontSize: 13, marginBottom: 6 }}>
+                    {t('category')}
+                  </Text>
+                  <View key={`categories-${updateKey}`} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                    {CATEGORIES.map(cat => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => updateProduct(index, 'category', cat.id)}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center',
+                          paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: product.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                          borderWidth: 1,
+                          borderColor: product.category === cat.id ? '#C8A55F' : 'rgba(255,107,53,0.2)',
+                        }}
+                      >
+                        <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+                        <Text style={{ fontSize: 12, color: product.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                          {t(cat.id)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
 
                   {/* Photos */}
                   <TouchableOpacity

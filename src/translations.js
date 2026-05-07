@@ -122,6 +122,14 @@ const translations = {
     // Search
     searchProduct: 'Rechercher un produit...',
     all: 'Toutes',
+    autres: 'Autres',
+    // Categories
+    food: 'Nourriture',
+    grocery: 'Épicerie',
+    pharmacy: 'Pharmacie',
+    electronics: 'Électronique',
+    fashion: 'Mode',
+    other: 'Autre',
     // Admin Dashboard
     userAndShopManagement: 'Gestion des utilisateurs et boutiques',
     users: 'Utilisateurs',
@@ -276,6 +284,14 @@ const translations = {
     // Search
     searchProduct: 'Search for a product...',
     all: 'All',
+    autres: 'Others',
+    // Categories
+    food: 'Food',
+    grocery: 'Grocery',
+    pharmacy: 'Pharmacy',
+    electronics: 'Electronics',
+    fashion: 'Fashion',
+    other: 'Other',
     // Admin Dashboard
     userAndShopManagement: 'User and shop management',
     users: 'Users',
@@ -430,6 +446,14 @@ const translations = {
     // Search
     searchProduct: 'ابحث عن منتج...',
     all: 'الكل',
+    autres: 'أخرى',
+    // Categories
+    food: 'طعام',
+    grocery: 'بقالة',
+    pharmacy: 'صيدلية',
+    electronics: 'إلكترونيات',
+    fashion: 'أزياء',
+    other: 'أخرى',
     // Admin Dashboard
     userAndShopManagement: 'إدارة المستخدمين والمتاجر',
     users: 'المستخدمون',
@@ -509,12 +533,15 @@ const applyDirection = (language) => {
 };
 
 export const useTranslation = () => {
-  const [, forceUpdate] = useState({});
+  const [updateCounter, setUpdateCounter] = useState(0);
   
   useEffect(() => {
     loadSavedSettings();
     
-    const listener = () => forceUpdate({});
+    const listener = () => {
+      console.log('🔄 Language changed, forcing update');
+      setUpdateCounter(prev => prev + 1);
+    };
     languageChangeListeners.push(listener);
     
     return () => {
@@ -539,7 +566,7 @@ export const useTranslation = () => {
       if (savedCurrency && savedCurrency !== currentCurrency) {
         currentCurrency = savedCurrency;
       }
-      forceUpdate({});
+      setUpdateCounter(prev => prev + 1);
     } catch (error) {
       console.log('Erreur chargement paramètres:', error);
     }
@@ -547,6 +574,7 @@ export const useTranslation = () => {
   
   const setLanguage = async (lang) => {
     if (translations[lang] && lang !== currentLanguage) {
+      console.log('🌐 Changing language from', currentLanguage, 'to', lang);
       currentLanguage = lang;
       
       // Appliquer automatiquement la direction RTL/LTR
@@ -558,6 +586,7 @@ export const useTranslation = () => {
         } else {
           await AsyncStorage.setItem('selectedLanguage', lang);
         }
+        console.log('📢 Notifying', languageChangeListeners.length, 'listeners');
         languageChangeListeners.forEach(listener => listener());
       } catch (error) {
         console.log('Erreur sauvegarde langue:', error);

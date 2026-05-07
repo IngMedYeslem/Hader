@@ -1,6 +1,5 @@
 const multer = require('multer');
 const path = require('path');
-const { processVideoUpload } = require('./convertVideo');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -13,30 +12,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB pour vidéos
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Seules les images et vidéos sont autorisées'));
+      cb(new Error('Seules les images sont autorisées'));
     }
   }
 });
 
-// Middleware pour convertir les vidéos après upload
+// Middleware simple sans traitement vidéo
 const processUploads = async (req, res, next) => {
-  if (req.file && req.file.mimetype.startsWith('video/')) {
-    console.log(`Traitement vidéo uploadée: ${req.file.filename}`);
-    await processVideoUpload(req.file.path);
-  }
-  if (req.files) {
-    for (const file of req.files) {
-      if (file.mimetype.startsWith('video/')) {
-        console.log(`Traitement vidéo uploadée: ${file.filename}`);
-        await processVideoUpload(file.path);
-      }
-    }
-  }
   next();
 };
 

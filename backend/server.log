@@ -1,0 +1,102 @@
+Serveur démarré sur le port 3000
+API REST disponible sur http://localhost:3000/api
+✅ Connexion MongoDB établie
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69fbcd108d97bef3070b8c53
+📨 0 notifications pour 69fbcd108d97bef3070b8c53
+📨 API: Trouvé 0 notifications
+✅ Produit supprimé: 69fbd32ca4db2879eabd6812
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📦 0 produits trouvés pour boutique 69fbcd108d97bef3070b8c53
+Produits en base: 11
+Produit اوميلا: 1 images
+Images: [ '/uploads/1777922642879.jpg' ]
+Produit السكر: 1 images
+Images: [ '/uploads/1777937660426.jpg' ]
+Produit مارو: 1 images
+Images: [ '/uploads/1777937660506.jpg' ]
+Produit السدر: 1 images
+Images: [ '/uploads/1777937660518.jpg' ]
+Produit سكر: 0 images
+Images: []
+Produit paracetamol: 0 images
+Images: []
+Produit seder: 1 images
+Images: [ '/uploads/1778024665011.jpg' ]
+Produit تست١: 1 images
+Images: [ '/uploads/1778026182267.jpg' ]
+Produit T2: 0 images
+Images: []
+Produit سكر: 1 images
+Images: [ '/uploads/1778085111510.jpg' ]
+Produit سكر: 1 images
+Images: [ '/uploads/1778102976384.jpg' ]
+Token Expo enregistré pour utilisateur: متجر1
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+🔍 DEBUG UPLOAD:
+Content-Type: multipart/form-data; boundary=7JPQi7VSIGynjnQp9cmnn9_ahqv5_mDHN1o9orutqca1cpj7ccd-DKf9p1RrXSKnbhwq7I
+Content-Length: 248
+📊 Total données reçues: 248 bytes
+✅ Fichier uploadé: 1778111442784.jpg
+📦 Création produit: ااا
+Images reçues: 1
+✅ Produit sauvegardé: new ObjectId("69fbd3d3506bcc0e5f08ab8e")
+Images sauvegardées: 1
+📱 API: Récupération notifications pour userId: 69fbcd108d97bef3070b8c53
+📨 0 notifications pour 69fbcd108d97bef3070b8c53
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69fbcd108d97bef3070b8c53
+📨 0 notifications pour 69fbcd108d97bef3070b8c53
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+Produits en base: 12
+Produit اوميلا: 1 images
+Images: [ '/uploads/1777922642879.jpg' ]
+Produit السكر: 1 images
+Images: [ '/uploads/1777937660426.jpg' ]
+Produit مارو: 1 images
+Images: [ '/uploads/1777937660506.jpg' ]
+Produit السدر: 1 images
+Images: [ '/uploads/1777937660518.jpg' ]
+Produit سكر: 0 images
+Images: []
+Produit paracetamol: 0 images
+Images: []
+Produit seder: 1 images
+Images: [ '/uploads/1778024665011.jpg' ]
+Produit تست١: 1 images
+Images: [ '/uploads/1778026182267.jpg' ]
+Produit T2: 0 images
+Images: []
+Produit سكر: 1 images
+Images: [ '/uploads/1778085111510.jpg' ]
+Produit سكر: 1 images
+Images: [ '/uploads/1778102976384.jpg' ]
+Produit ااا: 1 images
+Images: [ '/uploads/1778111442784.jpg' ]
+📱 API: Récupération notifications pour userId: 69fbcd108d97bef3070b8c53
+📨 0 notifications pour 69fbcd108d97bef3070b8c53
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications
+📱 API: Récupération notifications pour userId: 69f926de0de151134d4d2711
+📨 0 notifications pour 69f926de0de151134d4d2711
+📨 API: Trouvé 0 notifications

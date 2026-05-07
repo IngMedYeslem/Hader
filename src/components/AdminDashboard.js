@@ -287,19 +287,19 @@ export default function AdminDashboard() {
     return (
       <View style={{ backgroundColor: 'white', borderRadius: 12, marginBottom: 10, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 }}>
         <View style={{ padding: 14 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333' }}>{item.username}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333', flex: 1, marginRight: 8 }}>{item.username}</Text>
             {item.isApproved ? (
-              <View style={{ backgroundColor: '#e8f5e9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                <Text style={{ color: '#2e7d32', fontSize: 11, fontWeight: 'bold' }}>✅ Approuvé</Text>
+              <View style={{ backgroundColor: '#e8f5e9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minWidth: 90, alignItems: 'center' }}>
+                <Text style={{ color: '#2e7d32', fontSize: 11, fontWeight: 'bold' }}>✅ {t('approved')}</Text>
               </View>
             ) : item.isRejected ? (
-              <View style={{ backgroundColor: '#fdecea', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                <Text style={{ color: '#c62828', fontSize: 11, fontWeight: 'bold' }}>❌ Rejeté</Text>
+              <View style={{ backgroundColor: '#fdecea', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minWidth: 90, alignItems: 'center' }}>
+                <Text style={{ color: '#c62828', fontSize: 11, fontWeight: 'bold' }}>❌ {t('reject')}</Text>
               </View>
             ) : needsApproval ? (
-              <View style={{ backgroundColor: '#fff8e1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                <Text style={{ color: '#f57f17', fontSize: 11, fontWeight: 'bold' }}>⏳ En attente</Text>
+              <View style={{ backgroundColor: '#fff8e1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minWidth: 90, alignItems: 'center' }}>
+                <Text style={{ color: '#f57f17', fontSize: 11, fontWeight: 'bold' }}>⏳ {t('pending')}</Text>
               </View>
             ) : null}
           </View>
@@ -320,17 +320,17 @@ export default function AdminDashboard() {
 
     const statusColor = isValidated ? '#2e7d32' : isRejected ? '#c62828' : '#f57f17';
     const statusBg = isValidated ? '#e8f5e9' : isRejected ? '#fdecea' : '#fff8e1';
-    const statusText = isValidated ? '✅ Validée' : isRejected ? '❌ Rejetée' : '⏳ Attente';
+    const statusText = isValidated ? `✅ ${t('validated')}` : isRejected ? `❌ ${t('reject')}` : `⏳ ${t('pending')}`;
     const borderColor = isValidated ? '#2ecc71' : isRejected ? '#e74c3c' : '#C8A55F';
 
     return (
       <View style={{ backgroundColor: 'white', borderRadius: 12, marginBottom: 10, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2, borderLeftWidth: 4, borderLeftColor: borderColor }}>
         <View style={{ padding: 14 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333', flex: 1 }} numberOfLines={1}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#333', flex: 1, marginRight: 8 }} numberOfLines={1}>
               🏪 {item.name}
             </Text>
-            <View style={{ backgroundColor: statusBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+            <View style={{ backgroundColor: statusBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minWidth: 90, alignItems: 'center' }}>
               <Text style={{ fontSize: 11, fontWeight: 'bold', color: statusColor }}>{statusText}</Text>
             </View>
           </View>

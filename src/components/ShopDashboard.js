@@ -240,72 +240,46 @@ function ShopDashboard({ shop, onLogout }) {
       onBack={() => navigateTo('dashboard')} 
       onAdd={async (newProduct) => {
         try {
-          // S'assurer que images est un tableau
+          // الصور تأتي محولة بالفعل من AddProduct
           const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
           
-          // FORCER la conversion des images locales
-          console.log('📱 Images avant traitement:', imageArray);
-          const processedImages = [];
-          for (const img of imageArray) {
-            if (img.startsWith('file://')) {
-              const base64 = await imageService.convertToBase64(img);
-              if (base64.startsWith('data:')) {
-                processedImages.push(base64);
-              }
-            } else {
-              processedImages.push(img);
-            }
-          }
-          console.log('✅ Images après traitement:', processedImages.length);
+          console.log('📱 استلام منتج جديد مع', imageArray.length, 'صور');
+          console.log('📸 نوع الصورة الأولى:', imageArray[0]?.substring(0, 30));
           
-          // Essayer l'API d'abord
+          // الصور محولة بالفعل، لا حاجة لتحويل إضافي
           const product = await productAPI.create({ 
             ...newProduct, 
-            images: processedImages,
+            images: imageArray,
             shopId: shop._id 
           });
           
-          // Mettre à jour la liste avec le nouveau produit
+          console.log('✅ منتج محفوظ بنجاح');
           setProducts(prevProducts => [...prevProducts, product]);
           
         } catch (error) {
+          console.log('⚠️ فشل API، حفظ محلي...');
           // Fallback local
           try {
             const imageArray = Array.isArray(newProduct.images) ? newProduct.images : (newProduct.images ? [newProduct.images] : []);
             
-            // FORCER la conversion pour le stockage local aussi
-            const processedImages = [];
-            for (const img of imageArray) {
-              if (img.startsWith('file://')) {
-                const base64 = await imageService.convertToBase64(img);
-                if (base64.startsWith('data:')) {
-                  processedImages.push(base64);
-                }
-              } else {
-                processedImages.push(img);
-              }
-            }
-            
             const localProduct = {
               _id: Date.now().toString() + Math.random(),
               ...newProduct,
-              images: processedImages,
+              images: imageArray,
               shopId: shop._id,
               createdAt: new Date().toISOString()
             };
             
-            // Mettre à jour la liste avec le nouveau produit
             setProducts(prevProducts => {
               const updatedProducts = [...prevProducts, localProduct];
-              // Sauvegarder localement
               AsyncStorage.setItem(`products_${shop._id}`, JSON.stringify(updatedProducts));
               return updatedProducts;
             });
             
-            // Essayer de synchroniser immédiatement
+            console.log('✅ منتج محفوظ محلياً');
             setTimeout(() => handleSync(), 1000);
           } catch (localError) {
-            console.error('Erreur ajout produit local:', localError);
+            console.error('❌ خطأ في الحفظ المحلي:', localError);
           }
         }
       }} 
@@ -317,11 +291,11 @@ function ShopDashboard({ shop, onLogout }) {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
         <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
               <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🏪 {shop.name}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 8 }}>
-                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}>{products.length} {t('products')}</Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>{products.length} {t('products')}</Text>
                 <ValidationStatusIndicator isApproved={isApproved} isRejected={autoRefreshRejected} isChecking={false} />
               </View>
             </View>
@@ -491,7 +465,7 @@ function ShopDashboard({ shop, onLogout }) {
                   activeOpacity={0.9}
                   onPress={() => {
                     setSelectedProduct(product);
-                    if ((product.images && product.images.length > 0) || (product.videos && product.videos.length > 0)) {
+                    if (product.images && product.images.length > 0) {
                       setGalleryVisible(true);
                     }
                   }}
@@ -508,10 +482,10 @@ function ShopDashboard({ shop, onLogout }) {
                     >
                       <Text style={{ fontSize: 13 }}>✏️</Text>
                     </TouchableOpacity>
-                    {((product.images?.length || 0) + (product.videos?.length || 0)) > 1 && (
+                    {(product.images?.length || 0) > 1 && (
                       <View style={styles.mediaCounter}>
                         <Text style={styles.mediaCounterText}>
-                          +{(product.images?.length || 0) + (product.videos?.length || 0) - 1}
+                          +{(product.images?.length || 0) - 1}
                         </Text>
                       </View>
                     )}
@@ -539,7 +513,6 @@ function ShopDashboard({ shop, onLogout }) {
       <MediaGallery
           visible={galleryVisible}
           images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
-          videos={selectedProduct ? (Array.isArray(selectedProduct.videos) ? selectedProduct.videos : (selectedProduct.videos ? [selectedProduct.videos] : [])) : []}
           productName={selectedProduct?.name}
           productPrice={selectedProduct?.price}
           shop={shop}

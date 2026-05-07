@@ -7,7 +7,7 @@ import styles from './styles';
 const AddProductWithMedia = ({ shopId, onProductAdded }) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [media, setMedia] = useState({ images: [], videos: [] });
+  const [media, setMedia] = useState({ images: [] });
   const [loading, setLoading] = useState(false);
 
   const handleMediaSelected = (selectedMedia) => {
@@ -26,7 +26,6 @@ const AddProductWithMedia = ({ shopId, onProductAdded }) => {
         name,
         price: parseFloat(price),
         images: media.images,
-        videos: media.videos,
         shopId
       };
 
@@ -36,7 +35,7 @@ const AddProductWithMedia = ({ shopId, onProductAdded }) => {
       // Reset form
       setName('');
       setPrice('');
-      setMedia({ images: [], videos: [] });
+      setMedia({ images: [] });
       
       if (onProductAdded) {
         onProductAdded(result);
@@ -72,7 +71,6 @@ const AddProductWithMedia = ({ shopId, onProductAdded }) => {
         <MediaPicker 
           onMediaSelected={handleMediaSelected}
           maxImages={5}
-          maxVideos={2}
         />
         
         <TouchableOpacity 

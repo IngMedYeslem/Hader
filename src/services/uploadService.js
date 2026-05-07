@@ -80,11 +80,10 @@ export const uploadService = {
   },
 
   // Traiter un tableau de médias et retourner les URLs
-  processMediaToUrls: async (images = [], videos = []) => {
+  processMediaToUrls: async (images = []) => {
     console.log('🔄 Conversion médias vers URLs...');
     
     const imageUrls = [];
-    const videoUrls = [];
     
     // Traiter les images
     for (let i = 0; i < images.length; i++) {
@@ -108,29 +107,7 @@ export const uploadService = {
       }
     }
     
-    // Traiter les vidéos
-    for (let i = 0; i < videos.length; i++) {
-      const video = videos[i];
-      console.log(`🎬 Traitement vidéo ${i + 1}:`, video.substring(0, 50) + '...');
-      
-      if (video.startsWith('http') || video.startsWith('/uploads/')) {
-        // Déjà une URL
-        videoUrls.push(video);
-        console.log('✅ Vidéo déjà URL');
-      } else if (video.startsWith('data:') || video.startsWith('file://')) {
-        // Uploader et récupérer l'URL
-        console.log('📤 Upload vidéo nécessaire');
-        const url = await uploadService.uploadMedia(video, 'video');
-        if (url) {
-          videoUrls.push(url);
-          console.log('✅ Vidéo uploadée:', url);
-        } else {
-          console.log('❌ Échec upload vidéo');
-        }
-      }
-    }
-    
-    console.log(`✅ Conversion terminée: ${imageUrls.length} images, ${videoUrls.length} vidéos`);
-    return { images: imageUrls, videos: videoUrls };
+    console.log(`✅ Conversion terminée: ${imageUrls.length} images`);
+    return { images: imageUrls };
   }
 };

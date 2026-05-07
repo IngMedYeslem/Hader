@@ -28,14 +28,12 @@ router.post('/', async (req, res) => {
   try {
     console.log('📦 Création produit:', req.body.name);
     console.log('Images reçues:', req.body.images?.length || 0);
-    console.log('Vidéos reçues:', req.body.videos?.length || 0);
     
     const product = new Product(req.body);
     const savedProduct = await product.save();
     
     console.log('✅ Produit sauvegardé:', savedProduct._id);
     console.log('Images sauvegardées:', savedProduct.images?.length || 0);
-    console.log('Vidéos sauvegardées:', savedProduct.videos?.length || 0);
     
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -61,7 +59,6 @@ router.put('/:id', async (req, res) => {
   try {
     console.log('📦 Mise à jour produit:', req.params.id);
     console.log('Images à sauvegarder:', req.body.images?.length || 0);
-    console.log('Vidéos à sauvegarder:', req.body.videos?.length || 0);
     
     const product = await Product.findByIdAndUpdate(
       req.params.id, 
@@ -93,8 +90,6 @@ router.delete('/:id/media', async (req, res) => {
     
     if (mediaType === 'images' && product.images) {
       product.images.splice(mediaIndex, 1);
-    } else if (mediaType === 'videos' && product.videos) {
-      product.videos.splice(mediaIndex, 1);
     }
     
     await product.save();

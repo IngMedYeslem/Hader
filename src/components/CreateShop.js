@@ -6,16 +6,16 @@ import { useTranslation } from '../translations';
 const API_URL = 'http://192.168.0.110:3000/api';
 
 const SHOP_CATEGORIES = [
-  { id: 'food', label: 'طعام / Food', icon: '🍔' },
-  { id: 'grocery', label: 'بقالة / Épicerie', icon: '🛒' },
-  { id: 'pharmacy', label: 'صيدلية / Pharmacie', icon: '💊' },
-  { id: 'electronics', label: 'إلكترونيات / Électronique', icon: '📱' },
-  { id: 'fashion', label: 'أزياء / Mode', icon: '👗' },
-  { id: 'other', label: 'أخرى / Autre', icon: '📦' },
+  { id: 'food', icon: '🍔' },
+  { id: 'grocery', icon: '🛒' },
+  { id: 'pharmacy', icon: '💊' },
+  { id: 'electronics', icon: '📱' },
+  { id: 'fashion', icon: '👗' },
+  { id: 'other', icon: '📦' },
 ];
 
 export default function CreateShop({ onBack, onShopCreated }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,6 +29,12 @@ export default function CreateShop({ onBack, onShopCreated }) {
     category: ''
   });
   const [loading, setLoading] = useState(false);
+  const [updateKey, setUpdateKey] = useState(0);
+
+  // Force re-render when language changes
+  React.useEffect(() => {
+    setUpdateKey(prev => prev + 1);
+  }, [currentLanguage]);
 
   const handleCreateShop = async () => {
     // Validation - tous les champs sont obligatoires
@@ -214,9 +220,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
 
             {/* Category Selector */}
             <Text style={{ color: '#777', fontSize: 13, marginBottom: 6, marginTop: 4 }}>
-              صنف المتجر / Catégorie *
+              {t('category')} *
             </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            <View key={`shop-categories-${updateKey}`} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {SHOP_CATEGORIES.map(cat => (
                 <TouchableOpacity
                   key={cat.id}
@@ -231,7 +237,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 >
                   <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
                   <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
-                    {cat.label}
+                    {t(cat.id)}
                   </Text>
                 </TouchableOpacity>
               ))}

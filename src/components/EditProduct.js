@@ -17,8 +17,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
     price: '',
     category: '',
     stock: '',
-    images: [],
-    videos: []
+    images: []
   });
   const slideAnim = useState(new Animated.Value(300))[0];
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -59,8 +58,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
         price: product.price?.toString() || '',
         category: product.category || '',
         stock: product.stock?.toString() || '',
-        images: product.images || [],
-        videos: product.videos || []
+        images: product.images || []
       });
     }
   }, [product]);
@@ -81,8 +79,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
         price: parseFloat(formData.price) || 0,
         category: formData.category.trim(),
         stock: parseInt(formData.stock) || 0,
-        images: formData.images,
-        videos: formData.videos
+        images: formData.images
       };
       
       console.log('Produit à envoyer:', updatedProduct);
@@ -258,7 +255,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                 </View>
 
                 <MediaManager 
-                  product={{ ...product, images: formData.images, videos: formData.videos }}
+                  product={{ ...product, images: formData.images }}
                   onMediaDeleted={handleMediaDeleted}
                 />
               </Animated.View>
