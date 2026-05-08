@@ -15,6 +15,8 @@ const ORDER_STEPS = [
   { id: 'delivered',  icon: '🎉', labelAr: 'تم التوصيل',        labelFr: 'Livré!' },
 ];
 
+const TERMINAL_STATUSES = ['delivered', 'cancelled', 'failed'];
+
 export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
   const { currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
@@ -22,16 +24,15 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
   const [liveOrder, setLiveOrder] = useState(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    // Animate progress bar
     Animated.timing(progressAnim, {
       toValue: currentStep / (ORDER_STEPS.length - 1),
       duration: 800,
       useNativeDriver: false,
     }).start();
 
-    // Pulse animation for current step
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.15, duration: 600, useNativeDriver: true }),
@@ -41,11 +42,10 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
   }, [currentStep]);
 
   useEffect(() => {
-    // Simulate order progression (in real app, poll API)
     if (order?.orderNumber) {
       fetchOrderStatus();
-      const interval = setInterval(fetchOrderStatus, 15000);
-      return () => clearInterval(interval);
+      intervalRef.current = setInterval(fetchOrderStatus, 15000);
+      return () => clearInterval(intervalRef.current);
     }
   }, [order]);
 
@@ -57,13 +57,17 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
         setLiveOrder(data);
         const stepIndex = ORDER_STEPS.findIndex(s => s.id === data.status);
         if (stepIndex >= 0) setCurrentStep(stepIndex);
+        // Stop polling when order reaches a terminal state
+        if (TERMINAL_STATUSES.includes(data.status)) {
+          clearInterval(intervalRef.current);
+        }
       }
     } catch (e) {
-      // Do nothing — never simulate progression automatically
       console.log('Order status fetch failed, keeping current step');
     }
   };
 
+  const isCancelled = liveOrder?.status === 'cancelled' || liveOrder?.status === 'failed';
   const currentStepData = ORDER_STEPS[currentStep];
   const isDelivered = currentStep === ORDER_STEPS.length - 1;
 
@@ -98,23 +102,39 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
       <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: -16 }}>
         {/* Current Status Card */}
         <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 20, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 6 }}>
-          <Animated.Text style={{ fontSize: 60, transform: [{ scale: pulseAnim }] }}>
-            {currentStepData.icon}
-          </Animated.Text>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', marginTop: 12, textAlign: 'center' }}>
-            {isRTL ? currentStepData.labelAr : currentStepData.labelFr}
-          </Text>
-          {!isDelivered && (
-            <Text style={{ color: '#777', marginTop: 6, textAlign: 'center' }}>
-              {isRTL ? 'يرجى الانتظار...' : 'Veuillez patienter...'}
-            </Text>
-          )}
-          {isDelivered && (
-            <View style={{ backgroundColor: '#E8F5E9', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, marginTop: 10 }}>
-              <Text style={{ color: '#2E7D32', fontWeight: 'bold' }}>
-                {isRTL ? '🎉 استمتع بطلبك!' : '🎉 Bon appétit!'}
+          {isCancelled ? (
+            <>
+              <Text style={{ fontSize: 60 }}>❌</Text>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#e74c3c', marginTop: 12, textAlign: 'center' }}>
+                {isRTL ? 'تم رفض الطلب' : 'Commande refusée'}
               </Text>
-            </View>
+              <View style={{ backgroundColor: '#FFEBEE', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, marginTop: 10 }}>
+                <Text style={{ color: '#c0392b', textAlign: 'center' }}>
+                  {isRTL ? 'عذراً، تم رفض طلبك من قبل المتجر' : 'Désolé, votre commande a été refusée par le magasin'}
+                </Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <Animated.Text style={{ fontSize: 60, transform: [{ scale: pulseAnim }] }}>
+                {currentStepData.icon}
+              </Animated.Text>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', marginTop: 12, textAlign: 'center' }}>
+                {isRTL ? currentStepData.labelAr : currentStepData.labelFr}
+              </Text>
+              {!isDelivered && (
+                <Text style={{ color: '#777', marginTop: 6, textAlign: 'center' }}>
+                  {isRTL ? 'يرجى الانتظار...' : 'Veuillez patienter...'}
+                </Text>
+              )}
+              {isDelivered && (
+                <View style={{ backgroundColor: '#E8F5E9', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, marginTop: 10 }}>
+                  <Text style={{ color: '#2E7D32', fontWeight: 'bold' }}>
+                    {isRTL ? '🎉 استمتع بطلبك!' : '🎉 Bon appétit!'}
+                  </Text>
+                </View>
+              )}
+            </>
           )}
         </View>
 
@@ -126,7 +146,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
 
           {ORDER_STEPS.map((step, index) => {
             const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
+            const isCurrent = index === currentStep && !isCancelled;
             const isPending = index > currentStep;
 
             return (
@@ -193,7 +213,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
             </Text>
           </TouchableOpacity>
 
-          {isDelivered && (
+          {(isDelivered || isCancelled) && (
             <TouchableOpacity
               onPress={onNewOrder}
               style={{ backgroundColor: '#FF6B35', borderRadius: 16, padding: 14, alignItems: 'center' }}
