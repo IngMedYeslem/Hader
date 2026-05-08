@@ -6,7 +6,9 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
-import { API_URL } from '../config/api';
+import { API_URL, API_CONFIG } from '../config/api';
+
+const BASE = API_CONFIG.BASE_URL;
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'الدفع عند الاستلام', labelFr: 'Paiement à la livraison', icon: '💵' },
@@ -31,7 +33,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
 
   const deliveryFee = 15;
   const total = getTotalAmount() + deliveryFee;
-  const shopId = cartShop?._id || cartShop?.id;
+  const shopId = cartShop?._id?.toString() || cartShop?.id?.toString() || cartShop?._id || cartShop?.id;
 
   useEffect(() => {
     if (!shopId) return;
@@ -41,7 +43,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
       return;
     }
     // fallback: جلب من API
-    fetch(`${API_URL}/api/shops/${shopId}/bank-accounts`)
+    fetch(`${BASE}/shops/${shopId}/bank-accounts`)
       .then(r => r.json())
       .then(data => Array.isArray(data) && setBankAccounts(data))
       .catch(() => {});
@@ -71,14 +73,14 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
         type: 'image/jpeg',
         name: `receipt_${orderId}.jpg`,
       });
-      const uploadRes = await fetch(`${API_URL}/api/upload-receipt`, {
+      const uploadRes = await fetch(`${BASE}/upload-receipt`, {
         method: 'POST',
         body: formData,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       const uploadData = await uploadRes.json();
       if (uploadData.receiptPath) {
-        await fetch(`${API_URL}/api/orders/${orderId}/receipt`, {
+        await fetch(`${BASE}/orders/${orderId}/receipt`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ receiptUrl: uploadData.receiptPath }),
@@ -112,13 +114,23 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
       setDeliveryPhone(phone);
       setDeliveryAddress(address);
 
+      const finalShopId = shopId || cartItems[0]?.shopId;
+      if (!finalShopId) {
+        Alert.alert(
+          isRTL ? 'خطأ' : 'Erreur',
+          isRTL ? 'لم يتم تحديد المتجر، يرجى إعادة المحاولة' : 'Boutique non identifiée, veuillez réessayer'
+        );
+        setLoading(false);
+        return;
+      }
+
       const orderData = {
         phoneNumber: phone,
         shippingAddress: address,
         customerName: name,
         notes,
         paymentMethod,
-        shopId,
+        shopId: finalShopId,
         deviceId: 'app-user',
         items: cartItems.map(item => ({
           productId: item._id || item.id,
@@ -130,22 +142,25 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
         deliveryFee,
       };
 
-      let orderNumber = `ORD-${Date.now()}`;
-      let orderId = null;
-      try {
-        const response = await fetch(`${API_URL}/api/orders/guest`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData),
-        });
-        const data = await response.json();
-        if (data.success && data.orderNumber) {
-          orderNumber = data.orderNumber;
-          orderId = data.orderId;
-        }
-      } catch (apiError) {
-        console.log('API order creation failed:', apiError);
+      console.log('📦 Sending order → shopId:', finalShopId, 'to:', BASE);
+
+      const response = await fetch(`${BASE}/orders/guest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await response.json();
+      console.log('📦 Order response:', data);
+
+      if (!data.success) {
+        Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل إنشاء الطلب' : 'Impossible de créer la commande'));
+        setLoading(false);
+        return;
       }
+
+      const orderNumber = data.orderNumber;
+      const orderId = data.orderId;
 
       // Upload receipt if bank payment
       if (paymentMethod === 'bank' && receiptImage && orderId) {

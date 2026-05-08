@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } 
 import styles from './styles';
 import { useTranslation } from '../translations';
 
-const API_URL = 'http://192.168.0.132:3000/api';
+const API_URL = 'http://192.168.0.104:3000/api';
 
 const SHOP_CATEGORIES = [
   { id: 'food', icon: '🍔' },

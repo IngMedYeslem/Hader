@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+const statusHistorySchema = new mongoose.Schema({
+  status: { type: String, required: true },
+  changedBy: { type: String, enum: ['store', 'driver', 'system', 'customer'], default: 'system' },
+  changedById: { type: String },
+  note: { type: String, default: '' },
+  timestamp: { type: Date, default: Date.now }
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
   orderNumber: { type: String, required: true, unique: true },
   phoneNumber: { type: String, required: true },
@@ -10,6 +18,7 @@ const orderSchema = new mongoose.Schema({
   otpExpiresAt: { type: Date },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   shopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Shop' },
+  driverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   items: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     name: String,
@@ -22,13 +31,36 @@ const orderSchema = new mongoose.Schema({
   paymentReceiptUrl: { type: String, default: '' },
   paymentStatus: { type: String, enum: ['pending', 'receipt_uploaded', 'confirmed', 'rejected'], default: 'pending' },
   notes: { type: String, default: '' },
+  estimatedPrepTime: { type: Number, default: 0 }, // minutes
+  prepStartedAt: { type: Date },
+  readyAt: { type: Date },
+  pickedUpAt: { type: Date },
+  deliveredAt: { type: Date },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled', 'processing', 'shipped'],
+    enum: [
+      'pending',        // تم استلام الطلب
+      'confirmed',      // تم تأكيد الطلب
+      'preparing',      // جاري التحضير
+      'ready',          // جاهز للاستلام
+      'picked_up',      // تم تسليم للمندوب
+      'on_the_way',     // في الطريق
+      'delivered',      // تم التسليم
+      'cancelled',      // ملغي
+      'failed',         // فشل التوصيل
+      'no_answer',      // العميل لا يرد
+      'unavailable'     // المنتجات غير متوفرة
+    ],
     default: 'pending'
   },
+  statusHistory: [statusHistorySchema],
   shippingAddress: String,
   trackingLink: String,
+  driverLocation: {
+    lat: Number,
+    lng: Number,
+    updatedAt: Date
+  },
   reviewSubmitted: { type: Boolean, default: false }
 }, { timestamps: true });
 

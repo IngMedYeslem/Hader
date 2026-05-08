@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_URL = 'http://192.168.0.132:3000/api';
+const API_URL = 'http://192.168.0.104:3000/api';
 
 export const useShopValidationRefresh = (shopId, onValidationChange) => {
   const [isApproved, setIsApproved] = useState(false);

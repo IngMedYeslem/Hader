@@ -1,33 +1,55 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Component } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, Alert,
-  RefreshControl, SafeAreaView, ScrollView, Image, Vibration
+  RefreshControl, SafeAreaView, StyleSheet, Platform
 } from 'react-native';
 import { API_CONFIG } from '../config/api';
 import { useTranslation } from '../translations';
+import { STATUS_FLOW, getStatus } from './orderConstants';
+import OrderDetailView from './OrderDetailView';
 
 const BASE = API_CONFIG.BASE_URL;
 
-const STATUS_FLOW = [
-  { id: 'pending',    labelAr: 'معلق',         labelFr: 'En attente',    color: '#f39c12', icon: '📋' },
-  { id: 'confirmed',  labelAr: 'مؤكد',         labelFr: 'Confirmé',      color: '#3498db', icon: '✅' },
-  { id: 'preparing',  labelAr: 'قيد التحضير',  labelFr: 'En préparation',color: '#9b59b6', icon: '👨‍🍳' },
-  { id: 'on_the_way', labelAr: 'في الطريق',    labelFr: 'En route',      color: '#1abc9c', icon: '🛵' },
-  { id: 'delivered',  labelAr: 'تم التوصيل',   labelFr: 'Livré',         color: '#2ecc71', icon: '🎉' },
-  { id: 'cancelled',  labelAr: 'ملغي',         labelFr: 'Annulé',        color: '#e74c3c', icon: '❌' },
+export { STATUS_FLOW, getStatus };
+
+
+const TABS = [
+  { id: 'pending',    labelAr: 'معلق',        labelFr: 'En attente' },
+  { id: 'confirmed',  labelAr: 'مؤكد',        labelFr: 'Confirmé' },
+  { id: 'preparing',  labelAr: 'قيد التحضير', labelFr: 'Préparation' },
+  { id: 'on_the_way', labelAr: 'في الطريق',   labelFr: 'En route' },
+  { id: 'delivered',  labelAr: 'تم التوصيل',  labelFr: 'Livré' },
+  { id: 'cancelled',  labelAr: 'ملغي',        labelFr: 'Annulé' },
 ];
 
-const getStatus = (id) => STATUS_FLOW.find(s => s.id === id) || STATUS_FLOW[0];
 
-export default function ShopOrderManagement({ shopId, onClose }) {
+class ErrorBoundary extends Component {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 18, color: '#e74c3c', marginBottom: 10 }}>⚠️ خطأ في عرض الطلب</Text>
+          <Text style={{ color: '#777', fontSize: 12, textAlign: 'center' }}>{String(this.state.error)}</Text>
+          <TouchableOpacity onPress={() => this.setState({ hasError: false })} style={{ marginTop: 20, backgroundColor: '#FF6B35', padding: 12, borderRadius: 10 }}>
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>رجوع</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) {
   const { currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState('pending');
   const [newOrderAlert, setNewOrderAlert] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const prevOrderIds = useRef(new Set());
 
   const fetchOrders = useCallback(async () => {
@@ -35,412 +57,226 @@ export default function ShopOrderManagement({ shopId, onClose }) {
       const response = await fetch(`${BASE}/shops/${shopId}/orders`);
       if (response.ok) {
         const data = await response.json();
-        const ordersArray = Array.isArray(data) ? data : (data.orders || []);
-        // Detect new orders
+        const list = Array.isArray(data) ? data : (data.orders || []);
         if (prevOrderIds.current.size > 0) {
-          const newOrders = ordersArray.filter(o => !prevOrderIds.current.has(o._id) && o.status === 'pending');
-          if (newOrders.length > 0) {
-            Vibration.vibrate([0, 400, 200, 400]);
-            setNewOrderAlert(newOrders[0]);
+          const newOnes = list.filter(o => !prevOrderIds.current.has(o._id) && o.status === 'pending');
+          if (newOnes.length > 0) {
+            if (Platform.OS !== "web") { const { Vibration } = require("react-native"); Vibration.vibrate([0, 400, 200, 400]); }
+            setNewOrderAlert(newOnes[0]);
           }
         }
-        prevOrderIds.current = new Set(ordersArray.map(o => o._id));
-        setOrders(ordersArray);
+        prevOrderIds.current = new Set(list.map(o => o._id));
+        setOrders(list);
       }
     } catch (e) {
       console.log('Orders fetch error:', e);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }, [shopId]);
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 15000); // auto-refresh every 15s
+    const interval = setInterval(fetchOrders, 15000);
     return () => clearInterval(interval);
   }, [fetchOrders]);
 
-  const confirmPaymentReceipt = async (orderId, status) => {
-    try {
-      await fetch(`${BASE}/orders/${orderId}/payment-status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentStatus: status }),
-      });
-      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, paymentStatus: status } : o));
-      if (selectedOrder?._id === orderId) setSelectedOrder(prev => ({ ...prev, paymentStatus: status }));
-    } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل التحديث' : 'Mise à jour échouée');
-    }
-  };
-
   const acceptOrder = async (orderId) => {
     try {
-      const response = await fetch(`${BASE}/orders/${orderId}/status`, {
+      const res = await fetch(`${BASE}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'confirmed', shopId }),
+        body: JSON.stringify({ status: 'confirmed', shopId: shopId?.toString() || shopId }),
       });
-      if (response.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'confirmed' } : o));
-        if (selectedOrder?._id === orderId) setSelectedOrder(prev => ({ ...prev, status: 'confirmed' }));
-        Alert.alert(
-          isRTL ? 'تم القبول' : 'Accepté',
-          isRTL ? 'تم قبول الطلب بنجاح' : 'Commande acceptée avec succès'
-        );
+        Alert.alert(isRTL ? 'تم القبول ✅' : 'Accepté ✅', isRTL ? 'تم قبول الطلب' : 'Commande acceptée');
       } else {
-        const err = await response.json().catch(() => ({}));
-        Alert.alert(isRTL ? 'خطأ' : 'Erreur', err.message || (isRTL ? 'فشل التحديث' : 'Mise à jour échouée'));
+        Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
       }
     } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال بالإنترنت' : 'Vérifiez votre connexion');
+      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
     }
   };
 
-  const rejectOrder = async (orderId) => {
+  const rejectOrder = (orderId) => {
     Alert.alert(
-      isRTL ? 'رفض الطلب' : 'Refuser la commande',
+      isRTL ? 'رفض الطلب' : 'Refuser',
       isRTL ? 'هل تريد رفض هذه الطلبية؟' : 'Voulez-vous refuser cette commande?',
       [
         { text: isRTL ? 'إلغاء' : 'Annuler', style: 'cancel' },
-        {
-          text: isRTL ? 'رفض' : 'Refuser', style: 'destructive',
-          onPress: () => updateStatus(orderId, 'cancelled')
-        }
+        { text: isRTL ? 'رفض' : 'Refuser', style: 'destructive', onPress: () => updateStatus(orderId, 'cancelled') },
       ]
     );
   };
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`${BASE}/orders/${orderId}/status`, {
+      const res = await fetch(`${BASE}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, shopId }),
+        body: JSON.stringify({ status: newStatus, shopId: shopId?.toString() || shopId }),
       });
-      if (response.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-        if (selectedOrder?._id === orderId) {
-          setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-        }
+      } else {
+        Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
       }
     } catch (e) {
       Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée');
     }
   };
 
-  const activeOrders = orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
-  const displayOrders = activeTab === 'active' ? activeOrders : orders;
+  const tabOrders = orders.filter(o => o.status === activeTab);
+  const pendingCount = orders.filter(o => o.status === 'pending').length;
 
-  // ── Order Detail View ──
+  // ── Detail View ──
   if (selectedOrder) {
-    const status = getStatus(selectedOrder.status);
-    const nextStatuses = STATUS_FLOW.filter(s =>
-      s.id !== selectedOrder.status && s.id !== 'pending' && s.id !== 'confirmed' && s.id !== 'cancelled'
-    );
-
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-        <View style={{ backgroundColor: '#FF6B35', padding: 16, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity onPress={() => setSelectedOrder(null)}>
-            <Text style={{ color: 'white', fontSize: 22 }}>←</Text>
-          </TouchableOpacity>
-          <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold' }}>
-            #{selectedOrder.orderNumber}
-          </Text>
-        </View>
-
-        <ScrollView style={{ flex: 1 }}>
-          {/* Status Badge */}
-          <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 16, padding: 20, alignItems: 'center' }}>
-            <Text style={{ fontSize: 40 }}>{status.icon}</Text>
-            <View style={{ backgroundColor: status.color, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20, marginTop: 10 }}>
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
-                {isRTL ? status.labelAr : status.labelFr}
-              </Text>
-            </View>
-          </View>
-
-          {/* Customer Info */}
-          <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-            <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-              {isRTL ? '👤 معلومات العميل' : '👤 Informations client'}
-            </Text>
-            <InfoRow label={isRTL ? 'الهاتف' : 'Téléphone'} value={selectedOrder.phoneNumber} isRTL={isRTL} />
-            <InfoRow label={isRTL ? 'العنوان' : 'Adresse'} value={selectedOrder.shippingAddress} isRTL={isRTL} />
-            <InfoRow label={isRTL ? 'الدفع' : 'Paiement'} value={selectedOrder.paymentMethod === 'cash' ? (isRTL ? 'عند الاستلام' : 'À la livraison') : (isRTL ? 'تحويل بنكي' : 'Virement bancaire')} isRTL={isRTL} />
-          </View>
-
-          {/* Payment Receipt */}
-          {selectedOrder.paymentMethod === 'bank' && (
-            <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-                {isRTL ? '🧾 إيصال الدفع البنكي' : '🧾 Reçu de virement'}
-              </Text>
-              {selectedOrder.paymentReceiptUrl ? (
-                <>
-                  <Image
-                    source={{ uri: `${BASE.replace('/api', '')}${selectedOrder.paymentReceiptUrl}` }}
-                    style={{ width: '100%', height: 220, borderRadius: 10, marginBottom: 12 }}
-                    resizeMode="contain"
-                  />
-                  {selectedOrder.paymentStatus === 'receipt_uploaded' && (
-                    <View style={{ flexDirection: 'row', gap: 10 }}>
-                      <TouchableOpacity
-                        onPress={() => confirmPaymentReceipt(selectedOrder._id, 'confirmed')}
-                        style={{ flex: 1, backgroundColor: '#2ecc71', padding: 12, borderRadius: 10, alignItems: 'center' }}
-                      >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                          {isRTL ? '✅ تأكيد الدفع' : '✅ Confirmer'}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => confirmPaymentReceipt(selectedOrder._id, 'rejected')}
-                        style={{ flex: 1, backgroundColor: '#e74c3c', padding: 12, borderRadius: 10, alignItems: 'center' }}
-                      >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                          {isRTL ? '❌ رفض الإيصال' : '❌ Rejeter'}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  {selectedOrder.paymentStatus === 'confirmed' && (
-                    <View style={{ backgroundColor: '#d4edda', padding: 10, borderRadius: 8, alignItems: 'center' }}>
-                      <Text style={{ color: '#155724', fontWeight: 'bold' }}>
-                        {isRTL ? '✅ تم تأكيد الدفع' : '✅ Paiement confirmé'}
-                      </Text>
-                    </View>
-                  )}
-                  {selectedOrder.paymentStatus === 'rejected' && (
-                    <View style={{ backgroundColor: '#f8d7da', padding: 10, borderRadius: 8, alignItems: 'center' }}>
-                      <Text style={{ color: '#721c24', fontWeight: 'bold' }}>
-                        {isRTL ? '❌ تم رفض الإيصال' : '❌ Reçu rejeté'}
-                      </Text>
-                    </View>
-                  )}
-                </>
-              ) : (
-                <View style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 8, alignItems: 'center' }}>
-                  <Text style={{ color: '#FF6B35' }}>
-                    {isRTL ? '⏳ في انتظار رفع الإيصال من الزبون' : '⏳ En attente du reçu du client'}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Order Items */}
-          <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-            <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-              {isRTL ? '🛒 المنتجات' : '🛒 Produits'}
-            </Text>
-            {(selectedOrder.items || []).map((item, i) => (
-              <View key={i} style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: i < selectedOrder.items.length - 1 ? 1 : 0, borderBottomColor: '#f5f5f5' }}>
-                <Text style={{ color: '#555', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
-                  {item.name} × {item.quantity}
-                </Text>
-                <Text style={{ fontWeight: '600', color: '#FF6B35' }}>
-                  {item.price * item.quantity} MRU
-                </Text>
-              </View>
-            ))}
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#eee' }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#333' }}>{isRTL ? 'الإجمالي' : 'Total'}</Text>
-              <Text style={{ fontWeight: 'bold', fontSize: 16, color: '#FF6B35' }}>{selectedOrder.totalAmount} MRU</Text>
-            </View>
-          </View>
-
-          {/* Accept / Reject for pending orders */}
-          {selectedOrder.status === 'pending' && (
-            <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 12 }}>
-              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-                {isRTL ? '❓ هل تقبل هذه الطلبية؟' : '❓ Accepter cette commande?'}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity
-                  onPress={() => acceptOrder(selectedOrder._id)}
-                  style={{ flex: 1, backgroundColor: '#2ecc71', padding: 14, borderRadius: 12, alignItems: 'center' }}
-                >
-                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
-                    ✅ {isRTL ? 'قبول الطلب' : 'Accepter'}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => rejectOrder(selectedOrder._id)}
-                  style={{ flex: 1, backgroundColor: '#e74c3c', padding: 14, borderRadius: 12, alignItems: 'center' }}
-                >
-                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
-                    ❌ {isRTL ? 'رفض الطلب' : 'Refuser'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Update Status */}
-          {!['delivered', 'cancelled'].includes(selectedOrder.status) && (
-            <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 16, padding: 16, marginBottom: 16 }}>
-              <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-                {isRTL ? '🔄 تحديث الحالة' : '🔄 Mettre à jour le statut'}
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {nextStatuses.map(s => (
-                  <TouchableOpacity
-                    key={s.id}
-                    onPress={() => updateStatus(selectedOrder._id, s.id)}
-                    style={{ backgroundColor: s.color, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 }}
-                  >
-                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
-                      {s.icon} {isRTL ? s.labelAr : s.labelFr}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-                <TouchableOpacity
-                  onPress={() => updateStatus(selectedOrder._id, 'cancelled')}
-                  style={{ backgroundColor: '#e74c3c', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20 }}
-                >
-                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
-                    ❌ {isRTL ? 'إلغاء' : 'Annuler'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
+      <ErrorBoundary><OrderDetailView
+        order={selectedOrder}
+        shopId={shopId}
+        onBack={() => setSelectedOrder(null)}
+        onOrderUpdated={(updated) => {
+          setSelectedOrder(updated);
+          setOrders(prev => prev.map(o => o._id === updated._id ? updated : o));
+        }}
+      />
+      </ErrorBoundary>
     );
   }
 
-  // ── Orders List View ──
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      {/* New Order Alert Banner */}
+    <SafeAreaView style={s.container}>
+
+      {/* ── New Order Alert Banner ── */}
       {newOrderAlert && (
         <TouchableOpacity
+          style={s.alertBanner}
           onPress={() => { setSelectedOrder(newOrderAlert); setNewOrderAlert(null); }}
-          style={{
-            backgroundColor: '#FF6B35', padding: 14, flexDirection: isRTL ? 'row-reverse' : 'row',
-            alignItems: 'center', justifyContent: 'space-between'
-          }}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+          <Text style={s.alertText}>
             🔔 {isRTL ? `طلب جديد! #${newOrderAlert.orderNumber}` : `Nouvelle commande! #${newOrderAlert.orderNumber}`}
           </Text>
           <TouchableOpacity onPress={() => setNewOrderAlert(null)}>
-            <Text style={{ color: 'white', fontSize: 18 }}>×</Text>
+            <Text style={s.alertClose}>×</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       )}
-      {/* Header */}
-      <View style={{ backgroundColor: '#FF6B35', padding: 16, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+      {/* ── Header ── */}
+      <View style={[s.header, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <TouchableOpacity onPress={onClose}>
-          <Text style={{ color: 'white', fontSize: 22 }}>←</Text>
+          <Text style={s.headerBack}>{isRTL ? '→' : '←'}</Text>
         </TouchableOpacity>
-        <Text style={{ color: 'white', fontSize: 17, fontWeight: 'bold' }}>
-          {isRTL ? '📦 الطلبات الواردة' : '📦 Commandes reçues'}
+        <Text style={s.headerTitle}>
+          {isRTL ? '📦 إدارة الطلبات' : '📦 Gestion des commandes'}
         </Text>
-        <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>{activeOrders.length}</Text>
+        <View style={s.badge}>
+          <Text style={s.badgeText}>{pendingCount}</Text>
         </View>
       </View>
 
-      {/* Tabs */}
-      <View style={{ flexDirection: 'row', backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-        {[
-          { id: 'active', labelAr: 'النشطة', labelFr: 'Actives' },
-          { id: 'all', labelAr: 'الكل', labelFr: 'Toutes' },
-        ].map(tab => (
-          <TouchableOpacity
-            key={tab.id}
-            onPress={() => setActiveTab(tab.id)}
-            style={{ flex: 1, paddingVertical: 14, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: activeTab === tab.id ? '#FF6B35' : 'transparent' }}
-          >
-            <Text style={{ fontWeight: '600', color: activeTab === tab.id ? '#FF6B35' : '#888' }}>
-              {isRTL ? tab.labelAr : tab.labelFr}
-              {tab.id === 'active' && activeOrders.length > 0 ? ` (${activeOrders.length})` : ''}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* ── 6 Tabs ── */}
+      <View style={s.tabsWrapper}>
+        <FlatList
+          horizontal
+          data={TABS}
+          keyExtractor={t => t.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.tabsContent}
+          renderItem={({ item: tab }) => {
+            const st = getStatus(tab.id);
+            const count = orders.filter(o => o.status === tab.id).length;
+            const active = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                onPress={() => setActiveTab(tab.id)}
+                style={[s.tab, active && { borderBottomColor: st.color, borderBottomWidth: 3 }]}
+              >
+                <Text style={s.tabIcon}>{st.icon}</Text>
+                <Text style={[s.tabLabel, { color: active ? st.color : '#888' }]}>
+                  {isRTL ? tab.labelAr : tab.labelFr}
+                </Text>
+                {count > 0 && (
+                  <View style={[s.tabBadge, { backgroundColor: st.color }]}>
+                    <Text style={s.tabBadgeText}>{count}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+        />
       </View>
 
+      {/* ── Orders List ── */}
       <FlatList
-        data={displayOrders}
+        data={tabOrders}
         keyExtractor={item => item._id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchOrders(); }} colors={['#FF6B35']} />}
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { setRefreshing(true); fetchOrders(); }}
+            colors={['#FF6B35']}
+            tintColor="#FF6B35"
+          />
+        }
+        contentContainerStyle={s.listContent}
         ListEmptyComponent={
-          <View style={{ padding: 60, alignItems: 'center' }}>
-            <Text style={{ fontSize: 50 }}>📭</Text>
-            <Text style={{ color: '#777', marginTop: 12, fontSize: 15, textAlign: 'center' }}>
-              {isRTL ? 'لا توجد طلبات بعد' : 'Aucune commande pour l\'instant'}
+          <View style={s.empty}>
+            <Text style={s.emptyIcon}>📭</Text>
+            <Text style={s.emptyText}>
+              {isRTL ? 'لا توجد طلبات في هذه الفئة' : 'Aucune commande dans cette catégorie'}
             </Text>
           </View>
         }
         renderItem={({ item }) => {
-          const status = getStatus(item.status);
-          const isNew = item.status === 'pending';
+          const st = getStatus(item.status);
           return (
-            <TouchableOpacity
-              onPress={() => setSelectedOrder(item)}
-              style={{
-                backgroundColor: 'white', borderRadius: 16, marginBottom: 12, overflow: 'hidden',
-                shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 3,
-                borderLeftWidth: isNew ? 4 : 0, borderLeftColor: '#FF6B35',
-              }}
-            >
-              <View style={{ padding: 14 }}>
-                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333' }}>
-                    #{item.orderNumber}
-                    {isNew && <Text style={{ color: '#FF6B35', fontSize: 12 }}> 🆕</Text>}
-                  </Text>
-                  <View style={{ backgroundColor: status.color + '22', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                    <Text style={{ color: status.color, fontWeight: 'bold', fontSize: 12 }}>
-                      {status.icon} {isRTL ? status.labelAr : status.labelFr}
-                    </Text>
-                  </View>
-                </View>
+            <TouchableOpacity style={[s.card, item.status === 'pending' && s.cardNew]} onPress={() => setSelectedOrder(item)}>
 
-                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', gap: 16 }}>
-                  <Text style={{ color: '#777', fontSize: 13 }}>📞 {item.phoneNumber}</Text>
-                  <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 13 }}>
-                    {item.totalAmount} MRU
-                  </Text>
-                </View>
-
-                {item.shippingAddress && (
-                  <Text style={{ color: '#aaa', fontSize: 12, marginTop: 4, textAlign: isRTL ? 'right' : 'left' }} numberOfLines={1}>
-                    📍 {item.shippingAddress}
-                  </Text>
-                )}
-
-                <Text style={{ color: '#ccc', fontSize: 11, marginTop: 6, textAlign: isRTL ? 'right' : 'left' }}>
-                  {new Date(item.createdAt).toLocaleString()}
+              {/* Card Header */}
+              <View style={[s.cardHeader, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={s.cardNumber}>
+                  #{item.orderNumber}
+                  {item.status === 'pending' && <Text style={s.newTag}> 🆕</Text>}
                 </Text>
-
-                {/* Quick Accept/Reject for pending */}
-                {item.status === 'pending' && (
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                    <TouchableOpacity
-                      onPress={() => acceptOrder(item._id)}
-                      style={{ flex: 1, backgroundColor: '#2ecc71', padding: 10, borderRadius: 10, alignItems: 'center' }}
-                    >
-                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
-                        ✅ {isRTL ? 'قبول' : 'Accepter'}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => rejectOrder(item._id)}
-                      style={{ flex: 1, backgroundColor: '#e74c3c', padding: 10, borderRadius: 10, alignItems: 'center' }}
-                    >
-                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
-                        ❌ {isRTL ? 'رفض' : 'Refuser'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+                <View style={[s.statusPill, { backgroundColor: st.color + '22' }]}>
+                  <Text style={[s.statusPillText, { color: st.color }]}>
+                    {st.icon} {isRTL ? st.labelAr : st.labelFr}
+                  </Text>
+                </View>
               </View>
+
+              {/* Card Info */}
+              <View style={[s.cardInfo, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+                <Text style={s.cardPhone}>📞 {item.phoneNumber}</Text>
+                <Text style={s.cardAmount}>{item.totalAmount} MRU</Text>
+              </View>
+
+              {item.shippingAddress ? (
+                <Text style={[s.cardAddress, { textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+                  📍 {item.shippingAddress}
+                </Text>
+              ) : null}
+
+              <Text style={[s.cardDate, { textAlign: isRTL ? 'right' : 'left' }]}>
+                🕐 {new Date(item.createdAt).toLocaleString()}
+              </Text>
+
+              {/* Quick Actions for pending */}
+              {item.status === 'pending' && (
+                <View style={s.quickActions}>
+                  <TouchableOpacity style={s.btnAccept} onPress={() => acceptOrder(item._id)}>
+                    <Text style={s.btnText}>✅ {isRTL ? 'قبول' : 'Accepter'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.btnReject} onPress={() => rejectOrder(item._id)}>
+                    <Text style={s.btnText}>❌ {isRTL ? 'رفض' : 'Refuser'}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </TouchableOpacity>
           );
         }}
@@ -449,12 +285,47 @@ export default function ShopOrderManagement({ shopId, onClose }) {
   );
 }
 
-function InfoRow({ label, value, isRTL }) {
-  if (!value) return null;
-  return (
-    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', marginBottom: 8 }}>
-      <Text style={{ color: '#777', fontSize: 13, minWidth: 80, textAlign: isRTL ? 'right' : 'left' }}>{label}:</Text>
-      <Text style={{ color: '#333', fontSize: 13, flex: 1, textAlign: isRTL ? 'right' : 'left' }}>{value}</Text>
-    </View>
-  );
-}
+const s = StyleSheet.create({
+  container:      { flex: 1, backgroundColor: '#f5f6fa' },
+  // Alert
+  alertBanner:    { backgroundColor: '#FF6B35', padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  alertText:      { color: 'white', fontWeight: 'bold', fontSize: 14, flex: 1 },
+  alertClose:     { color: 'white', fontSize: 22, paddingHorizontal: 8 },
+  // Header
+  header:         { backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14, alignItems: 'center', justifyContent: 'space-between' },
+  headerBack:     { color: 'white', fontSize: 22, paddingRight: 8 },
+  headerTitle:    { color: 'white', fontSize: 17, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+  badge:          { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
+  badgeText:      { color: 'white', fontWeight: 'bold', fontSize: 13 },
+  // Tabs
+  tabsWrapper:    { backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' },
+  tabsContent:    { paddingHorizontal: 8 },
+  tab:            { paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 3, borderBottomColor: 'transparent', marginHorizontal: 2 },
+  tabIcon:        { fontSize: 18 },
+  tabLabel:       { fontSize: 11, fontWeight: '600', marginTop: 2 },
+  tabBadge:       { borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1, marginTop: 2 },
+  tabBadgeText:   { color: 'white', fontSize: 10, fontWeight: 'bold' },
+  // List
+  listContent:    { padding: 14, paddingBottom: 40 },
+  empty:          { paddingVertical: 60, alignItems: 'center' },
+  emptyIcon:      { fontSize: 52 },
+  emptyText:      { color: '#999', marginTop: 12, fontSize: 14, textAlign: 'center' },
+  // Card
+  card:           { backgroundColor: 'white', borderRadius: 16, marginBottom: 12, padding: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 3 },
+  cardNew:        { borderLeftWidth: 4, borderLeftColor: '#FF6B35' },
+  cardHeader:     { justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  cardNumber:     { fontWeight: 'bold', fontSize: 15, color: '#333' },
+  newTag:         { color: '#FF6B35', fontSize: 12 },
+  statusPill:     { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  statusPillText: { fontWeight: 'bold', fontSize: 12 },
+  cardInfo:       { justifyContent: 'space-between', marginBottom: 4 },
+  cardPhone:      { color: '#777', fontSize: 13 },
+  cardAmount:     { color: '#FF6B35', fontWeight: 'bold', fontSize: 13 },
+  cardAddress:    { color: '#aaa', fontSize: 12, marginTop: 2 },
+  cardDate:       { color: '#ccc', fontSize: 11, marginTop: 4 },
+  // Quick Actions
+  quickActions:   { flexDirection: 'row', marginTop: 10 },
+  btnAccept:      { flex: 1, backgroundColor: '#2ecc71', padding: 10, borderRadius: 10, alignItems: 'center', marginRight: 8 },
+  btnReject:      { flex: 1, backgroundColor: '#e74c3c', padding: 10, borderRadius: 10, alignItems: 'center' },
+  btnText:        { color: 'white', fontWeight: 'bold', fontSize: 13 },
+});

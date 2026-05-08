@@ -4,6 +4,8 @@ import GlobalNavbar from './GlobalNavbar';
 import AdminInterface from './AdminInterface';
 import RestaurantScreen from './RestaurantScreen';
 import CartScreen from './CartScreen';
+import CheckoutScreen from './CheckoutScreen';
+import OrderTrackingScreen from './OrderTrackingScreen';
 import { fetchProductsWithShops } from '../services/apiService';
 import { getServerStatus } from '../services/serverCheck';
 import { getMediaUrl } from '../services/api';
@@ -25,6 +27,8 @@ export default function GlobalInterface({ onShopLogin }) {
   const [showAdminInterface, setShowAdminInterface] = useState(false);
   const [selectedShop, setSelectedShop] = useState(null);
   const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -34,7 +38,7 @@ export default function GlobalInterface({ onShopLogin }) {
         setServerAvailable(status.isAvailable);
         if (status.isAvailable) {
           // جلب المتاجر مباشرة
-          const shopsRes = await fetch('http://192.168.0.132:3000/api/shops');
+          const shopsRes = await fetch('http://192.168.0.104:3000/api/shops');
           if (shopsRes.ok) {
             const shopsData = await shopsRes.json();
             setShops(Array.isArray(shopsData) ? shopsData : []);
@@ -57,12 +61,34 @@ export default function GlobalInterface({ onShopLogin }) {
     return <AdminInterface onBack={() => setShowAdminInterface(false)} />;
   }
 
+  if (placedOrder) {
+    return (
+      <OrderTrackingScreen
+        order={placedOrder}
+        onBack={() => setPlacedOrder(null)}
+        onNewOrder={() => { setPlacedOrder(null); setSelectedShop(null); }}
+      />
+    );
+  }
+
   if (selectedShop) {
+    if (showCheckout) {
+      return (
+        <CheckoutScreen
+          onBack={() => setShowCheckout(false)}
+          onOrderPlaced={(order) => {
+            setShowCheckout(false);
+            setShowCart(false);
+            setPlacedOrder(order);
+          }}
+        />
+      );
+    }
     if (showCart) {
       return (
         <CartScreen
           onBack={() => setShowCart(false)}
-          onCheckout={() => {}}
+          onCheckout={() => setShowCheckout(true)}
         />
       );
     }

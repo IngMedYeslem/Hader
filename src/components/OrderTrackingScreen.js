@@ -4,7 +4,8 @@ import {
   StatusBar, Animated, Linking, Alert
 } from 'react-native';
 import { useTranslation } from '../translations';
-import { API_URL } from '../config/api';
+import { API_CONFIG } from '../config/api';
+const BASE = API_CONFIG.BASE_URL;
 
 const ORDER_STEPS = [
   { id: 'pending',    icon: '📋', labelAr: 'تم استلام الطلب',   labelFr: 'Commande reçue' },
@@ -50,7 +51,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
 
   const fetchOrderStatus = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/orders/number/${order.orderNumber}`);
+      const response = await fetch(`${BASE}/orders/number/${order.orderNumber}`);
       const data = await response.json();
       if (data && data.status) {
         setLiveOrder(data);
@@ -58,8 +59,8 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
         if (stepIndex >= 0) setCurrentStep(stepIndex);
       }
     } catch (e) {
-      // Simulate progression for demo
-      setCurrentStep(prev => Math.min(prev + 1, ORDER_STEPS.length - 1));
+      // Do nothing — never simulate progression automatically
+      console.log('Order status fetch failed, keeping current step');
     }
   };
 

@@ -95,6 +95,22 @@ class NotificationService {
     }
   }
   
+  async sendOrderStatusNotification(userId, orderId, title, body) {
+    try {
+      const notification = new Notification({
+        userId: userId.toString(),
+        title,
+        body,
+        type: 'order_update',
+        orderId,
+        data: { orderId }
+      });
+      await notification.save();
+    } catch (error) {
+      console.error('Erreur notification statut commande:', error);
+    }
+  }
+
   async sendReviewNotification(shopId, productId, rating) {
     try {
       const notification = new Notification({

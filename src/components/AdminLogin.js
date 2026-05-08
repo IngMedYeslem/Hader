@@ -4,7 +4,7 @@ import { useTranslation } from '../translations';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 
-const API_URL = 'http://192.168.0.132:3000/api';
+const API_URL = 'http://192.168.0.104:3000/api';
 
 export default function AdminLogin({ onLoginSuccess, onBack }) {
   const { t } = useTranslation();

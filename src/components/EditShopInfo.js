@@ -37,7 +37,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         stock: parseInt(formData.stock) || 0
       };
 
-      const response = await fetch(`http://192.168.0.132:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`http://192.168.0.104:3000/api/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)

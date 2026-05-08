@@ -1047,7 +1047,7 @@ app.delete('/api/products/:productId', async (req, res) => {
 
 
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log('Serveur démarré sur le port 3000');
   console.log('API REST disponible sur http://localhost:3000/api');
 });
