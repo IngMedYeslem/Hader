@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://192.168.0.104:3000/api';
+
 
 const SHOP_CATEGORIES = [
   { id: 'food', icon: '🍔' },

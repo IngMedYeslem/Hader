@@ -1,10 +1,6 @@
 import { Platform } from 'react-native';
 
-const getApiUrl = () => {
-  return __DEV__ && Platform.OS !== 'web' 
-    ? 'http://192.168.0.104:3000/api'
-    : 'http://localhost:3000/api';
-};
+import { API_URL } from '../config/api';
 
 export const uploadService = {
   // Uploader un média et retourner l'URL
@@ -12,7 +8,7 @@ export const uploadService = {
     try {
       console.log(`📤 Upload ${mediaType}:`, mediaUri.substring(0, 50) + '...');
       
-      const API_URL = getApiUrl();
+      
       const formData = new FormData();
       
       if (mediaUri.startsWith('data:')) {

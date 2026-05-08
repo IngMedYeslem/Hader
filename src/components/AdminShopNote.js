@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
 import styles from './styles';
+import { API_URL } from '../config/api';
 
 export const AdminShopNote = ({ shop, visible, onClose, onSave }) => {
   const [note, setNote] = useState(shop.missingDataNote || '');
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://192.168.0.104:3000/api/shops/${shop._id}`, {
+      const response = await fetch(`${API_URL}/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ missingDataNote: note })

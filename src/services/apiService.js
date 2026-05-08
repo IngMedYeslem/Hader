@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api';
+import { apiClient } from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
@@ -10,15 +11,8 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 // Fonction pour vérifier la connectivité avec fallback
 const checkConnectivity = async () => {
   try {
-    // Essayer l'URL principale
-    const response = await fetch(`${API_BASE_URL}/health`, { timeout: 3000 });
-    if (response.ok) return API_BASE_URL;
-    
-    // Essayer l'URL de fallback
-    const fallbackResponse = await fetch(`${API_CONFIG.FALLBACK_URL}/health`, { timeout: 3000 });
-    if (fallbackResponse.ok) return API_CONFIG.FALLBACK_URL;
-    
-    return null;
+    await apiClient.get('/health');
+    return API_BASE_URL;
   } catch (error) {
     console.log('Aucune connectivité serveur:', error.message);
     return null;
@@ -91,11 +85,7 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
     }
     
     console.log('🌐 Récupération produits depuis:', activeApiUrl);
-    const productsResponse = await fetch(`${activeApiUrl}/debug/products`);
-    
-    if (!productsResponse.ok) throw new Error('Erreur récupération produits');
-    
-    const products = await productsResponse.json();
+    const products = await apiClient.get('/debug/products');
     console.log(`📦 ${products.length} produits récupérés`);
     
     // Limiter le nombre de produits pour éviter OOM
@@ -107,10 +97,7 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
         let shop = null;
         if (product.shopId) {
           try {
-            const shopResponse = await fetch(`${activeApiUrl}/shops/${product.shopId}`);
-            if (shopResponse.ok) {
-              shop = await shopResponse.json();
-            }
+            shop = await apiClient.get(`/shops/${product.shopId}`);
           } catch (error) {
             // Ignorer l'erreur et continuer
           }

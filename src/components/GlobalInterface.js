@@ -12,6 +12,7 @@ import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
 import { useCart } from '../contexts/CartContext';
 import styles from './styles';
+import { API_URL } from '../config/api';
 
 const { width } = Dimensions.get('window');
 
@@ -38,7 +39,7 @@ export default function GlobalInterface({ onShopLogin }) {
         setServerAvailable(status.isAvailable);
         if (status.isAvailable) {
           // جلب المتاجر مباشرة
-          const shopsRes = await fetch('http://192.168.0.104:3000/api/shops');
+          const shopsRes = await fetch('${API_URL}/shops');
           if (shopsRes.ok) {
             const shopsData = await shopsRes.json();
             setShops(Array.isArray(shopsData) ? shopsData : []);

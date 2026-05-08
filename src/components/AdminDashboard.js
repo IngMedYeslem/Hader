@@ -3,8 +3,9 @@ import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking,
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://192.168.0.104:3000/api';
+
 
 export default function AdminDashboard() {
   const { t } = useTranslation();

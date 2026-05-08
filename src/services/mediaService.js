@@ -1,11 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 
-const getApiUrl = () => {
-  return __DEV__ && Platform.OS !== 'web'
-    ? 'http://192.168.0.104:3000/api'
-    : 'http://localhost:3000/api';
-};
+import { API_URL } from '../config/api';
 
 export const mediaService = {
   processMedia: async (images = []) => {
@@ -28,7 +24,7 @@ export const mediaService = {
 
   uploadMedia: async (mediaUri) => {
     try {
-      const API_URL = getApiUrl();
+      
       const formData = new FormData();
 
       if (Platform.OS === 'web') {

@@ -1,12 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
-// URL API dynamique
-const getApiUrl = () => {
-  return __DEV__ && Platform.OS !== 'web' 
-    ? 'http://192.168.0.104:3000/api'
-    : 'http://localhost:3000/api';
-};
+import { API_URL } from '../config/api';
 
 export const imageService = {
   // تحويل صورة محلية إلى base64 مع ضغط
@@ -143,7 +138,7 @@ export const imageService = {
   // Uploader une image vers le serveur (optionnel)
   uploadImage: async (imageUri) => {
     try {
-      const API_URL = getApiUrl();
+      
       console.log('📤 Upload vers:', API_URL);
 
       const formData = new FormData();

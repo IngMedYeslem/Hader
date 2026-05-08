@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { API_URL } from '../config/api';
 
 export const ShopReactivationFlow = ({ shopId }) => {
   const [shopStatus, setShopStatus] = useState('rejected');
@@ -14,7 +15,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
 
   const checkStatus = async () => {
     try {
-      const response = await fetch(`http://192.168.0.104:3000/api/shops/${shopId}/status`);
+      const response = await fetch(`${API_URL}/shops/${shopId}/status`);
       const data = await response.json();
       setShopStatus(data.status);
     } catch (error) {
@@ -26,7 +27,7 @@ export const ShopReactivationFlow = ({ shopId }) => {
   const requestReactivation = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://192.168.0.104:3000/api/shops/${shopId}/reactivate`, {
+      const response = await fetch(`${API_URL}/shops/${shopId}/reactivate`, {
         method: 'POST'
       });
       

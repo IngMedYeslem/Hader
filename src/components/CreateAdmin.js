@@ -3,8 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } 
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 import { useTranslation } from '../translations';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://192.168.0.104:3000/api';
+
 
 export default function CreateAdmin({ onBack, onAdminCreated }) {
   const { t } = useTranslation();

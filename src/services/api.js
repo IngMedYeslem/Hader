@@ -1,10 +1,6 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Utiliser l'IP locale pour les smartphones
-const API_URL = __DEV__ && Platform.OS !== 'web' 
-  ? 'http://192.168.0.104:3000/api'
-  : 'http://localhost:3000/api';
+import { API_URL } from '../config/api';
 
 // Nettoyer les boutiques locales fantômes
 export const clearLocalShops = async () => {
@@ -37,8 +33,7 @@ export const showPendingShops = async () => {
   return shops;
 };
 
-console.log('API_URL:', API_URL);
-console.log('Base URL pour médias:', Platform.OS !== 'web' ? 'http://192.168.0.104:3000' : 'http://localhost:3000');
+console.log('[api.js] BASE_URL:', API_URL);
 
 // Construire l'URL complète pour les médias
 export const getMediaUrl = (mediaPath) => {
@@ -47,23 +42,11 @@ export const getMediaUrl = (mediaPath) => {
   console.log('🔗 Construction URL pour:', mediaPath);
   
   // Si c'est déjà une URL complète
-  if (mediaPath.startsWith('http')) {
-    if (Platform.OS !== 'web' && mediaPath.includes('localhost')) {
-      const correctedUrl = mediaPath.replace('localhost', '192.168.0.104');
-      console.log('✅ URL corrigée:', correctedUrl);
-      return correctedUrl;
-    }
-    console.log('✅ URL déjà complète:', mediaPath);
-    return mediaPath;
-  }
-  
-  // Construire l'URL complète pour les chemins relatifs
-  const baseUrl = Platform.OS !== 'web' ? 'http://192.168.0.104:3000' : 'http://localhost:3000';
+  if (mediaPath.startsWith('http')) return mediaPath;
+
+  const baseUrl = API_URL.replace('/api', '');
   const cleanPath = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
-  const fullUrl = `${baseUrl}${cleanPath}`;
-  
-  console.log('✅ URL construite:', fullUrl);
-  return fullUrl;
+  return `${baseUrl}${cleanPath}`;
 };
 
 export const shopAPI = {

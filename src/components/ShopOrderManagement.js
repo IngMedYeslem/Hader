@@ -50,6 +50,7 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
   const [activeTab, setActiveTab] = useState('pending');
   const [newOrderAlert, setNewOrderAlert] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [loadingOrderId, setLoadingOrderId] = useState(null);
   const prevOrderIds = useRef(new Set());
 
   const fetchOrders = useCallback(async () => {
@@ -82,12 +83,18 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
   }, [fetchOrders]);
 
   const acceptOrder = async (orderId) => {
+    if (loadingOrderId) return;
+    setLoadingOrderId(orderId);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const res = await fetch(`${BASE}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'confirmed', shopId: shopId?.toString() || shopId }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = await res.json();
       if (res.ok && data.success) {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'confirmed' } : o));
@@ -96,7 +103,13 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
         Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
       }
     } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
+      clearTimeout(timeout);
+      const msg = e.name === 'AbortError'
+        ? (isRTL ? 'انتهت مهلة الاتصال، تحقق من الشبكة' : 'Délai dépassé, vérifiez le réseau')
+        : (isRTL ? `تعذر الاتصال بالخادم\n${BASE}` : `Impossible de joindre le serveur\n${BASE}`);
+      Alert.alert(isRTL ? 'خطأ في الاتصال' : 'Erreur réseau', msg);
+    } finally {
+      setLoadingOrderId(null);
     }
   };
 
@@ -269,8 +282,14 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
               {/* Quick Actions for pending */}
               {item.status === 'pending' && (
                 <View style={s.quickActions}>
-                  <TouchableOpacity style={s.btnAccept} onPress={() => acceptOrder(item._id)}>
-                    <Text style={s.btnText}>✅ {isRTL ? 'قبول' : 'Accepter'}</Text>
+                  <TouchableOpacity
+                    style={[s.btnAccept, loadingOrderId === item._id && { opacity: 0.6 }]}
+                    onPress={() => acceptOrder(item._id)}
+                    disabled={!!loadingOrderId}
+                  >
+                    <Text style={s.btnText}>
+                      {loadingOrderId === item._id ? '⏳' : '✅'} {isRTL ? 'قبول' : 'Accepter'}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.btnReject} onPress={() => rejectOrder(item._id)}>
                     <Text style={s.btnText}>❌ {isRTL ? 'رفض' : 'Refuser'}</Text>
