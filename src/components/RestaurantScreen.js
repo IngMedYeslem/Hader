@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { fetchProductsWithShops } from '../services/apiService';
 import { getMediaUrl } from '../services/api';
+import { API_CONFIG } from '../config/api';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
 
@@ -14,6 +15,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const { addToCart, cartItems, getTotalItems, getTotalAmount, cartShop } = useCart();
   const { currentLanguage } = useTranslation();
   const [products, setProducts] = useState([]);
+  const [availableStock, setAvailableStock] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -35,10 +37,17 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     }).start();
   }, [cartItems]);
 
+  const loadAvailableStock = async (shopId) => {
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/products/shop/${shopId}/available-stock`);
+      if (res.ok) setAvailableStock(await res.json());
+    } catch {}
+  };
+
   const loadShopProducts = async () => {
     try {
       setLoading(true);
-      const all = await fetchProductsWithShops(true); // force refresh
+      const all = await fetchProductsWithShops(true);
       const shopProducts = all.filter(p =>
         p.shop?._id === shop._id ||
         p.shop?._id === shop.id ||
@@ -46,6 +55,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         p.shop?.name === shop.name
       );
       setProducts(shopProducts);
+      await loadAvailableStock(shop._id || shop.id);
     } catch (e) {
       console.log('Error:', e);
     } finally {
@@ -53,12 +63,18 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     }
   };
 
-  // استخراج التصنيفات
-  const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))];
+  // إخفاء المنتجات النافدة كلياً
+  const visibleProducts = products.filter(p => {
+    const stock = availableStock[p._id || p.id];
+    return stock === undefined || stock > 0;
+  });
+
+  // استخراج التصنيفات من المنتجات المتاحة فقط
+  const categories = ['all', ...new Set(visibleProducts.map(p => p.category).filter(Boolean))];
 
   const filteredProducts = selectedCategory === 'all'
-    ? products
-    : products.filter(p => p.category === selectedCategory);
+    ? visibleProducts
+    : visibleProducts.filter(p => p.category === selectedCategory);
 
   // تجميع المنتجات حسب التصنيف
   const groupedProducts = {};
@@ -72,6 +88,16 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     if (cartShop && cartShop._id !== shop._id && getTotalItems() > 0) {
       setPendingProduct(product);
       setShowDifferentShopAlert(true);
+      return;
+    }
+    const pid = product._id || product.id;
+    const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
+    const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
+    if (inCartQty + quantity > maxQty) {
+      Alert.alert(
+        isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
+        isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
+      );
       return;
     }
     addToCart(product, quantity, shop);
@@ -104,12 +130,12 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340 }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 12 }}>
-              🛒 {isRTL ? 'سلة من متجر آخر' : 'Panier d\'un autre restaurant'}
+              🛒 {isRTL ? 'سلة من متجر آخر' : "Panier d'un autre restaurant"}
             </Text>
             <Text style={{ color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 20 }}>
               {isRTL
                 ? 'سلتك تحتوي على منتجات من متجر آخر. هل تريد إفراغها والبدء من هذا المتجر؟'
-                : 'Votre panier contient des articles d\'un autre restaurant. Voulez-vous le vider et recommencer?'}
+                : "Votre panier contient des articles d'un autre restaurant. Voulez-vous le vider et recommencer?"}
             </Text>
             <TouchableOpacity
               onPress={confirmClearAndAdd}
@@ -133,91 +159,104 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
 
       {/* Product Detail Modal */}
       <Modal visible={!!selectedProduct} transparent animationType="slide">
-        {selectedProduct && (
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-            <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }}>
-              <ScrollView>
-                {/* Product Image */}
-                <View style={{ height: 220, backgroundColor: '#FFF0EB' }}>
-                  {selectedProduct.images?.[0] ? (
-                    <Image
-                      source={{ uri: getMediaUrl(selectedProduct.images[0]) }}
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 60 }}>🍽️</Text>
+        {selectedProduct && (() => {
+          const pid = selectedProduct._id || selectedProduct.id;
+          const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : 99;
+          const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
+          const remaining = Math.max(0, maxQty - inCartQty);
+          return (
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+              <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }}>
+                <ScrollView>
+                  {/* Product Image */}
+                  <View style={{ height: 220, backgroundColor: '#FFF0EB' }}>
+                    {selectedProduct.images?.[0] ? (
+                      <Image
+                        source={{ uri: getMediaUrl(selectedProduct.images[0]) }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 60 }}>🍽️</Text>
+                      </View>
+                    )}
+                    <TouchableOpacity
+                      onPress={() => { setSelectedProduct(null); setQuantity(1); }}
+                      style={{
+                        position: 'absolute', top: 16, right: 16,
+                        backgroundColor: 'white', borderRadius: 20, width: 36, height: 36,
+                        justifyContent: 'center', alignItems: 'center',
+                        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+                      }}
+                    >
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={{ padding: 20 }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
+                      {selectedProduct.name}
+                    </Text>
+                    {selectedProduct.description && (
+                      <Text style={{ color: '#777', marginTop: 8, lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
+                        {selectedProduct.description}
+                      </Text>
+                    )}
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FF6B35', marginTop: 12 }}>
+                      {selectedProduct.price} MRU
+                    </Text>
+
+                    {maxQty < 10 && (
+                      <Text style={{ color: '#e67e22', fontSize: 13, textAlign: 'center', marginTop: 10 }}>
+                        {isRTL ? `⚠️ متبقي: ${maxQty} فقط` : `⚠️ Reste: ${maxQty} seulement`}
+                      </Text>
+                    )}
+
+                    {/* Quantity Selector */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 20, gap: 20 }}>
+                      <TouchableOpacity
+                        onPress={() => setQuantity(q => Math.max(1, q - 1))}
+                        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF0EB', justifyContent: 'center', alignItems: 'center' }}
+                      >
+                        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333' }}>−</Text>
+                      </TouchableOpacity>
+                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', minWidth: 30, textAlign: 'center' }}>{quantity}</Text>
+                      <TouchableOpacity
+                        onPress={() => setQuantity(q => Math.min(remaining, q + 1))}
+                        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: quantity < remaining ? '#FF6B35' : '#ccc', justifyContent: 'center', alignItems: 'center' }}
+                        disabled={quantity >= remaining}
+                      >
+                        <Text style={{ fontSize: 22, fontWeight: 'bold', color: 'white' }}>+</Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
+                  </View>
+                </ScrollView>
+
+                {/* Add to Cart Button */}
+                <View style={{ padding: 20, paddingBottom: 30 }}>
                   <TouchableOpacity
-                    onPress={() => { setSelectedProduct(null); setQuantity(1); }}
+                    onPress={() => handleAddToCart(selectedProduct)}
                     style={{
-                      position: 'absolute', top: 16, right: 16,
-                      backgroundColor: 'white', borderRadius: 20, width: 36, height: 36,
-                      justifyContent: 'center', alignItems: 'center',
-                      shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+                      backgroundColor: '#FF6B35', borderRadius: 16, padding: 16,
+                      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
                     }}
                   >
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>✕</Text>
+                    <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10, width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>{quantity}</Text>
+                    </View>
+                    <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+                      {isRTL ? 'إضافة إلى السلة' : 'Ajouter au panier'}
+                    </Text>
+                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                      {selectedProduct.price * quantity} MRU
+                    </Text>
                   </TouchableOpacity>
                 </View>
-
-                <View style={{ padding: 20 }}>
-                  <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: isRTL ? 'right' : 'left' }}>
-                    {selectedProduct.name}
-                  </Text>
-                  {selectedProduct.description && (
-                    <Text style={{ color: '#777', marginTop: 8, lineHeight: 22, textAlign: isRTL ? 'right' : 'left' }}>
-                      {selectedProduct.description}
-                    </Text>
-                  )}
-                  <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FF6B35', marginTop: 12 }}>
-                    {selectedProduct.price} MRU
-                  </Text>
-
-                  {/* Quantity Selector */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 20, gap: 20 }}>
-                    <TouchableOpacity
-                      onPress={() => setQuantity(q => Math.max(1, q - 1))}
-                      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF0EB', justifyContent: 'center', alignItems: 'center' }}
-                    >
-                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333' }}>−</Text>
-                    </TouchableOpacity>
-                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', minWidth: 30, textAlign: 'center' }}>{quantity}</Text>
-                    <TouchableOpacity
-                      onPress={() => setQuantity(q => q + 1)}
-                      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' }}
-                    >
-                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: 'white' }}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </ScrollView>
-
-              {/* Add to Cart Button */}
-              <View style={{ padding: 20, paddingBottom: 30 }}>
-                <TouchableOpacity
-                  onPress={() => handleAddToCart(selectedProduct)}
-                  style={{
-                    backgroundColor: '#FF6B35', borderRadius: 16, padding: 16,
-                    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-                  }}
-                >
-                  <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10, width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: 'white', fontWeight: 'bold' }}>{quantity}</Text>
-                  </View>
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
-                    {isRTL ? 'إضافة إلى السلة' : 'Ajouter au panier'}
-                  </Text>
-                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
-                    {selectedProduct.price * quantity} MRU
-                  </Text>
-                </TouchableOpacity>
               </View>
             </View>
-          </View>
-        )}
+          );
+        })()}
       </Modal>
 
       <ScrollView showsVerticalScrollIndicator={false} stickyHeaderIndices={[1]}>
@@ -232,7 +271,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                 <Text style={{ fontSize: 60 }}>🏪</Text>
               </View>
             )}
-            <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} />
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} />
             <TouchableOpacity
               onPress={onBack}
               style={{
@@ -301,7 +340,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>{products.length}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>{visibleProducts.length}</Text>
                 <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'منتج' : 'Produits'}</Text>
               </View>
             </View>
@@ -354,7 +393,20 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                     onPress={() => { setSelectedProduct(product); setQuantity(1); }}
                     isRTL={isRTL}
                     cartItems={cartItems}
-                    onQuickAdd={() => addToCart(product, 1, shop)}
+                    availableStock={availableStock}
+                    onQuickAdd={() => {
+                      const pid = product._id || product.id;
+                      const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
+                      const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
+                      if (inCartQty + 1 > maxQty) {
+                        Alert.alert(
+                          isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
+                          isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
+                        );
+                        return;
+                      }
+                      addToCart(product, 1, shop);
+                    }}
                   />
                 ))}
               </View>
@@ -393,9 +445,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   );
 }
 
-function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd }) {
+function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd, availableStock }) {
   const inCart = cartItems.find(i => i._id === (product._id || product.id));
   const imageUri = product.images?.[0] ? getMediaUrl(product.images[0]) : null;
+  const pid = product._id || product.id;
+  const stock = availableStock?.[pid];
 
   return (
     <TouchableOpacity
@@ -425,6 +479,11 @@ function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd }) {
         {product.description && (
           <Text style={{ fontSize: 12, color: '#777', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
             {product.description}
+          </Text>
+        )}
+        {stock !== undefined && stock < 10 && stock > 0 && (
+          <Text style={{ fontSize: 11, color: '#e67e22', textAlign: isRTL ? 'right' : 'left' }}>
+            {isRTL ? `⚠️ متبقي: ${stock}` : `⚠️ Reste: ${stock}`}
           </Text>
         )}
         <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', justifyContent: 'space-between', alignItems: 'center' }}>

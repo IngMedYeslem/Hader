@@ -65,6 +65,17 @@ router.post('/orders/guest', async (req, res) => {
         try {
           const product = await Product.findById(item.productId);
           if (product) {
+            // تحقق من الكمية المتاحة (مع احتساب الطلبات قيد التنفيذ)
+            const activeStatuses = ['pending', 'confirmed', 'preparing', 'on_the_way', 'ready', 'picked_up'];
+            const activeOrders = await Order.find({ 'items.productId': product._id, status: { $in: activeStatuses } }, 'items');
+            const reserved = activeOrders.reduce((sum, o) => {
+              const i = o.items.find(i => i.productId?.toString() === product._id.toString());
+              return sum + (i?.quantity || 0);
+            }, 0);
+            const available = Math.max(0, (product.stock || 0) - reserved);
+            if (available < item.quantity) {
+              return res.status(400).json({ error: `الكمية المتاحة من "${product.name}" هي ${available} فقط` });
+            }
             shopId = product.shopId;
             calcTotal += product.price * item.quantity;
             orderItems.push({ productId: product._id, name: product.name, price: product.price, quantity: item.quantity });

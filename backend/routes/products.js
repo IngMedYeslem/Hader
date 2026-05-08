@@ -1,7 +1,36 @@
 const express = require('express');
 const Product = require('../models/Product');
 const Shop = require('../models/Shop');
+const Order = require('../models/Order');
 const router = express.Router();
+
+// Helper: حساب الكمية المحجوزة في الطلبات النشطة
+async function getReservedQty(productId) {
+  const activeStatuses = ['pending', 'confirmed', 'preparing', 'on_the_way', 'ready', 'picked_up'];
+  const orders = await Order.find({
+    'items.productId': productId,
+    status: { $in: activeStatuses }
+  }, 'items');
+  return orders.reduce((sum, order) => {
+    const item = order.items.find(i => i.productId?.toString() === productId.toString());
+    return sum + (item?.quantity || 0);
+  }, 0);
+}
+
+// الكميات المتاحة لمنتجات متجر (مع احتساب الطلبات قيد التنفيذ)
+router.get('/shop/:shopId/available-stock', async (req, res) => {
+  try {
+    const products = await Product.find({ shopId: req.params.shopId }, '_id stock');
+    const result = {};
+    await Promise.all(products.map(async (p) => {
+      const reserved = await getReservedQty(p._id);
+      result[p._id.toString()] = Math.max(0, (p.stock || 0) - reserved);
+    }));
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Récupérer tous les produits publics (catalogue public)
 router.get('/public', async (req, res) => {

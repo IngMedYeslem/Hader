@@ -110,6 +110,7 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
           description: product.description,
           price: product.price,
           category: product.category,
+          stock: product.stock ?? 0,
           images: (product.images || []).slice(0, 3),
           shop: shop ? {
             _id: shop._id,

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, Image, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Platform, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Text, View, Image, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Platform, SafeAreaView, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddProduct from "./AddProduct";
 import MediaGallery from "./MediaGallery";
@@ -31,6 +31,9 @@ function ShopDashboard({ shop, onLogout }) {
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [ordersVisible, setOrdersVisible] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
+  const [hasNewOrder, setHasNewOrder] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const prevPendingCount = useRef(0);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isApproved, setIsApproved] = useState(shop.isApproved || false);
   const [showWelcomePage, setShowWelcomePage] = useState(false);
@@ -70,6 +73,8 @@ function ShopDashboard({ shop, onLogout }) {
     checkWelcomePage();
     fetchUserId();
     fetchNewOrdersCount();
+    const interval = setInterval(fetchNewOrdersCount, 15000);
+    return () => clearInterval(interval);
   }, []);
   
   const fetchNewOrdersCount = async () => {
@@ -79,6 +84,10 @@ function ShopDashboard({ shop, onLogout }) {
         const orders = await response.json();
         const pending = orders.filter(o => o.status === 'pending').length;
         setNewOrdersCount(pending);
+        if (pending > prevPendingCount.current) {
+          setHasNewOrder(true);
+        }
+        prevPendingCount.current = pending;
       }
     } catch (e) {}
   };
@@ -117,6 +126,19 @@ function ShopDashboard({ shop, onLogout }) {
     }
   };
   
+  // Pulse animation when new order arrives
+  useEffect(() => {
+    if (hasNewOrder) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.2, duration: 400, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ]),
+        { iterations: 6 }
+      ).start();
+    }
+  }, [hasNewOrder]);
+
   // Synchroniser le statut avec le hook d'actualisation automatique
   useEffect(() => {
     if (autoRefreshApproved !== isApproved) {
@@ -303,17 +325,24 @@ function ShopDashboard({ shop, onLogout }) {
 
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
               {isApproved && (
-                <TouchableOpacity
-                  onPress={() => setOrdersVisible(true)}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, position: 'relative' }}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>📦 {isRTL ? 'الطلبات' : 'Commandes'}</Text>
-                  {newOrdersCount > 0 && (
-                    <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#FF6B35', borderRadius: 9, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{newOrdersCount}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
+                <Animated.View style={{ transform: [{ scale: hasNewOrder ? pulseAnim : 1 }] }}>
+                  <TouchableOpacity
+                    onPress={() => { setOrdersVisible(true); setHasNewOrder(false); }}
+                    style={{
+                      backgroundColor: hasNewOrder ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)',
+                      paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, position: 'relative'
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                      {hasNewOrder ? '🔔' : '📦'} {isRTL ? 'الطلبات' : 'Commandes'}
+                    </Text>
+                    {newOrdersCount > 0 && (
+                      <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#e74c3c', borderRadius: 9, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{newOrdersCount}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
               )}
               {Platform.OS !== 'web' && (
                 <TouchableOpacity
@@ -499,6 +528,17 @@ function ShopDashboard({ shop, onLogout }) {
                     <Text style={styles.globalPrice}>
                       {product.price} MRU
                     </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                      <Text style={{
+                        fontSize: 11,
+                        color: (product.stock || 0) === 0 ? '#e74c3c' : (product.stock || 0) < 5 ? '#e67e22' : '#27ae60',
+                        fontWeight: '600'
+                      }}>
+                        {(product.stock || 0) === 0
+                          ? (isRTL ? 'نفد المخزون' : 'Rupture')
+                          : (isRTL ? `مخزون: ${product.stock}` : `Stock: ${product.stock}`)}
+                      </Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -545,7 +585,7 @@ function ShopDashboard({ shop, onLogout }) {
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'white', zIndex: 9999 }}>
           <ShopOrderManagement
             shopId={shop._id}
-            onClose={() => { setOrdersVisible(false); fetchNewOrdersCount(); }}
+            onClose={() => { setOrdersVisible(false); setHasNewOrder(false); fetchNewOrdersCount(); }}
           />
         </View>
       )}
