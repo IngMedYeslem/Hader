@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  SafeAreaView, StatusBar, Alert, ActivityIndicator, Image
+  SafeAreaView, StatusBar, Alert, ActivityIndicator, Image, Clipboard, Platform
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useCart } from '../contexts/CartContext';
@@ -232,19 +232,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
               </Text>
             ) : (
               bankAccounts.map((acc, i) => (
-                <View key={i} style={{ backgroundColor: '#f0f7ff', borderRadius: 10, padding: 14, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#3498db' }}>
-                  <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 14, textAlign: isRTL ? 'right' : 'left' }}>
-                    🏦 {acc.bankName}
-                  </Text>
-                  <Text style={{ color: '#3498db', fontSize: 16, fontWeight: 'bold', marginTop: 4, textAlign: isRTL ? 'right' : 'left', letterSpacing: 1 }}>
-                    {acc.accountNumber}
-                  </Text>
-                  {acc.accountHolder ? (
-                    <Text style={{ color: '#555', fontSize: 13, marginTop: 2, textAlign: isRTL ? 'right' : 'left' }}>
-                      👤 {acc.accountHolder}
-                    </Text>
-                  ) : null}
-                </View>
+                <BankAccountCard key={i} acc={acc} isRTL={isRTL} />
               ))
             )}
 
@@ -352,5 +340,47 @@ function InputField({ placeholder, value, onChangeText, keyboardType, multiline,
         minHeight: multiline ? 70 : 44,
       }}
     />
+  );
+}
+
+function BankAccountCard({ acc, isRTL }) {
+  const copyToClipboard = (text) => {
+    if (Platform.OS === 'web') {
+      navigator.clipboard?.writeText(text).catch(() => {});
+    } else {
+      Clipboard.setString(text);
+    }
+    Alert.alert(
+      isRTL ? '✅ تم النسخ' : '✅ Copié',
+      isRTL ? `تم نسخ: ${text}` : `Copié: ${text}`,
+      [{ text: 'OK' }],
+      { cancelable: true }
+    );
+  };
+
+  return (
+    <View style={{ backgroundColor: '#f0f7ff', borderRadius: 10, padding: 14, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#3498db' }}>
+      <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 14, textAlign: isRTL ? 'right' : 'left' }}>
+        🏦 {acc.bankName}
+      </Text>
+      <TouchableOpacity
+        onPress={() => copyToClipboard(acc.accountNumber)}
+        style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 6, gap: 8 }}
+      >
+        <Text style={{ color: '#3498db', fontSize: 16, fontWeight: 'bold', letterSpacing: 1, flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+          {acc.accountNumber}
+        </Text>
+        <View style={{ backgroundColor: '#3498db', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+          <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+            {isRTL ? '📋 نسخ' : '📋 Copier'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      {acc.accountHolder ? (
+        <Text style={{ color: '#555', fontSize: 13, marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
+          👤 {acc.accountHolder}
+        </Text>
+      ) : null}
+    </View>
   );
 }

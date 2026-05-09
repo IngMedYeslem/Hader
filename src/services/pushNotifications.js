@@ -193,63 +193,40 @@ class PushNotificationService {
   
   async checkPendingNotifications() {
     if (this.isChecking) return;
-    
     const now = Date.now();
-    if (now - this.lastCheck < 25000) return; // Minimum 25s entre vérifications
-    
+    if (now - this.lastCheck < 25000) return;
     this.isChecking = true;
     this.lastCheck = now;
-    
     try {
       const userId = await AsyncStorage.getItem('userId');
       const shopData = await AsyncStorage.getItem('currentShop');
       let targetId = userId;
-      
-      if (shopData) {
-        try {
-          const shop = JSON.parse(shopData);
-          const response = await fetch(`${API_CONFIG.BASE_URL}/users`);
-          if (response.ok) {
-            const users = await response.json();
-            const linkedUser = users.find(user => 
-              user.linkedShop && user.linkedShop.id === shop._id
-            );
-            if (linkedUser) {
-              targetId = linkedUser.id;
-            } else {
-              targetId = shop._id;
-            }
-          }
-        } catch (e) {
-          console.error('Erreur parsing shop data:', e);
-        }
+      if (!targetId && shopData) {
+        try { targetId = JSON.parse(shopData)._id; } catch {}
       }
-      
       if (!targetId) return;
-      
-      const response = await fetch(`${API_CONFIG.BASE_URL}/users/${targetId}/notifications`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/notifications/${targetId}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       if (!response.ok) return;
-      
       const notifications = await response.json();
-      
+
       for (const notification of notifications) {
         if (!notification.read && !this.shownNotifications.has(notification._id)) {
           this.shownNotifications.add(notification._id);
-          
           if (Notifications) await Notifications.scheduleNotificationAsync({
-            content: {
-              title: notification.title,
-              body: notification.body,
-              data: notification.data
-            },
+            content: { title: notification.title, body: notification.body, data: notification.data },
             trigger: null
           });
-          
           await this.markNotificationAsRead(notification._id);
         }
       }
     } catch (error) {
-      console.error('❌ Erreur vérification notifications:', error);
+      if (error.name !== 'AbortError') console.log('checkPendingNotifications failed (ignored)');
     } finally {
       this.isChecking = false;
     }
@@ -257,15 +234,8 @@ class PushNotificationService {
   
   async markNotificationAsRead(notificationId) {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/notifications/${notificationId}/read`, {
-        method: 'PUT'
-      });
-      if (response.ok) {
-        console.log(`✅ Notification ${notificationId} marquée comme lue`);
-      }
-    } catch (error) {
-      console.error('Erreur marquage notification:', error);
-    }
+      await fetch(`${API_CONFIG.BASE_URL}/notifications/${notificationId}/read`, { method: 'PUT' });
+    } catch {}
   }
   
   async getAllNotifications() {
@@ -273,53 +243,23 @@ class PushNotificationService {
       const userId = await AsyncStorage.getItem('userId');
       const shopData = await AsyncStorage.getItem('currentShop');
       let targetId = userId;
-      
-      if (!userId && shopData) {
-        try {
-          const shop = JSON.parse(shopData);
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-          
-          const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          
-          if (response.ok) {
-            const users = await response.json();
-            const linkedUser = users.find(user => 
-              user.linkedShop && user.linkedShop.id === shop._id
-            );
-            if (linkedUser) {
-              targetId = linkedUser.id;
-            } else {
-              targetId = shop._id;
-            }
-          }
-        } catch (e) {
-          if (e.name === 'AbortError') {
-            console.log('⏱️ Timeout récupération utilisateurs');
-          }
-          return [];
-        }
+
+      if (!targetId && shopData) {
+        try { targetId = JSON.parse(shopData)._id; } catch {}
       }
-      
       if (!targetId) return [];
-      
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${API_CONFIG.BASE_URL}/users/${targetId}/notifications`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/notifications/${targetId}`, {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-      
       if (!response.ok) return [];
-      
       return await response.json();
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Erreur récupération notifications:', error);
+        console.log('Notifications fetch failed (ignored)');
       }
       return [];
     }

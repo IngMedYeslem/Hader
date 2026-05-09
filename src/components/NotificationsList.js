@@ -15,15 +15,18 @@ const NotificationsList = ({ userId }) => {
 
   const fetchNotifications = async () => {
     try {
-      console.log(`📱 جلب الإشعارات للمستخدم: ${userId}`);
-      const url = `${API_CONFIG.BASE_URL.replace('/api', '')}/api/notifications/${userId}`;
-      console.log('🔗 URL:', url);
-      const response = await fetch(url);
+      const url = `${API_CONFIG.BASE_URL}/notifications/${userId}`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!response.ok) return;
       const data = await response.json();
-      console.log(`✅ تم جلب ${data.length} إشعار`);
-      setNotifications(data);
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('❌ خطأ في جلب الإشعارات:', error);
+      if (error.name !== 'AbortError') {
+        console.log('Notifications fetch failed (ignored)');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -37,12 +40,9 @@ const NotificationsList = ({ userId }) => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const url = `${API_CONFIG.BASE_URL.replace('/api', '')}/api/notifications/${notificationId}/read`;
-      await fetch(url, { method: 'PUT' });
+      await fetch(`${API_CONFIG.BASE_URL}/notifications/${notificationId}/read`, { method: 'PUT' });
       fetchNotifications();
-    } catch (error) {
-      console.error('خطأ في تحديث الإشعار:', error);
-    }
+    } catch {}
   };
 
   const renderNotification = ({ item }) => (

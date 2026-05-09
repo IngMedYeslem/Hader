@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView, Image, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Linking, Alert, Modal, TextInput, ScrollView, Image, Platform, Clipboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '../translations';
 import styles from './styles';
@@ -381,10 +381,27 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
                     <View key={i} style={{ backgroundColor: '#f0f7ff', borderRadius: 8, padding: 10, marginBottom: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 13 }}>{acc.bankName}</Text>
-                        <Text style={{ color: '#3498db', fontSize: 13 }}>{acc.accountNumber}</Text>
-                        {acc.accountHolder ? <Text style={{ color: '#555', fontSize: 12 }}>{acc.accountHolder}</Text> : null}
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (Platform.OS === 'web') {
+                              navigator.clipboard?.writeText(acc.accountNumber).catch(() => {});
+                            } else {
+                              Clipboard.setString(acc.accountNumber);
+                            }
+                            Alert.alert(isRTL ? '✅ تم النسخ' : '✅ Copié', acc.accountNumber, [{ text: 'OK' }], { cancelable: true });
+                          }}
+                          style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 2, gap: 6 }}
+                        >
+                          <Text style={{ color: '#3498db', fontSize: 13, fontWeight: 'bold', flex: 1 }}>{acc.accountNumber}</Text>
+                          <View style={{ backgroundColor: '#3498db', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                              {isRTL ? '📋 نسخ' : '📋 Copier'}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                        {acc.accountHolder ? <Text style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{acc.accountHolder}</Text> : null}
                       </View>
-                      <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6 }}>
+                      <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6, marginLeft: 8 }}>
                         <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>
                       </TouchableOpacity>
                     </View>
