@@ -5,6 +5,7 @@ import {
 import { useCart } from '../contexts/CartContext';
 import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
+import ShopHeader from './ShopHeader';
 
 export default function CartScreen({ onBack, onCheckout }) {
   const { cartItems, cartShop, removeFromCart, updateQuantity, getTotalAmount, getTotalItems, clearCart } = useCart();
@@ -52,11 +53,9 @@ export default function CartScreen({ onBack, onCheckout }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
+      <ShopHeader onBack={onBack} onOpenCart={null} showCart={false} />
       {/* Header */}
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-        <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-          <Text style={{ fontSize: 22, color: '#333' }}>←</Text>
-        </TouchableOpacity>
         <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
           {isRTL ? 'سلة التسوق' : 'Mon panier'} ({getTotalItems()})
         </Text>
@@ -68,18 +67,7 @@ export default function CartScreen({ onBack, onCheckout }) {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Shop Info */}
-        {cartShop && (
-          <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 12, padding: 14, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }}>
-            <Text style={{ fontSize: 24 }}>🏪</Text>
-            <View>
-              <Text style={{ fontSize: 13, color: '#777' }}>{isRTL ? 'طلبك من' : 'Votre commande chez'}</Text>
-              <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#333' }}>
-                {cartShop.username || cartShop.name}
-              </Text>
-            </View>
-          </View>
-        )}
+
 
         {/* Cart Items */}
         <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 12, overflow: 'hidden' }}>

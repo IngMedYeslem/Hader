@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from '../translations';
 import { API_CONFIG } from '../config/api';
+import ShopHeader from './ShopHeader';
 const BASE = API_CONFIG.BASE_URL;
 
 const ORDER_STEPS = [
@@ -75,16 +76,9 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
 
+      <ShopHeader onBack={onBack} showCart={false} />
       {/* Header */}
       <View style={{ backgroundColor: '#FF6B35', padding: 16, paddingBottom: 30 }}>
-        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-            <Text style={{ fontSize: 22, color: 'white' }}>←</Text>
-          </TouchableOpacity>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white', marginLeft: 8 }}>
-            {isRTL ? 'تتبع الطلب' : 'Suivi de commande'}
-          </Text>
-        </View>
 
         <View style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: 14 }}>
           <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>

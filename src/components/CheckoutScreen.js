@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
 import { API_URL, API_CONFIG } from '../config/api';
+import ShopHeader from './ShopHeader';
 
 const BASE = API_CONFIG.BASE_URL;
 
@@ -180,11 +181,9 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
+      <ShopHeader onBack={onBack} showCart={false} />
       <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', padding: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-        <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-          <Text style={{ fontSize: 22, color: '#333' }}>←</Text>
-        </TouchableOpacity>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginLeft: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
           {isRTL ? 'إتمام الطلب' : 'Finaliser la commande'}
         </Text>
       </View>
