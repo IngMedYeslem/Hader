@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, SafeAreaView,
-  StatusBar, Animated, Linking, Alert
+  StatusBar, Animated, Linking, Alert, Image, Platform
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '../translations';
 import { API_CONFIG } from '../config/api';
 import ShopHeader from './ShopHeader';
@@ -23,6 +24,8 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
   const isRTL = currentLanguage === 'ar';
   const [currentStep, setCurrentStep] = useState(0);
   const [liveOrder, setLiveOrder] = useState(null);
+  const [newReceipt, setNewReceipt] = useState(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const intervalRef = useRef(null);
@@ -68,6 +71,58 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
     }
   };
 
+  const isReceiptRejected = liveOrder?.paymentMethod === 'bank' && liveOrder?.paymentStatus === 'rejected';
+  const pickNewReceipt = async () => {
+    if (Platform.OS === 'web') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) setNewReceipt(file);
+      };
+      input.click();
+      return;
+    }
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+    if (!result.canceled && result.assets?.[0]) setNewReceipt(result.assets[0].uri);
+  };
+
+  const submitNewReceipt = async () => {
+    if (!newReceipt || !liveOrder?._id) return;
+    setUploadingReceipt(true);
+    try {
+      const formData = new FormData();
+      if (Platform.OS === 'web') {
+        formData.append('receipt', newReceipt);
+      } else {
+        formData.append('receipt', { uri: newReceipt, type: 'image/jpeg', name: 'receipt.jpg' });
+      }
+      const uploadRes = await fetch(`${BASE}/upload-receipt`, { method: 'POST', body: formData });
+      const uploadData = await uploadRes.json();
+      if (uploadData.receiptPath) {
+        await fetch(`${BASE}/orders/${liveOrder._id}/new-receipt`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiptUrl: uploadData.receiptPath }),
+        });
+        setNewReceipt(null);
+        fetchOrderStatus();
+        Platform.OS === 'web'
+          ? window.alert(isRTL ? 'تم إرسال الإيصال بنجاح' : 'Reçu envoyé avec succès')
+          : Alert.alert(isRTL ? 'تم ✅' : 'Envoyé ✅', isRTL ? 'تم إرسال الإيصال بنجاح' : 'Reçu envoyé avec succès');
+      }
+    } catch (e) {
+      Platform.OS === 'web'
+        ? window.alert(isRTL ? 'فشل رفع الإيصال' : 'Échec de l\'envoi')
+        : Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل رفع الإيصال' : 'Échec de l\'envoi');
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
   const isCancelled = liveOrder?.status === 'cancelled' || liveOrder?.status === 'failed';
   const currentStepData = ORDER_STEPS[currentStep];
   const isDelivered = currentStep === ORDER_STEPS.length - 1;
@@ -94,6 +149,87 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: -16 }}>
+
+        {/* إيصال التحويل البنكي - في الأعلى */}
+        {liveOrder?.paymentMethod === 'bank' && (
+          <View style={{ backgroundColor: 'white', margin: 16, marginBottom: 0, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 3 }}>
+            <Text style={{ fontWeight: 'bold', color: '#333', fontSize: 15, marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
+              🧾 {isRTL ? 'إيصال التحويل البنكي' : 'Reçu de virement bancaire'}
+            </Text>
+
+            {/* سبب الرفض */}
+            {liveOrder.paymentStatus === 'rejected' && liveOrder.paymentNote && (
+              <View style={{ backgroundColor: '#f8d7da', borderRadius: 8, padding: 10, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: '#e74c3c' }}>
+                <Text style={{ color: '#721c24', fontWeight: 'bold', fontSize: 13, textAlign: isRTL ? 'right' : 'left' }}>
+                  ❌ {isRTL ? `سبب الرفض: ${liveOrder.paymentNote}` : `Motif du rejet: ${liveOrder.paymentNote}`}
+                </Text>
+              </View>
+            )}
+
+            {/* الإيصال: إذا مرفوض يظهر القديم مع إمكانية الاستبدال، وإلا يظهر فقط */}
+            {isReceiptRejected ? (
+              <TouchableOpacity
+                onPress={pickNewReceipt}
+                style={{ borderWidth: 2, borderColor: newReceipt ? '#2ecc71' : '#e74c3c', borderStyle: 'dashed', borderRadius: 12, overflow: 'hidden', marginBottom: 10 }}
+              >
+                {newReceipt ? (
+                  Platform.OS === 'web'
+                    ? <View style={{ padding: 16, alignItems: 'center', backgroundColor: '#f0fff4' }}>
+                        <Text style={{ color: '#2ecc71', fontWeight: 'bold' }}>✅ {isRTL ? 'تم اختيار الإيصال الجديد' : 'Nouveau reçu sélectionné'}</Text>
+                      </View>
+                    : <View>
+                        <Image source={{ uri: newReceipt }} style={{ width: '100%', height: 200 }} resizeMode="cover" />
+                        <View style={{ backgroundColor: 'rgba(46,204,113,0.85)', padding: 8, alignItems: 'center' }}>
+                          <Text style={{ color: 'white', fontWeight: 'bold' }}>✅ {isRTL ? 'اضغط للتغيير' : 'Appuyer pour changer'}</Text>
+                        </View>
+                      </View>
+                ) : (
+                  liveOrder.paymentReceiptUrl
+                    ? <View>
+                        <Image source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200 }} resizeMode="cover" />
+                        <View style={{ backgroundColor: 'rgba(231,76,60,0.85)', padding: 8, alignItems: 'center' }}>
+                          <Text style={{ color: 'white', fontWeight: 'bold' }}>📷 {isRTL ? 'اضغط لرفع إيصال جديد' : 'Appuyer pour envoyer un nouveau reçu'}</Text>
+                        </View>
+                      </View>
+                    : <View style={{ padding: 20, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 32 }}>📷</Text>
+                        <Text style={{ color: '#e74c3c', fontWeight: 'bold', marginTop: 6 }}>{isRTL ? 'اضغط لرفع إيصال جديد' : 'Appuyer pour envoyer un nouveau reçu'}</Text>
+                      </View>
+                )}
+              </TouchableOpacity>
+            ) : (
+              liveOrder.paymentReceiptUrl
+                ? <Image source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200, borderRadius: 10, marginBottom: 8 }} resizeMode="cover" />
+                : null
+            )}
+
+            {/* زر الإرسال */}
+            {isReceiptRejected && newReceipt && (
+              <TouchableOpacity
+                onPress={submitNewReceipt}
+                disabled={uploadingReceipt}
+                style={{ backgroundColor: uploadingReceipt ? '#ccc' : '#2ecc71', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 4 }}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                  {uploadingReceipt ? '⏳...' : (isRTL ? '✅ إرسال الإيصال الجديد' : '✅ Envoyer le nouveau reçu')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* حالة الإيصال */}
+            {!isReceiptRejected && liveOrder.paymentStatus === 'confirmed' && (
+              <View style={{ backgroundColor: '#d4edda', borderRadius: 8, padding: 10, alignItems: 'center' }}>
+                <Text style={{ color: '#155724', fontWeight: 'bold' }}>✅ {isRTL ? 'تم تأكيد الدفع' : 'Paiement confirmé'}</Text>
+              </View>
+            )}
+            {!isReceiptRejected && liveOrder.paymentStatus === 'receipt_uploaded' && (
+              <View style={{ backgroundColor: '#fff3cd', borderRadius: 8, padding: 10, alignItems: 'center' }}>
+                <Text style={{ color: '#856404', fontWeight: 'bold' }}>⏳ {isRTL ? 'قيد المراجعة من المتجر' : 'En attente de vérification'}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Current Status Card */}
         <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 20, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 6 }}>
           {isCancelled ? (

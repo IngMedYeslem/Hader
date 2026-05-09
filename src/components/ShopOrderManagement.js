@@ -3,6 +3,7 @@ import {
   View, Text, FlatList, TouchableOpacity, Alert,
   RefreshControl, SafeAreaView, StyleSheet, Platform
 } from 'react-native';
+
 import { API_CONFIG } from '../config/api';
 import { useTranslation } from '../translations';
 import { STATUS_FLOW, getStatus } from './orderConstants';
@@ -78,7 +79,21 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
         if (prevOrderIds.current.size > 0) {
           const newOnes = list.filter(o => !prevOrderIds.current.has(o._id) && o.status === 'pending');
           if (newOnes.length > 0) {
-            if (Platform.OS !== "web") { const { Vibration } = require("react-native"); Vibration.vibrate([0, 400, 200, 400]); }
+            if (Platform.OS !== 'web') {
+              const { Vibration } = require('react-native');
+              Vibration.vibrate([0, 500, 200, 500, 200, 500]);
+            }
+            try {
+              const Notifications = require('expo-notifications');
+              await Notifications.scheduleNotificationAsync({
+                content: {
+                  title: isRTL ? '🔔 طلب جديد!' : '🔔 Nouvelle commande!',
+                  body: isRTL ? `طلب #${newOnes[0].orderNumber} بانتظار موافقتك` : `Commande #${newOnes[0].orderNumber} en attente`,
+                  sound: true,
+                },
+                trigger: null,
+              });
+            } catch (_) {}
             setNewOrderAlert(newOnes[0]);
           }
         }

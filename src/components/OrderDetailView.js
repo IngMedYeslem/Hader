@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   Image, Alert, SafeAreaView, StyleSheet, Platform
@@ -33,7 +33,23 @@ const TIMELINE_STEPS = STATUS_FLOW
 export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated }) {
   const { currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
-  const status = getStatus(order?.status) || getStatus("pending");
+  const [liveOrder, setLiveOrder] = useState(order);
+  const status = getStatus(liveOrder?.status) || getStatus('pending');
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${BASE}/orders/${order._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data._id) setLiveOrder(data);
+        }
+      } catch {}
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [order._id]);
+
+  useEffect(() => { setLiveOrder(order); }, [order]);
 
   const updateStatus = async (newStatus) => {
     try {
@@ -57,20 +73,43 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
     }
   };
 
-  const confirmPayment = async (paymentStatus) => {
+  const confirmPayment = async (paymentStatus, note = '') => {
     try {
       const orderId = order._id?.toString() || order._id;
       const res = await fetch(`${BASE}/orders/${orderId}/payment-status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentStatus }),
+        body: JSON.stringify({ paymentStatus, note }),
       });
       const data = await res.json();
-      if (res.ok) onOrderUpdated({ ...order, paymentStatus });
+      if (res.ok) onOrderUpdated({ ...order, paymentStatus, paymentNote: paymentStatus === 'rejected' ? note : '' });
       else showAlert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل التحديث' : 'Mise à jour échouée'));
     } catch (e) {
       showAlert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
     }
+  };
+
+  const rejectPayment = () => {
+    showAlert(
+      isRTL ? 'رفض الإيصال' : 'Rejeter le reçu',
+      isRTL ? 'لماذا تريد رفض هذا الإيصال؟' : 'Pourquoi rejeter ce reçu?',
+      [
+        { text: isRTL ? 'إلغاء' : 'Annuler', style: 'cancel' },
+        { 
+          text: isRTL ? 'إيصال غير واضح' : 'Reçu illisible', 
+          onPress: () => confirmPayment('rejected', isRTL ? 'الإيصال غير واضح' : 'Reçu illisible') 
+        },
+        { 
+          text: isRTL ? 'مبلغ خاطئ' : 'Montant incorrect', 
+          onPress: () => confirmPayment('rejected', isRTL ? 'المبلغ غير صحيح' : 'Montant incorrect') 
+        },
+        { 
+          text: isRTL ? 'إيصال مزيف' : 'Reçu falsifié', 
+          style: 'destructive',
+          onPress: () => confirmPayment('rejected', isRTL ? 'الإيصال مزيف أو محرف' : 'Reçu falsifié') 
+        },
+      ]
+    );
   };
 
   const acceptOrder = () => {
@@ -97,12 +136,15 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
 
   // Next possible statuses (forward flow only, no pending/cancelled)
   // Only the immediate next status (not all future ones)
-  const currentIdx = STATUS_FLOW.findIndex(x => x.id === order.status);
+  const currentIdx = STATUS_FLOW.findIndex(x => x.id === liveOrder.status);
   const nextStatuses = currentIdx >= 0 && currentIdx < STATUS_FLOW.length - 1
     ? [STATUS_FLOW[currentIdx + 1]].filter(s => s && s.id !== 'cancelled')
     : [];
 
-  const isDone = ['delivered', 'cancelled'].includes(order.status);
+  const isDone = ['delivered', 'cancelled'].includes(liveOrder.status);
+
+  // قيد: لا يمكن تحديث الحالة إذا كان الدفع بنكياً ولم يتم تأكيد الإيصال
+  const receiptBlocking = liveOrder.paymentMethod === 'bank' && liveOrder.paymentStatus !== 'confirmed';
 
   return (
     <SafeAreaView style={s.container}>
@@ -205,41 +247,48 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
         </View>
 
         {/* ── Bank Receipt ── */}
-        {order.paymentMethod === 'bank' && (
+        {liveOrder.paymentMethod === 'bank' && (
           <View style={s.card}>
             <Text style={[s.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? '🧾 إيصال التحويل البنكي' : '🧾 Reçu de virement'}
             </Text>
-            {order.paymentReceiptUrl ? (
+            {liveOrder.paymentReceiptUrl ? (
               <>
                 <Image
-                  source={{ uri: `${BASE.replace('/api', '')}${order.paymentReceiptUrl}` }}
+                  source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }}
                   style={s.receiptImage}
                   resizeMode="contain"
                 />
-                {order.paymentStatus === 'receipt_uploaded' && (
+                {liveOrder.paymentStatus === 'receipt_uploaded' && (
                   <View style={s.row}>
                     <TouchableOpacity style={[s.btn, { backgroundColor: '#2ecc71' }]} onPress={() => confirmPayment('confirmed')}>
                       <Text style={s.btnText}>✅ {isRTL ? 'تأكيد الدفع' : 'Confirmer'}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[s.btn, { backgroundColor: '#e74c3c' }]} onPress={() => confirmPayment('rejected')}>
+                    <TouchableOpacity style={[s.btn, { backgroundColor: '#e74c3c' }]} onPress={rejectPayment}>
                       <Text style={s.btnText}>❌ {isRTL ? 'رفض الإيصال' : 'Rejeter'}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
-                {order.paymentStatus === 'confirmed' && (
+                {liveOrder.paymentStatus === 'confirmed' && (
                   <View style={[s.paymentBadge, { backgroundColor: '#d4edda' }]}>
                     <Text style={{ color: '#155724', fontWeight: 'bold' }}>
                       ✅ {isRTL ? 'تم تأكيد الدفع' : 'Paiement confirmé'}
                     </Text>
                   </View>
                 )}
-                {order.paymentStatus === 'rejected' && (
-                  <View style={[s.paymentBadge, { backgroundColor: '#f8d7da' }]}>
-                    <Text style={{ color: '#721c24', fontWeight: 'bold' }}>
-                      ❌ {isRTL ? 'تم رفض الإيصال' : 'Reçu rejeté'}
-                    </Text>
-                  </View>
+                {liveOrder.paymentStatus === 'rejected' && (
+                  <>
+                    <View style={[s.paymentBadge, { backgroundColor: '#f8d7da' }]}>
+                      <Text style={{ color: '#721c24', fontWeight: 'bold' }}>
+                        ❌ {isRTL ? `تم رفض الإيصال${liveOrder.paymentNote ? ': ' + liveOrder.paymentNote : ''}` : `Reçu rejeté${liveOrder.paymentNote ? ': ' + liveOrder.paymentNote : ''}`}
+                      </Text>
+                    </View>
+                    <View style={[s.warningBox, { backgroundColor: '#fff3cd', borderColor: '#ffeaa7' }]}>
+                      <Text style={{ color: '#856404', textAlign: 'center', fontSize: 13 }}>
+                        ⏳ {isRTL ? 'في انتظار إيصال جديد من الزبون' : 'En attente d’un nouveau reçu du client'}
+                      </Text>
+                    </View>
+                  </>
                 )}
               </>
             ) : (
@@ -276,45 +325,75 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
         </View>
 
         {/* ── Accept / Reject (pending only) ── */}
-        {order.status === 'pending' && (
+        {liveOrder.status === 'pending' && (
           <View style={s.card}>
             <Text style={[s.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? '❓ هل تقبل هذه الطلبية؟' : '❓ Accepter cette commande?'}
             </Text>
-            <View style={s.row}>
-              <TouchableOpacity style={[s.btn, { backgroundColor: '#2ecc71' }]} onPress={acceptOrder}>
-                <Text style={s.btnText}>✅ {isRTL ? 'قبول الطلب' : 'Accepter'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.btn, { backgroundColor: '#e74c3c' }]} onPress={rejectOrder}>
-                <Text style={s.btnText}>❌ {isRTL ? 'رفض الطلب' : 'Refuser'}</Text>
-              </TouchableOpacity>
-            </View>
+            {receiptBlocking ? (
+              <View style={[s.warningBox, { backgroundColor: '#fff3cd', borderColor: '#ffc107' }]}>
+                <Text style={{ color: '#856404', textAlign: 'center', fontSize: 13, fontWeight: 'bold' }}>
+                  ⏳ {isRTL
+                    ? liveOrder.paymentReceiptUrl
+                      ? liveOrder.paymentStatus === 'rejected'
+                        ? 'تم رفض الإيصال — بانتظار إيصال جديد من الزبون'
+                        : 'يجب تأكيد إيصال الدفع أولاً قبل قبول الطلب'
+                      : 'بانتظار رفع إيصال الدفع من الزبون'
+                    : liveOrder.paymentReceiptUrl
+                      ? liveOrder.paymentStatus === 'rejected'
+                        ? 'Reçu rejeté — En attente d’un nouveau reçu'
+                        : 'Confirmez le reçu avant d’accepter'
+                      : 'En attente du reçu de virement'
+                  }
+                </Text>
+              </View>
+            ) : (
+              <View style={s.row}>
+                <TouchableOpacity style={[s.btn, { backgroundColor: '#2ecc71' }]} onPress={acceptOrder}>
+                  <Text style={s.btnText}>✅ {isRTL ? 'قبول الطلب' : 'Accepter'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.btn, { backgroundColor: '#e74c3c' }]} onPress={rejectOrder}>
+                  <Text style={s.btnText}>❌ {isRTL ? 'رفض الطلب' : 'Refuser'}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
 
         {/* ── Update Status ── */}
-        {!isDone && order.status !== 'pending' && nextStatuses.length > 0 && (
+        {!isDone && liveOrder.status !== 'pending' && nextStatuses.length > 0 && (
           <View style={[s.card, { marginBottom: 32 }]}>
             <Text style={[s.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
               {isRTL ? '🔄 تحديث الحالة' : '🔄 Mettre à jour le statut'}
             </Text>
-            <View style={s.statusBtns}>
-              {nextStatuses.map(st => (
+            {receiptBlocking ? (
+              <View style={[s.warningBox, { backgroundColor: '#fff3cd', borderColor: '#ffc107' }]}>
+                <Text style={{ color: '#856404', textAlign: 'center', fontSize: 13, fontWeight: 'bold' }}>
+                  ⏳ {isRTL
+                    ? 'يجب تأكيد إيصال الدفع أولاً لمتابعة الطلب'
+                    : 'Confirmez le reçu de paiement pour continuer'
+                  }
+                </Text>
+              </View>
+            ) : (
+              <View style={s.statusBtns}>
+                {nextStatuses.map(st => (
+                  <TouchableOpacity
+                    key={st.id}
+                    style={[s.statusBtn, { backgroundColor: st.color }]}
+                    onPress={() => updateStatus(st.id)}
+                  >
+                    <Text style={s.statusBtnText}>{st.icon} {isRTL ? st.labelAr : st.labelFr}</Text>
+                  </TouchableOpacity>
+                ))}
                 <TouchableOpacity
-                  key={st.id}
-                  style={[s.statusBtn, { backgroundColor: st.color }]}
-                  onPress={() => updateStatus(st.id)}
+                  style={[s.statusBtn, { backgroundColor: '#e74c3c' }]}
+                  onPress={rejectOrder}
                 >
-                  <Text style={s.statusBtnText}>{st.icon} {isRTL ? st.labelAr : st.labelFr}</Text>
+                  <Text style={s.statusBtnText}>❌ {isRTL ? 'إلغاء الطلب' : 'Annuler'}</Text>
                 </TouchableOpacity>
-              ))}
-              <TouchableOpacity
-                style={[s.statusBtn, { backgroundColor: '#e74c3c' }]}
-                onPress={rejectOrder}
-              >
-                <Text style={s.statusBtnText}>❌ {isRTL ? 'إلغاء الطلب' : 'Annuler'}</Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -369,6 +448,7 @@ const s = StyleSheet.create({
   receiptImage:     { width: '100%', height: 220, borderRadius: 10, marginBottom: 12 },
   waitingReceipt:   { backgroundColor: '#fff3ee', padding: 12, borderRadius: 8 },
   paymentBadge:     { padding: 10, borderRadius: 8, alignItems: 'center', marginTop: 8 },
+  warningBox:       { padding: 12, borderRadius: 8, marginTop: 8, borderWidth: 1 },
   // Items
   itemRow:          { justifyContent: 'space-between', paddingVertical: 8 },
   itemBorder:       { borderBottomWidth: 1, borderBottomColor: '#f5f5f5' },

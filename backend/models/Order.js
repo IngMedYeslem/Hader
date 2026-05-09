@@ -30,6 +30,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: { type: String, default: 'cash' },
   paymentReceiptUrl: { type: String, default: '' },
   paymentStatus: { type: String, enum: ['pending', 'receipt_uploaded', 'confirmed', 'rejected'], default: 'pending' },
+  paymentNote: { type: String, default: '' },
   notes: { type: String, default: '' },
   estimatedPrepTime: { type: Number, default: 0 }, // minutes
   prepStartedAt: { type: Date },

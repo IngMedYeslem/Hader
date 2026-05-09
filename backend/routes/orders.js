@@ -151,6 +151,16 @@ router.put('/orders/:orderId/status', async (req, res) => {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: 'Commande introuvable' });
 
+    // منع متابعة الطلب إذا كان الدفع بنكياً ولم يتم تأكيد الإيصال
+    if (order.paymentMethod === 'bank' && order.paymentStatus !== 'confirmed' && newStatus !== 'cancelled') {
+      const msg = order.paymentStatus === 'rejected'
+        ? 'تم رفض الإيصال — يجب رفع إيصال جديد أولاً'
+        : order.paymentStatus === 'receipt_uploaded'
+        ? 'يجب تأكيد إيصال الدفع أولاً قبل متابعة الطلب'
+        : 'بانتظار رفع إيصال الدفع من الزبون';
+      return res.status(400).json({ error: msg });
+    }
+
     const transition = STATUS_TRANSITIONS[order.status];
     if (!transition || !transition.next.includes(newStatus))
       return res.status(400).json({ error: `لا يمكن الانتقال من ${order.status} إلى ${newStatus}` });
@@ -255,6 +265,17 @@ router.get('/shops/:shopId/orders/counts', async (req, res) => {
   }
 });
 
+// ── Get single order by ID ──
+router.get('/orders/:orderId', async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ error: 'Commande introuvable' });
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Get order by number ──
 router.get('/orders/number/:orderNumber', async (req, res) => {
   try {
@@ -297,14 +318,55 @@ router.put('/orders/:orderId/receipt', async (req, res) => {
   }
 });
 
+// ── Upload new receipt after rejection ──
+router.put('/orders/:orderId/new-receipt', async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ error: 'Commande introuvable' });
+    if (order.paymentStatus !== 'rejected') {
+      return res.status(400).json({ error: 'لا يمكن رفع إيصال جديد إلا بعد رفض الإيصال السابق' });
+    }
+    order.paymentReceiptUrl = req.body.receiptUrl;
+    order.paymentStatus = 'receipt_uploaded';
+    order.paymentNote = '';
+    await pushStatusHistory(order, order.status, 'customer', null, 'تم رفع إيصال دفع جديد بعد الرفض');
+    await order.save();
+    // إشعار المتجر: نبحث عن userId المرتبط بالمتجر
+    if (order.shopId) {
+      try {
+        const User = require('../models/User');
+        const shopUser = await User.findOne({ linkedShopId: order.shopId }).select('_id');
+        const notifyId = shopUser ? shopUser._id : order.shopId;
+        await notificationService.sendOrderNotification(
+          notifyId,
+          order._id,
+          `${order.orderNumber} - إيصال جديد بعد الرفض 🔄`
+        );
+      } catch {}
+    }
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.put('/orders/:orderId/payment-status', async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.orderId,
-      { paymentStatus: req.body.paymentStatus },
-      { new: true }
-    );
+    const { paymentStatus, note = '' } = req.body;
+    const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: 'Commande introuvable' });
+
+    const oldStatus = order.paymentStatus;
+    order.paymentStatus = paymentStatus;
+    if (paymentStatus === 'rejected') {
+      order.paymentNote = note;
+      await pushStatusHistory(order, order.status, 'store', null, `تم رفض إيصال الدفع: ${note}`);
+    } else if (oldStatus === 'rejected' && paymentStatus === 'receipt_uploaded') {
+      order.paymentNote = '';
+      await pushStatusHistory(order, order.status, 'customer', null, 'تم رفع إيصال دفع جديد بعد الرفض');
+    }
+    
+    await order.save();
     res.json({ success: true, order });
   } catch (error) {
     res.status(500).json({ error: error.message });
