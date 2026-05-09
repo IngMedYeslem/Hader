@@ -116,10 +116,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const cartCount = getTotalItems();
   const cartTotal = getTotalAmount();
 
-  const coverUri = (shop.mainImage || shop.coverImage)
-    ? getMediaUrl(shop.mainImage || shop.coverImage)
+  const mainImageUri = shop.mainImage
+    ? getMediaUrl(shop.mainImage)
+    : shop.coverImage
+    ? getMediaUrl(shop.coverImage)
     : null;
-  const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -259,13 +260,12 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         })()}
       </Modal>
 
-      <ScrollView showsVerticalScrollIndicator={false} stickyHeaderIndices={[1]}>
-        {/* Shop Header */}
-        <View>
-          {/* Cover */}
-          <View style={{ height: 200, backgroundColor: '#FF6B35' }}>
-            {coverUri ? (
-              <Image source={{ uri: coverUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      {/* Shop Header - ثابت */}
+      <View>
+        {/* Cover */}
+        <View style={{ height: 200, backgroundColor: '#FF6B35' }}>
+            {mainImageUri ? (
+              <Image source={{ uri: mainImageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
             ) : (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 60 }}>🏪</Text>
@@ -307,8 +307,8 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
           {/* Shop Info Card */}
           <View style={{ backgroundColor: 'white', margin: 16, borderRadius: 16, padding: 16, marginTop: -30, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5 }}>
             <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
-              {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={{ width: 56, height: 56, borderRadius: 28, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
+              {mainImageUri ? (
+                <Image source={{ uri: mainImageUri }} style={{ width: 56, height: 56, borderRadius: 28, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
               ) : (
                 <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }}>
                   <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 22 }}>
@@ -345,29 +345,30 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
               </View>
             </View>
           </View>
-        </View>
+      </View>
 
-        {/* Category Tabs - Sticky */}
-        <View style={{ backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
-            {categories.map(cat => (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => setSelectedCategory(cat)}
-                style={{
-                  paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-                  backgroundColor: selectedCategory === cat ? '#FF6B35' : '#f5f5f5',
-                }}
-              >
-                <Text style={{ fontSize: 13, fontWeight: '600', color: selectedCategory === cat ? 'white' : '#555' }}>
-                  {cat === 'all' ? (isRTL ? 'الكل' : 'Tout') : cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+      {/* Category Tabs - ثابت */}
+      <View style={{ backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}>
+          {categories.map(cat => (
+            <TouchableOpacity
+              key={cat}
+              onPress={() => setSelectedCategory(cat)}
+              style={{
+                paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+                backgroundColor: selectedCategory === cat ? '#FF6B35' : '#f5f5f5',
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '600', color: selectedCategory === cat ? 'white' : '#555' }}>
+                {cat === 'all' ? (isRTL ? 'الكل' : 'Tout') : cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-        {/* Products */}
+      {/* Products - قابل للتمرير */}
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View style={{ padding: 16 }}>
           {loading ? (
             <View style={{ padding: 40, alignItems: 'center' }}>

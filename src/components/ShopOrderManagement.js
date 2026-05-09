@@ -12,6 +12,22 @@ const BASE = API_CONFIG.BASE_URL;
 
 export { STATUS_FLOW, getStatus };
 
+const showAlert = (title, message, buttons) => {
+  if (Platform.OS === 'web') {
+    if (buttons && buttons.length > 1) {
+      const confirmed = window.confirm(`${title}\n${message}`);
+      if (confirmed) {
+        const confirmBtn = buttons.find(b => b.style === 'destructive' || b.style !== 'cancel');
+        confirmBtn?.onPress?.();
+      }
+    } else {
+      window.alert(`${title}\n${message}`);
+    }
+  } else {
+    Alert.alert(title, message, buttons);
+  }
+};
+
 
 const TABS = [
   { id: 'pending',    labelAr: 'معلق',        labelFr: 'En attente' },
@@ -98,23 +114,23 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
       const data = await res.json();
       if (res.ok && data.success) {
         setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'confirmed' } : o));
-        Alert.alert(isRTL ? 'تم القبول ✅' : 'Accepté ✅', isRTL ? 'تم قبول الطلب' : 'Commande acceptée');
+        showAlert(isRTL ? 'تم القبول ✅' : 'Accepté ✅', isRTL ? 'تم قبول الطلب' : 'Commande acceptée');
       } else {
-        Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
+        showAlert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
       }
     } catch (e) {
       clearTimeout(timeout);
       const msg = e.name === 'AbortError'
         ? (isRTL ? 'انتهت مهلة الاتصال، تحقق من الشبكة' : 'Délai dépassé, vérifiez le réseau')
         : (isRTL ? `تعذر الاتصال بالخادم\n${BASE}` : `Impossible de joindre le serveur\n${BASE}`);
-      Alert.alert(isRTL ? 'خطأ في الاتصال' : 'Erreur réseau', msg);
+      showAlert(isRTL ? 'خطأ في الاتصال' : 'Erreur réseau', msg);
     } finally {
       setLoadingOrderId(null);
     }
   };
 
   const rejectOrder = (orderId) => {
-    Alert.alert(
+    showAlert(
       isRTL ? 'رفض الطلب' : 'Refuser',
       isRTL ? 'هل تريد رفض هذه الطلبية؟' : 'Voulez-vous refuser cette commande?',
       [
@@ -138,7 +154,7 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
         Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée'));
       }
     } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée');
+      showAlert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée');
     }
   };
 

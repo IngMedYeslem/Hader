@@ -145,10 +145,10 @@ export default function GlobalInterface({ onShopLogin }) {
             return (
               <TouchableOpacity
                 key={shop._id}
-                onPress={() => setSelectedShop({
-                  ...shop,
-                  username: shop.name,  // RestaurantScreen يستخدم username
-                })}
+                onPress={() => {
+                  setSelectedShop(shop);
+                  navigate('restaurant');
+                }}
                 style={{
                   backgroundColor: 'white',
                   borderRadius: 16,

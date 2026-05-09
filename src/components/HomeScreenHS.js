@@ -54,7 +54,6 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
                 ...p.shop,
                 productCount: 0,
                 minPrice: Infinity,
-                coverImage: p.shop.mainImage || p.shop.coverImage || p.images?.[0] || null,
               };
             }
             shopMap[p.shop._id].productCount++;

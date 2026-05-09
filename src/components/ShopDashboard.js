@@ -15,7 +15,7 @@ import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
 import { useShopValidationRefresh } from '../hooks/useShopValidationRefresh';
-import { productAPI } from '../services/api';
+import { productAPI, getMediaUrl } from '../services/api';
 import { syncService } from '../services/syncService';
 import { imageService } from '../services/imageService';
 import { API_URL } from '../config/api';
@@ -313,6 +313,21 @@ function ShopDashboard({ shop, onLogout }) {
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
+        {/* Cover Image */}
+        <View style={{ height: 160, backgroundColor: '#FF6B35' }}>
+          {shop.mainImage ? (
+            <Image
+              source={{ uri: getMediaUrl(shop.mainImage) }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 60 }}>🏪</Text>
+            </View>
+          )}
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} />
+        </View>
         <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View style={{ flex: 1, marginRight: 8 }}>

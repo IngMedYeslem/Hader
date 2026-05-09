@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, ImageBackground, KeyboardAvoidingView, Platform, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform, Animated, Dimensions } from 'react-native';
 import MediaManager from './MediaManager';
 import styles from './styles';
 import { useTranslation } from '../translations';
@@ -131,11 +131,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
   return (
     <Modal visible={visible} animationType="none" presentationStyle="pageSheet">
       <View style={[styles.wrapper, styles.shopLoginContainer, { minHeight: screenHeight }]}>
-        <ImageBackground 
-          source={require('../../assets/b2.jpeg')} 
-          style={styles.background}
-          resizeMode="cover"
-        >
+        <View style={styles.background}>
           <KeyboardAvoidingView 
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -261,7 +257,7 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
               </Animated.View>
             </ScrollView>
           </KeyboardAvoidingView>
-        </ImageBackground>
+        </View>
       </View>
     </Modal>
   );

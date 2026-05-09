@@ -1,13 +1,29 @@
 import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Image, Alert, SafeAreaView, StyleSheet
+  Image, Alert, SafeAreaView, StyleSheet, Platform
 } from 'react-native';
 import { API_CONFIG } from '../config/api';
 import { useTranslation } from '../translations';
 import { STATUS_FLOW, getStatus } from './orderConstants';
 
 const BASE = API_CONFIG.BASE_URL;
+
+const showAlert = (title, message, buttons) => {
+  if (Platform.OS === 'web') {
+    if (buttons && buttons.length > 1) {
+      const confirmed = window.confirm(`${title}\n${message}`);
+      if (confirmed) {
+        const confirmBtn = buttons.find(b => b.style === 'destructive' || b.style !== 'cancel');
+        confirmBtn?.onPress?.();
+      }
+    } else {
+      window.alert(`${title}\n${message}`);
+    }
+  } else {
+    Alert.alert(title, message, buttons);
+  }
+};
 
 // Timeline steps in order (excluding cancelled)
 const TIMELINE_STEPS = STATUS_FLOW
@@ -31,13 +47,13 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
       if (res.ok && data.success) {
         onOrderUpdated({ ...order, status: newStatus });
       } else {
-        Alert.alert(
+        showAlert(
           isRTL ? 'خطأ' : 'Erreur',
           data.error || (isRTL ? 'فشل تحديث الحالة' : 'Mise à jour échouée')
         );
       }
     } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
+      showAlert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
     }
   };
 
@@ -51,14 +67,14 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
       });
       const data = await res.json();
       if (res.ok) onOrderUpdated({ ...order, paymentStatus });
-      else Alert.alert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل التحديث' : 'Mise à jour échouée'));
+      else showAlert(isRTL ? 'خطأ' : 'Erreur', data.error || (isRTL ? 'فشل التحديث' : 'Mise à jour échouée'));
     } catch (e) {
-      Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
+      showAlert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'تحقق من الاتصال' : 'Vérifiez votre connexion');
     }
   };
 
   const acceptOrder = () => {
-    Alert.alert(
+    showAlert(
       isRTL ? 'قبول الطلب' : 'Accepter la commande',
       isRTL ? 'هل تريد قبول هذه الطلبية؟' : 'Voulez-vous accepter cette commande?',
       [
@@ -69,7 +85,7 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
   };
 
   const rejectOrder = () => {
-    Alert.alert(
+    showAlert(
       isRTL ? 'رفض الطلب' : 'Refuser la commande',
       isRTL ? 'هل تريد رفض هذه الطلبية؟' : 'Voulez-vous refuser cette commande?',
       [

@@ -62,7 +62,18 @@ export const shopAPI = {
       throw new Error('Network error');
     }
     
-    return response.json();
+    const shop = await response.json();
+
+    // جلب البيانات الكاملة للمتجر بعد تسجيل الدخول
+    try {
+      const fullRes = await fetch(`${API_URL}/shops/${shop._id}`);
+      if (fullRes.ok) {
+        const fullShop = await fullRes.json();
+        return { ...shop, ...fullShop };
+      }
+    } catch {}
+
+    return shop;
   },
 
   register: async (shopData) => {
