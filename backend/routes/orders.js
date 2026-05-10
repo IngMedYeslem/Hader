@@ -51,7 +51,7 @@ async function pushStatusHistory(order, newStatus, changedBy, changedById, note 
 // ── Create guest order ──
 router.post('/orders/guest', async (req, res) => {
   try {
-    const { phoneNumber, deviceId, items, shippingAddress, paymentMethod, customerName, notes, totalAmount: clientTotal, deliveryFee } = req.body;
+    const { phoneNumber, deviceId, items, shippingAddress, gpsLocation, paymentMethod, customerName, notes, totalAmount: clientTotal, deliveryFee } = req.body;
 
     if (!phoneNumber || !items || items.length === 0)
       return res.status(400).json({ error: 'Données manquantes' });
@@ -101,7 +101,9 @@ router.post('/orders/guest', async (req, res) => {
       paymentMethod: paymentMethod || 'cash', deviceId: deviceId || 'app',
       softOtp, otpExpiresAt, otpStatus: 'verified', shopId,
       items: orderItems, totalAmount: clientTotal || calcTotal,
-      deliveryFee: deliveryFee || 0, shippingAddress, status: 'pending',
+      deliveryFee: deliveryFee || 0, shippingAddress,
+      gpsLocation: gpsLocation || null,
+      status: 'pending',
       statusHistory: [{ status: 'pending', changedBy: 'system', note: 'تم إنشاء الطلب', timestamp: new Date() }]
     });
 

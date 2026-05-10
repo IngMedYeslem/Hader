@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Image, Alert, SafeAreaView, StyleSheet, Platform
+  Image, Alert, SafeAreaView, StyleSheet, Platform, Linking
 } from 'react-native';
 import { API_CONFIG } from '../config/api';
 import { useTranslation } from '../translations';
@@ -244,6 +244,22 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
               : (isRTL ? 'تحويل بنكي' : 'Virement bancaire')}
             isRTL={isRTL}
           />
+          {/* GPS Location */}
+          {order.gpsLocation?.latitude && (
+            <TouchableOpacity
+              onPress={() => Linking.openURL(
+                `https://www.google.com/maps?q=${order.gpsLocation.latitude},${order.gpsLocation.longitude}`
+              )}
+              style={s.gpsBtn}
+            >
+              <Text style={s.gpsBtnText}>
+                📍 {isRTL ? 'فتح الموقع على الخريطة' : 'Ouvrir sur la carte'}
+              </Text>
+              <Text style={s.gpsCoords}>
+                {order.gpsLocation.latitude.toFixed(5)}, {order.gpsLocation.longitude.toFixed(5)}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* ── Bank Receipt ── */}
@@ -444,6 +460,10 @@ const s = StyleSheet.create({
   infoRow:          { marginBottom: 8 },
   infoLabel:        { color: '#999', fontSize: 13, minWidth: 90 },
   infoValue:        { color: '#333', fontSize: 13, flex: 1 },
+  // GPS
+  gpsBtn:           { marginTop: 10, backgroundColor: '#e8f5e9', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#2ecc71' },
+  gpsBtnText:       { color: '#27ae60', fontWeight: 'bold', fontSize: 14 },
+  gpsCoords:        { color: '#888', fontSize: 11, marginTop: 3 },
   // Receipt
   receiptImage:     { width: '100%', height: 220, borderRadius: 10, marginBottom: 12 },
   waitingReceipt:   { backgroundColor: '#fff3ee', padding: 12, borderRadius: 8 },

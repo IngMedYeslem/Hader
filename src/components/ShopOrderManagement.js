@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, Component } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, Alert,
-  RefreshControl, SafeAreaView, StyleSheet, Platform
+  RefreshControl, SafeAreaView, StyleSheet, Platform, Linking
 } from 'react-native';
 
 import { API_CONFIG } from '../config/api';
@@ -306,6 +306,19 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
                 </Text>
               ) : null}
 
+              {item.gpsLocation?.latitude && (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(
+                    `https://www.google.com/maps?q=${item.gpsLocation.latitude},${item.gpsLocation.longitude}`
+                  )}
+                  style={s.gpsBtn}
+                >
+                  <Text style={s.gpsBtnText}>
+                    🗺️ {isRTL ? 'فتح موقع الزبون على الخريطة' : 'Localisation du client'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <Text style={[s.cardDate, { textAlign: isRTL ? 'right' : 'left' }]}>
                 🕐 {new Date(item.createdAt).toLocaleString()}
               </Text>
@@ -373,6 +386,9 @@ const s = StyleSheet.create({
   cardAmount:     { color: '#FF6B35', fontWeight: 'bold', fontSize: 13 },
   cardAddress:    { color: '#aaa', fontSize: 12, marginTop: 2 },
   cardDate:       { color: '#ccc', fontSize: 11, marginTop: 4 },
+  // GPS
+  gpsBtn:         { marginTop: 6, backgroundColor: '#e8f5e9', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#2ecc71' },
+  gpsBtnText:     { color: '#27ae60', fontWeight: 'bold', fontSize: 12 },
   // Quick Actions
   quickActions:   { flexDirection: 'row', marginTop: 10 },
   btnAccept:      { flex: 1, backgroundColor: '#2ecc71', padding: 10, borderRadius: 10, alignItems: 'center', marginRight: 8 },

@@ -56,6 +56,10 @@ const orderSchema = new mongoose.Schema({
   },
   statusHistory: [statusHistorySchema],
   shippingAddress: String,
+  gpsLocation: {
+    latitude: Number,
+    longitude: Number
+  },
   trackingLink: String,
   driverLocation: {
     lat: Number,

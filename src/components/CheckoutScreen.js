@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   SafeAreaView, StatusBar, Alert, ActivityIndicator, Image, Clipboard, Platform
 } from 'react-native';
+import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
@@ -31,10 +32,36 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
   const [receiptImage, setReceiptImage] = useState(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState(null);
+  const [gpsLocation, setGpsLocation] = useState(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   const deliveryFee = 15;
   const total = getTotalAmount() + deliveryFee;
   const shopId = cartShop?._id?.toString() || cartShop?.id?.toString() || cartShop?._id || cartShop?.id;
+
+  useEffect(() => {
+    fetchGpsLocation();
+  }, []);
+
+  const fetchGpsLocation = async () => {
+    setGpsLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          isRTL ? 'تنبيه' : 'Attention',
+          isRTL ? 'لم يتم السماح بالوصول للموقع. يمكنك إدخال العنوان يدوياً.' : 'Accès à la localisation refusé. Vous pouvez saisir l\'adresse manuellement.'
+        );
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      setGpsLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+    } catch (e) {
+      console.log('GPS error:', e);
+    } finally {
+      setGpsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!shopId) return;
@@ -133,6 +160,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
         paymentMethod,
         shopId: finalShopId,
         deviceId: 'app-user',
+        gpsLocation: gpsLocation || undefined,
         items: cartItems.map(item => ({
           productId: item._id || item.id,
           quantity: item.quantity,
@@ -195,6 +223,30 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
           <InputField placeholder={isRTL ? 'رقم الهاتف *' : 'Numéro de téléphone *'} value={phone} onChangeText={setPhone} keyboardType="phone-pad" isRTL={isRTL} />
           <InputField placeholder={isRTL ? 'عنوان التوصيل *' : 'Adresse de livraison *'} value={address} onChangeText={setAddress} multiline isRTL={isRTL} />
           <InputField placeholder={isRTL ? 'ملاحظات للمتجر (اختياري)' : 'Notes pour le restaurant (optionnel)'} value={notes} onChangeText={setNotes} multiline isRTL={isRTL} />
+
+          {/* GPS Status */}
+          <TouchableOpacity
+            onPress={fetchGpsLocation}
+            style={{
+              flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 8,
+              padding: 10, borderRadius: 10, marginTop: 4,
+              backgroundColor: gpsLocation ? '#f0fff4' : '#fff8f5',
+              borderWidth: 1, borderColor: gpsLocation ? '#2ecc71' : '#FFD4C2',
+            }}
+          >
+            {gpsLoading ? (
+              <ActivityIndicator size="small" color="#FF6B35" />
+            ) : (
+              <Text style={{ fontSize: 18 }}>{gpsLocation ? '📍' : '🔍'}</Text>
+            )}
+            <Text style={{ flex: 1, fontSize: 13, color: gpsLocation ? '#27ae60' : '#FF6B35', textAlign: isRTL ? 'right' : 'left' }}>
+              {gpsLoading
+                ? (isRTL ? 'جاري تحديد الموقع...' : 'Localisation en cours...')
+                : gpsLocation
+                ? (isRTL ? `✅ تم تحديد الموقع (${gpsLocation.latitude.toFixed(4)}, ${gpsLocation.longitude.toFixed(4)})` : `✅ Position détectée (${gpsLocation.latitude.toFixed(4)}, ${gpsLocation.longitude.toFixed(4)})`)
+                : (isRTL ? 'اضغط لتحديد موقعك تلقائياً' : 'Appuyer pour détecter votre position')}
+            </Text>
+          </TouchableOpacity>
         </SectionCard>
 
         {/* Payment Method */}
