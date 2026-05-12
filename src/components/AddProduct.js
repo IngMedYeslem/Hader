@@ -51,9 +51,7 @@ function AddProduct({ onBack, onAdd }) {
   };
 
   const updateProduct = (index, field, value) => {
-    const updated = [...products];
-    updated[index][field] = value;
-    setProducts(updated);
+    setProducts(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
   };
 
   const fileInputRefs = useRef([]);
@@ -154,6 +152,7 @@ function AddProduct({ onBack, onAdd }) {
   const handleSubmit = async () => {
     try {
       for (const product of products) {
+        console.log('📦 إرسال منتج - الصنف:', product.category);
         if (product.name && product.price && onAdd) {
           // استخدام imageService لتحويل الصور
           const convertedImages = [];

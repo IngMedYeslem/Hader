@@ -23,7 +23,8 @@ import { API_URL } from '../config/api';
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 60) / 2;
 
-function ShopDashboard({ shop, onLogout }) {
+function ShopDashboard({ shop: initialShop, onLogout }) {
+  const [shop, setShop] = useState(initialShop);
   const [products, setProducts] = useState([]);
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
@@ -94,7 +95,7 @@ function ShopDashboard({ shop, onLogout }) {
 
   const fetchUserId = async () => {
     try {
-      const response = await fetch('${API_URL}/users');
+      const response = await fetch(`${API_URL}/users`);
       const users = await response.json();
       const user = users.find(u => u.linkedShop?.id === shop._id);
       if (user) {
@@ -594,6 +595,7 @@ function ShopDashboard({ shop, onLogout }) {
           visible={shopInfoVisible}
           onClose={() => setShopInfoVisible(false)}
           allowEdit={true}
+          onShopUpdated={(updatedShop) => setShop(prev => ({ ...prev, ...updatedShop }))}
       />
 
       {ordersVisible && (

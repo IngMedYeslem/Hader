@@ -96,6 +96,10 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
     }
   };
 
+  const handleMediaAdded = (newPaths) => {
+    setFormData(prev => ({ ...prev, images: [...prev.images, ...newPaths] }));
+  };
+
   const handleMediaDeleted = (mediaType, mediaIndex) => {
     setFormData(prev => ({
       ...prev,
@@ -130,134 +134,119 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
 
   return (
     <Modal visible={visible} animationType="none" presentationStyle="pageSheet">
-      <View style={[styles.wrapper, styles.shopLoginContainer, { minHeight: screenHeight }]}>
-        <View style={styles.background}>
-          <KeyboardAvoidingView 
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-          >
-            <ScrollView 
-              contentContainerStyle={[styles.shopLoginScrollContent, { 
-                justifyContent: 'flex-start',
-                paddingBottom: Platform.OS === 'android' ? 50 : 20,
-                paddingTop: 60
-              }]}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              enableOnAndroid={true}
-            >
-              <Animated.View style={[
-                styles.shopLoginFormCard,
-                {
-                  transform: [{ translateY: slideAnim }],
-                  opacity: fadeAnim
-                }
-              ]}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <Text style={[styles.authTitle, { fontSize: 18, marginBottom: 0 }]}>
-                    📝 Éditer Produit
-                  </Text>
-                  <TouchableOpacity onPress={onClose}>
-                    <Text style={[styles.closeBtnText, { color: '#333', fontSize: 24 }]}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                
-                {/* Section Informations de base */}
-                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                  <RTLTextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
-                    placeholder="Nom du produit *"
-                    placeholderTextColor="#999"
-                    value={formData.name}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                  />
-                  
-                  <RTLTextInput
-                    style={[styles.addProductInput, { 
-                      fontSize: 16, 
-                      paddingVertical: 15,
-                      minHeight: 60,
-                      textAlignVertical: 'top',
-                      marginBottom: 0
-                    }]}
-                    placeholder="Description"
-                    placeholderTextColor="#999"
-                    multiline
-                    value={formData.description}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-                  />
-                </View>
-                
-                {/* Section Prix et Stock */}
-                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 8 }}>
-                  <RTLTextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50 }]}
-                    placeholder="Prix (MRU) *"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={formData.price}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, price: text }))}
-                  />
-                  
-                  <RTLTextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
-                    placeholder="Stock disponible"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    value={formData.stock}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, stock: text }))}
-                  />
-                </View>
-                
-                {/* Section Catégorie */}
-                <View style={{ backgroundColor: 'rgba(255,107,53,0.08)', padding: 8, borderRadius: 8, marginBottom: 15 }}>
-                  <RTLTextInput
-                    style={[styles.addProductInput, { fontSize: 16, paddingVertical: 15, height: 50, marginBottom: 0 }]}
-                    placeholder="Catégorie"
-                    placeholderTextColor="#999"
-                    value={formData.category}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, category: text }))}
-                  />
-                </View>
-                
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 15 }}>
-                  <TouchableOpacity 
-                    style={[styles.submitBtn, { 
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      flex: 1
-                    }]} 
-                    onPress={handleSave}
-                  >
-                    <Text style={[styles.submitText, { fontSize: 18 }]}>
-                      💾 Sauvegarder
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.submitBtn, { 
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      backgroundColor: '#e74c3c',
-                      flex: 1
-                    }]} 
-                    onPress={handleDelete}
-                  >
-                    <Text style={[styles.submitText, { fontSize: 18 }]}>
-                      🗑️ Supprimer
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {/* Header */}
+          <View style={{ backgroundColor: '#FF6B35', paddingTop: Platform.OS === 'ios' ? 50 : 20, paddingBottom: 16, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>✏️ تعديل المنتج</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={{ color: 'white', fontSize: 22, fontWeight: 'bold' }}>✕</Text>
+            </TouchableOpacity>
+          </View>
 
-                <MediaManager 
-                  product={{ ...product, images: formData.images }}
-                  onMediaDeleted={handleMediaDeleted}
+          <ScrollView
+            contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Animated.View style={{ transform: [{ translateY: slideAnim }], opacity: fadeAnim }}>
+
+              {/* حقول النموذج */}
+              <View style={{ backgroundColor: '#FFF0EB', borderRadius: 12, padding: 12, marginBottom: 12 }}>
+                <RTLTextInput
+                  style={[styles.addProductInput, { fontSize: 15, height: 48 }]}
+                  placeholder="Nom du produit *"
+                  placeholderTextColor="#aaa"
+                  value={formData.name}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                 />
-              </Animated.View>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </View>
+                <RTLTextInput
+                  style={[styles.addProductInput, { fontSize: 15, minHeight: 70, textAlignVertical: 'top', marginBottom: 0 }]}
+                  placeholder="Description"
+                  placeholderTextColor="#aaa"
+                  multiline
+                  value={formData.description}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+                />
+              </View>
+
+              <View style={{ backgroundColor: '#FFF0EB', borderRadius: 12, padding: 12, marginBottom: 12 }}>
+                <RTLTextInput
+                  style={[styles.addProductInput, { fontSize: 15, height: 48 }]}
+                  placeholder="Prix (MRU) *"
+                  placeholderTextColor="#aaa"
+                  keyboardType="numeric"
+                  value={formData.price}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, price: text }))}
+                />
+                <RTLTextInput
+                  style={[styles.addProductInput, { fontSize: 15, height: 48, marginBottom: 0 }]}
+                  placeholder="Stock disponible"
+                  placeholderTextColor="#aaa"
+                  keyboardType="numeric"
+                  value={formData.stock}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, stock: text }))}
+                />
+              </View>
+
+              <View style={{ backgroundColor: '#FFF0EB', borderRadius: 12, padding: 12, marginBottom: 16 }}>
+                <Text style={{ color: '#777', fontSize: 13, marginBottom: 8 }}>{t('category')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {[
+                    { id: 'food', icon: '🍔' },
+                    { id: 'grocery', icon: '🛒' },
+                    { id: 'pharmacy', icon: '💊' },
+                    { id: 'electronics', icon: '📱' },
+                    { id: 'fashion', icon: '👗' },
+                    { id: 'other', icon: '📦' },
+                  ].map(cat => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() => setFormData(prev => ({ ...prev, category: cat.id }))}
+                      style={{
+                        flexDirection: 'row', alignItems: 'center',
+                        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                        backgroundColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                        borderWidth: 1,
+                        borderColor: formData.category === cat.id ? '#C8A55F' : 'rgba(255,107,53,0.2)',
+                      }}
+                    >
+                      <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+                      <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                        {t(cat.id)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* أزرار الحفظ والحذف */}
+              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+                <TouchableOpacity
+                  style={[styles.submitBtn, { flex: 1, paddingVertical: 14, borderRadius: 12 }]}
+                  onPress={handleSave}
+                >
+                  <Text style={styles.submitText}>💾 Sauvegarder</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.submitBtn, { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#e74c3c' }]}
+                  onPress={handleDelete}
+                >
+                  <Text style={styles.submitText}>🗑️ Supprimer</Text>
+                </TouchableOpacity>
+              </View>
+
+              <MediaManager
+                product={{ ...product, images: formData.images }}
+                onMediaDeleted={handleMediaDeleted}
+                onMediaAdded={handleMediaAdded}
+              />
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

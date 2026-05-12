@@ -7,6 +7,7 @@ const API_BASE_URL = API_CONFIG.BASE_URL;
 const CACHE_KEY = 'products_cache';
 const CACHE_TIMESTAMP_KEY = 'products_cache_timestamp';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const SHOP_CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
 
 // Fonction pour vérifier la connectivité avec fallback
 const checkConnectivity = async () => {
@@ -141,6 +142,58 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
     // En cas d'erreur, essayer de retourner le cache
     const cachedProducts = await getCachedProducts();
     return cachedProducts || [];
+  }
+};
+
+export const fetchProductsByShop = async (shopId, page = 1, limit = 20) => {
+  const cacheKey = `shop_products_${shopId}_${page}`;
+  const cacheTimestampKey = `shop_products_ts_${shopId}_${page}`;
+  try {
+    // Check cache
+    const [cachedData, cachedTs] = await Promise.all([
+      Platform.OS === 'web' ? localStorage.getItem(cacheKey) : AsyncStorage.getItem(cacheKey),
+      Platform.OS === 'web' ? localStorage.getItem(cacheTimestampKey) : AsyncStorage.getItem(cacheTimestampKey),
+    ]);
+    if (cachedData && cachedTs && Date.now() - parseInt(cachedTs) < SHOP_CACHE_DURATION) {
+      return JSON.parse(cachedData);
+    }
+
+    const activeApiUrl = await checkConnectivity();
+    if (!activeApiUrl) return cachedData ? JSON.parse(cachedData) : [];
+
+    // Try dedicated endpoint first, fallback to filter from all
+    let products = [];
+    try {
+      products = await apiClient.get(`/products/shop/${shopId}?page=${page}&limit=${limit}`);
+    } catch {
+      const all = await apiClient.get('/debug/products');
+      products = all
+        .filter(p => p.shopId === shopId || p.shop?._id === shopId)
+        .slice((page - 1) * limit, page * limit);
+    }
+
+    const result = products.map(p => ({
+      id: p._id, _id: p._id,
+      name: p.name, description: p.description,
+      price: p.price, category: p.category,
+      stock: p.stock ?? 0,
+      images: (p.images || []).slice(0, 3),
+      shop: p.shop || null,
+    }));
+
+    const serialized = JSON.stringify(result);
+    const ts = Date.now().toString();
+    if (Platform.OS === 'web') {
+      localStorage.setItem(cacheKey, serialized);
+      localStorage.setItem(cacheTimestampKey, ts);
+    } else {
+      await AsyncStorage.setItem(cacheKey, serialized);
+      await AsyncStorage.setItem(cacheTimestampKey, ts);
+    }
+    return result;
+  } catch (error) {
+    console.error('fetchProductsByShop error:', error);
+    return [];
   }
 };
 

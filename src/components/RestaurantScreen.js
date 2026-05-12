@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image,
-  SafeAreaView, StatusBar, Animated, Dimensions, Modal, Alert
+  View, Text, FlatList, ScrollView, TouchableOpacity, Image,
+  SafeAreaView, StatusBar, Animated, Dimensions, Modal, Alert, ActivityIndicator
 } from 'react-native';
-import { fetchProductsWithShops } from '../services/apiService';
+import { fetchProductsByShop } from '../services/apiService';
 import { getMediaUrl } from '../services/api';
 import { API_CONFIG } from '../config/api';
 import { useCart } from '../contexts/CartContext';
@@ -17,6 +17,9 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const [products, setProducts] = useState([]);
   const [availableStock, setAvailableStock] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -26,7 +29,10 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const isRTL = currentLanguage === 'ar';
 
   useEffect(() => {
-    loadShopProducts();
+    setPage(1);
+    setHasMore(true);
+    setProducts([]);
+    loadShopProducts(1, false);
   }, [shop]);
 
   useEffect(() => {
@@ -44,47 +50,61 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     } catch {}
   };
 
-  const loadShopProducts = async () => {
+  const loadShopProducts = async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const all = await fetchProductsWithShops(true);
-      const shopProducts = all.filter(p =>
-        p.shop?._id === shop._id ||
-        p.shop?._id === shop.id ||
-        p.shop?.username === shop.username ||
-        p.shop?.name === shop.name
-      );
-      setProducts(shopProducts);
-      await loadAvailableStock(shop._id || shop.id);
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+      const shopId = shop._id || shop.id;
+      const newProducts = await fetchProductsByShop(shopId, pageNum);
+      if (newProducts.length < 20) setHasMore(false);
+      setProducts(prev => append ? [...prev, ...newProducts] : newProducts);
+      if (pageNum === 1) await loadAvailableStock(shopId);
     } catch (e) {
       console.log('Error:', e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  // إخفاء المنتجات النافدة كلياً
-  const visibleProducts = products.filter(p => {
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadShopProducts(nextPage, true);
+    }
+  };
+
+  const visibleProducts = useMemo(() => products.filter(p => {
     const stock = availableStock[p._id || p.id];
     return stock === undefined || stock > 0;
-  });
+  }), [products, availableStock]);
 
-  // استخراج التصنيفات من المنتجات المتاحة فقط
-  const categories = ['all', ...new Set(visibleProducts.map(p => p.category).filter(Boolean))];
+  const categories = useMemo(() =>
+    ['all', ...new Set(visibleProducts.map(p => p.category).filter(Boolean))]
+  , [visibleProducts]);
 
-  const filteredProducts = selectedCategory === 'all'
-    ? visibleProducts
-    : visibleProducts.filter(p => p.category === selectedCategory);
+  const flatListData = useMemo(() => {
+    const filtered = selectedCategory === 'all'
+      ? visibleProducts
+      : visibleProducts.filter(p => p.category === selectedCategory);
 
-  // تجميع المنتجات حسب التصنيف
-  const groupedProducts = {};
-  filteredProducts.forEach(p => {
-    const cat = p.category || (isRTL ? 'عام' : 'Général');
-    if (!groupedProducts[cat]) groupedProducts[cat] = [];
-    groupedProducts[cat].push(p);
-  });
+    // Build sections: [{type:'header', category}, {type:'item', ...product}]
+    const grouped = {};
+    filtered.forEach(p => {
+      const cat = p.category || (isRTL ? 'عام' : 'Général');
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(p);
+    });
+    const rows = [];
+    Object.entries(grouped).forEach(([cat, items]) => {
+      rows.push({ type: 'header', category: cat, key: `header_${cat}` });
+      items.forEach(p => rows.push({ type: 'item', ...p, key: p._id || p.id }));
+    });
+    return rows;
+  }, [visibleProducts, selectedCategory, isRTL]);
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = useCallback((product) => {
     if (cartShop && cartShop._id !== shop._id && getTotalItems() > 0) {
       setPendingProduct(product);
       setShowDifferentShopAlert(true);
@@ -103,7 +123,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     addToCart(product, quantity, shop);
     setSelectedProduct(null);
     setQuantity(1);
-  };
+  }, [cartShop, shop, availableStock, cartItems, quantity, addToCart]);
 
   const confirmClearAndAdd = () => {
     if (pendingProduct) {
@@ -367,56 +387,66 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         </ScrollView>
       </View>
 
-      {/* Products - قابل للتمرير */}
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-        <View style={{ padding: 16 }}>
-          {loading ? (
-            <View style={{ padding: 40, alignItems: 'center' }}>
-              <Text style={{ fontSize: 30 }}>⏳</Text>
-            </View>
-          ) : Object.keys(groupedProducts).length === 0 ? (
+      {/* Products - FlatList للأداء */}
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+        </View>
+      ) : (
+        <FlatList
+          data={flatListData}
+          keyExtractor={item => item.key}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.4}
+          removeClippedSubviews
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          initialNumToRender={10}
+          ListEmptyComponent={
             <View style={{ padding: 40, alignItems: 'center' }}>
               <Text style={{ fontSize: 40 }}>📦</Text>
               <Text style={{ color: '#777', marginTop: 10 }}>
                 {isRTL ? 'لا توجد منتجات' : 'Aucun produit'}
               </Text>
             </View>
-          ) : (
-            Object.entries(groupedProducts).map(([category, items]) => (
-              <View key={category} style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 12, textAlign: isRTL ? 'right' : 'left' }}>
-                  {category}
+          }
+          ListFooterComponent={loadingMore ? <ActivityIndicator color="#FF6B35" style={{ marginVertical: 16 }} /> : null}
+          renderItem={({ item }) => {
+            if (item.type === 'header') {
+              return (
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 12, marginTop: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                  {item.category}
                 </Text>
-                {items.map(product => (
-                  <ProductRow
-                    key={product._id || product.id}
-                    product={product}
-                    onPress={() => { setSelectedProduct(product); setQuantity(1); }}
-                    isRTL={isRTL}
-                    cartItems={cartItems}
-                    availableStock={availableStock}
-                    onQuickAdd={() => {
-                      const pid = product._id || product.id;
-                      const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
-                      const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
-                      if (inCartQty + 1 > maxQty) {
-                        Alert.alert(
-                          isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
-                          isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
-                        );
-                        return;
-                      }
-                      addToCart(product, 1, shop);
-                    }}
-                  />
-                ))}
-              </View>
-            ))
-          )}
-        </View>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
+              );
+            }
+            return (
+              <ProductRow
+                product={item}
+                onPress={() => { setSelectedProduct(item); setQuantity(1); }}
+                isRTL={isRTL}
+                cartItems={cartItems}
+                availableStock={availableStock}
+                onQuickAdd={() => {
+                  const pid = item._id || item.id;
+                  const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
+                  const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
+                  if (inCartQty + 1 > maxQty) {
+                    Alert.alert(
+                      isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
+                      isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
+                    );
+                    return;
+                  }
+                  addToCart(item, 1, shop);
+                }}
+              />
+            );
+          }}
+        />
+      )}
 
       {/* Floating Cart Bar */}
       {cartCount > 0 && (

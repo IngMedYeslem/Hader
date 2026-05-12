@@ -27,19 +27,14 @@ export default function CreateShop({ onBack, onShopCreated }) {
     whatsapp: '',
     latitude: '',
     longitude: '',
-    category: ''
   });
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
-  const [updateKey, setUpdateKey] = useState(0);
-
-  // Force re-render when language changes
-  React.useEffect(() => {
-    setUpdateKey(prev => prev + 1);
-  }, [currentLanguage]);
+  const isRTL = currentLanguage === 'ar';
 
   const handleCreateShop = async () => {
     // Validation - tous les champs sont obligatoires
-    if (!formData.name || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude || !formData.category) {
+    if (!formData.name || !formData.email || !formData.password || !formData.address || !formData.phone || !formData.whatsapp || !formData.latitude || !formData.longitude || !selectedCategory) {
       Platform.OS === 'web' ? alert('Tous les champs sont obligatoires') : Alert.alert('Erreur', 'Tous les champs sont obligatoires');
       return;
     }
@@ -73,7 +68,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/shop/create`, {
+      const response = await fetch(`${API_URL}/shops/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +80,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
           address: formData.address,
           phone: formData.phone,
           whatsapp: formData.whatsapp,
-          category: formData.category,
+          category: selectedCategory,
           location: {
             latitude: parseFloat(formData.latitude),
             longitude: parseFloat(formData.longitude)
@@ -100,8 +95,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
           alert(`Boutique "${formData.name}" créée avec succès`);
           setFormData({ 
             name: '', email: '', password: '', confirmPassword: '',
-            address: '', phone: '', whatsapp: '', latitude: '', longitude: '', category: ''
+            address: '', phone: '', whatsapp: '', latitude: '', longitude: '',
           });
+          setSelectedCategory('');
           onShopCreated && onShopCreated();
         } else {
           Alert.alert(
@@ -113,8 +109,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 onPress: () => {
                   setFormData({ 
                     name: '', email: '', password: '', confirmPassword: '',
-                    address: '', phone: '', whatsapp: '', latitude: '', longitude: '', category: ''
+                    address: '', phone: '', whatsapp: '', latitude: '', longitude: '',
                   });
+                  setSelectedCategory('');
                   onShopCreated && onShopCreated();
                 }
               }
@@ -161,7 +158,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('shopName')} *`}
               placeholderTextColor="#999"
               value={formData.name}
-              onChangeText={(text) => setFormData({...formData, name: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
             />
 
             <TextInput
@@ -169,7 +166,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('email')} *`}
               placeholderTextColor="#999"
               value={formData.email}
-              onChangeText={(text) => setFormData({...formData, email: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, email: text}))}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -179,7 +176,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('password')} *`}
               placeholderTextColor="#999"
               value={formData.password}
-              onChangeText={(text) => setFormData({...formData, password: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, password: text}))}
               secureTextEntry
             />
 
@@ -188,7 +185,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('confirmPassword')} *`}
               placeholderTextColor="#999"
               value={formData.confirmPassword}
-              onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, confirmPassword: text}))}
               secureTextEntry
             />
 
@@ -197,7 +194,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('address')} *`}
               placeholderTextColor="#999"
               value={formData.address}
-              onChangeText={(text) => setFormData({...formData, address: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, address: text}))}
               multiline
             />
 
@@ -206,7 +203,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('phone')} *`}
               placeholderTextColor="#999"
               value={formData.phone}
-              onChangeText={(text) => setFormData({...formData, phone: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
               keyboardType="phone-pad"
             />
 
@@ -215,7 +212,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder={`${t('whatsapp')} *`}
               placeholderTextColor="#999"
               value={formData.whatsapp}
-              onChangeText={(text) => setFormData({...formData, whatsapp: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, whatsapp: text}))}
               keyboardType="phone-pad"
             />
 
@@ -223,25 +220,28 @@ export default function CreateShop({ onBack, onShopCreated }) {
             <Text style={{ color: '#777', fontSize: 13, marginBottom: 6, marginTop: 4 }}>
               {t('category')} *
             </Text>
-            <View key={`shop-categories-${updateKey}`} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-              {SHOP_CATEGORIES.map(cat => (
-                <TouchableOpacity
-                  key={cat.id}
-                  onPress={() => setFormData({...formData, category: cat.id})}
-                  style={{
-                    flexDirection: 'row', alignItems: 'center',
-                    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-                    backgroundColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
-                    borderWidth: 1,
-                    borderColor: formData.category === cat.id ? '#C8A55F' : 'rgba(255,107,53,0.2)',
-                  }}
-                >
-                  <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
-                  <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
-                    {t(cat.id)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {SHOP_CATEGORIES.map(cat => {
+                const selected = selectedCategory === cat.id;
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    onPress={() => setSelectedCategory(cat.id)}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center',
+                      paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                      backgroundColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                      borderWidth: 1,
+                      borderColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.2)',
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+                    <Text style={{ fontSize: 12, color: selected ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                      {t(cat.id)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             <TextInput
@@ -249,7 +249,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder="Latitude (ex: 5.3364) *"
               placeholderTextColor="#999"
               value={formData.latitude}
-              onChangeText={(text) => setFormData({...formData, latitude: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, latitude: text}))}
               keyboardType="numeric"
             />
 
@@ -258,7 +258,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               placeholder="Longitude (ex: -4.0267) *"
               placeholderTextColor="#999"
               value={formData.longitude}
-              onChangeText={(text) => setFormData({...formData, longitude: text})}
+              onChangeText={(text) => setFormData(prev => ({...prev, longitude: text}))}
               keyboardType="numeric"
             />
 

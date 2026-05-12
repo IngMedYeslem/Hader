@@ -67,7 +67,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.name}
-          onChangeText={(text) => setFormData({...formData, name: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
           placeholder="Nom de la boutique"
         />
 
@@ -75,7 +75,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.email}
-          onChangeText={(text) => setFormData({...formData, email: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, email: text}))}
           placeholder="Email"
           keyboardType="email-address"
         />
@@ -84,7 +84,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.address}
-          onChangeText={(text) => setFormData({...formData, address: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, address: text}))}
           placeholder="Adresse complète"
           multiline
         />
@@ -93,7 +93,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.phone}
-          onChangeText={(text) => setFormData({...formData, phone: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
           placeholder="Numéro de téléphone"
           keyboardType="phone-pad"
         />
@@ -102,7 +102,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.whatsapp}
-          onChangeText={(text) => setFormData({...formData, whatsapp: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, whatsapp: text}))}
           placeholder="Numéro WhatsApp"
           keyboardType="phone-pad"
         />
@@ -111,7 +111,7 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={[styles.input, { height: 80 }]}
           value={formData.description}
-          onChangeText={(text) => setFormData({...formData, description: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, description: text}))}
           placeholder="Description de la boutique"
           multiline
           numberOfLines={3}
@@ -121,31 +121,34 @@ export const EditShopInfo = ({ shop, onSave, onCancel }) => {
         <TextInput
           style={styles.input}
           value={formData.stock}
-          onChangeText={(text) => setFormData({...formData, stock: text})}
+          onChangeText={(text) => setFormData(prev => ({...prev, stock: text}))}
           placeholder="Quantité en stock"
           keyboardType="numeric"
         />
 
         <Text style={{ color: '#FF6B35', marginBottom: 5 }}>Catégorie</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 15 }}>
-          {SHOP_CATEGORIES.map(cat => (
-            <TouchableOpacity
-              key={cat.id}
-              onPress={() => setFormData({...formData, category: cat.id})}
-              style={{
-                flexDirection: 'row', alignItems: 'center',
-                paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-                backgroundColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.08)',
-                borderWidth: 1,
-                borderColor: formData.category === cat.id ? '#FF6B35' : 'rgba(255,107,53,0.2)',
-              }}
-            >
-              <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
-              <Text style={{ fontSize: 12, color: formData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
-                {cat.id}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {SHOP_CATEGORIES.map(cat => {
+            const selected = formData.category === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => setFormData(prev => ({ ...prev, category: cat.id }))}
+                style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                  backgroundColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.08)',
+                  borderWidth: 1,
+                  borderColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.2)',
+                }}
+              >
+                <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
+                <Text style={{ fontSize: 12, color: selected ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                  {cat.id}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>

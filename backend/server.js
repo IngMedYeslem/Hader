@@ -353,6 +353,18 @@ app.get('/api/shops', async (req, res) => {
   }
 });
 
+// المتاجر التي لديها منتجات بكمية > 0
+app.get('/api/shops/with-stock', async (req, res) => {
+  try {
+    const Product = require('./models/Product');
+    const shopIds = await Product.distinct('shopId', { stock: { $gt: 0 } });
+    const shops = await Shop.find({ _id: { $in: shopIds } });
+    res.json(shops);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Route pour lier un utilisateur à une boutique
 app.post('/api/users/:userId/link-shop/:shopId', async (req, res) => {
   try {
@@ -764,10 +776,10 @@ app.post('/api/shops/login', async (req, res) => {
 
 app.post('/api/shops/register', async (req, res) => {
   try {
-    const { name, email, password, address, phone, whatsapp, location } = req.body;
+    const { name, email, password, address, phone, whatsapp, location, category } = req.body;
     
     console.log('=== INSCRIPTION BOUTIQUE ===');
-    console.log('Données reçues:', { name, email, address, phone, whatsapp });
+    console.log('Données reçues:', { name, email, address, phone, whatsapp, category });
     console.log('Location reçue:', location);
     console.log('Type de location:', typeof location);
     if (location) {
@@ -834,6 +846,7 @@ app.post('/api/shops/register', async (req, res) => {
       address, 
       phone, 
       whatsapp,
+      category: category || '',
       location: {
         latitude: location.latitude,
         longitude: location.longitude

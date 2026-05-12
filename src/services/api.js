@@ -108,7 +108,7 @@ export const productAPI = {
   create: async (product) => {
     try {
       console.log('=== Envoi produit ===');
-      console.log('Produit:', { name: product.name, price: product.price, shopId: product.shopId });
+      console.log('Produit:', { name: product.name, price: product.price, category: product.category, shopId: product.shopId });
       console.log('Images à traiter:', product.images?.length || 0);
       
       // Convertir tous les médias en URLs avant envoi

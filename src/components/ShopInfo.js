@@ -16,7 +16,7 @@ const SHOP_CATEGORIES = [
   { id: 'other', icon: '📦' },
 ];
 
-const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
+const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) => {
   const { t, currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
   const [isEditing, setIsEditing] = useState(false);
@@ -161,6 +161,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false }) => {
       if (shopResponse.ok && userResponse.ok) {
         const updatedShopData = await shopResponse.json();
         setUpdatedShop(updatedShopData.shop);
+        onShopUpdated?.(updatedShopData.shop);
         Alert.alert('Succès', 'Informations mises à jour');
         setIsEditing(false);
         onClose();

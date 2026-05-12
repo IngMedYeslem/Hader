@@ -43,26 +43,18 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
       setLoading(true);
       const status = await getServerStatus();
       if (status.isAvailable) {
+        const { API_URL } = require('../config/api');
+
+        // جلب المتاجر ذات المنتجات بكمية > 0 مباشرة من الباكند
+        const shopsRes = await fetch(`${API_URL}/shops/with-stock`);
+        if (shopsRes.ok) {
+          const allShops = await shopsRes.json();
+          setShops(allShops.map(s => ({ ...s, productCount: 0, minPrice: null })));
+        }
+
+        // جلب المنتجات للعرض في الواجهة
         const allProducts = await fetchProductsWithShops();
         setProducts(allProducts);
-        // استخراج المتاجر الفريدة
-        const shopMap = {};
-        allProducts.forEach(p => {
-          if (p.shop && p.shop._id) {
-            if (!shopMap[p.shop._id]) {
-              shopMap[p.shop._id] = {
-                ...p.shop,
-                productCount: 0,
-                minPrice: Infinity,
-              };
-            }
-            shopMap[p.shop._id].productCount++;
-            if (p.price < shopMap[p.shop._id].minPrice) {
-              shopMap[p.shop._id].minPrice = p.price;
-            }
-          }
-        });
-        setShops(Object.values(shopMap));
       }
     } catch (e) {
       console.log('Error loading:', e);
