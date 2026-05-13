@@ -98,7 +98,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                 body: JSON.stringify({ mainImage: uploadData.imagePath }),
               });
               setMainImage(uploadData.imagePath);
-              Alert.alert('', isRTL ? 'تم رفع الصورة بنجاح' : 'Image mise à jour');
+              onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
+              Alert.alert('', t('imageUpdated'));
             }
           } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
           finally { setUploadingImage(false); }
@@ -108,7 +109,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
       }
       // Mobile: use ImagePicker
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') { Alert.alert('', 'يجب السماح بالوصول للصور'); setUploadingImage(false); return; }
+      if (status !== 'granted') { Alert.alert('', t('galleryAccess')); setUploadingImage(false); return; }
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
       if (result.canceled || !result.assets?.[0]) { setUploadingImage(false); return; }
       const formData = new FormData();
@@ -122,7 +123,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
           body: JSON.stringify({ mainImage: uploadData.imagePath }),
         });
         setMainImage(uploadData.imagePath);
-        Alert.alert('', isRTL ? 'تم رفع الصورة بنجاح' : 'Image mise à jour');
+        onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
+        Alert.alert('', t('imageUpdated'));
       }
     } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
     finally { setUploadingImage(false); }
@@ -146,30 +148,38 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
 
   const handleSave = async () => {
     try {
+      const dataToSend = { ...editData };
+      if (!dataToSend.newPassword) delete dataToSend.newPassword;
+
       const shopResponse = await fetch(`${BASE}/shops/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editData)
+        body: JSON.stringify(dataToSend)
       });
       
       const userResponse = await fetch(`${BASE}/users/update-by-shop/${shop._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: editData.name, email: editData.email })
+        body: JSON.stringify({
+          username: editData.name,
+          email: editData.email,
+          ...(editData.newPassword ? { password: editData.newPassword } : {})
+        })
       });
       
       if (shopResponse.ok && userResponse.ok) {
         const updatedShopData = await shopResponse.json();
         setUpdatedShop(updatedShopData.shop);
         onShopUpdated?.(updatedShopData.shop);
-        Alert.alert('Succès', 'Informations mises à jour');
+        setEditData(prev => ({ ...prev, newPassword: '' }));
+        Alert.alert(t('success'), t('productsAdded').replace('produits ajoutés', 'informations mises à jour'));
         setIsEditing(false);
         onClose();
       } else {
-        Alert.alert('Erreur', 'Impossible de mettre à jour');
+        Alert.alert(t('error'), 'Impossible de mettre à jour');
       }
     } catch (error) {
-      Alert.alert('Erreur', 'Erreur de connexion');
+      Alert.alert(t('error'), 'Erreur de connexion');
     }
   };
 
@@ -179,7 +189,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
         <View style={styles.shopInfoContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.shopInfoTitle}>
-              {isEditing ? 'Modifier les informations' : shop.name}
+              {isEditing ? t('editInfo') : shop.name}
             </Text>
             
             {isEditing ? (
@@ -268,8 +278,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                 >
                   <Text style={styles.locationBtnText}>
                     🗺️ {editData.location.latitude && editData.location.longitude 
-                      ? 'Modifier localisation sur carte' 
-                      : 'Définir localisation sur carte'}
+                      ? t('editLocation') 
+                      : t('setLocation')}
                   </Text>
                 </TouchableOpacity>
                 
@@ -278,15 +288,27 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                     style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#FF6B35' }]} 
                     onPress={handleSave}
                   >
-                    <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>Sauvegarder</Text>
+                    <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>{t('save')}</Text>
                   </TouchableOpacity>
                   
                   <TouchableOpacity 
                     style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#ccc' }]} 
                     onPress={() => setIsEditing(false)}
                   >
-                    <Text style={styles.closeInfoBtnText}>Annuler</Text>
+                    <Text style={styles.closeInfoBtnText}>{t('cancel')}</Text>
                   </TouchableOpacity>
+                </View>
+
+                {/* تعديل كلمة المرور */}
+                <View style={styles.shopInfoItem}>
+                  <Text style={styles.shopInfoLabel}>🔑 {t('newPassword')}:</Text>
+                  <TextInput
+                    style={[styles.input, { marginTop: 5 }]}
+                    value={editData.newPassword || ''}
+                    onChangeText={(text) => setEditData({...editData, newPassword: text})}
+                    placeholder={t('newPasswordPlaceholder')}
+                    secureTextEntry
+                  />
                 </View>
               </>
             ) : (
@@ -333,7 +355,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                     style={[styles.locationBtn, { backgroundColor: '#FF6B35', marginTop: 10 }]} 
                     onPress={() => setIsEditing(true)}
                   >
-                    <Text style={[styles.locationBtnText, { color: 'white' }]}>✏️ Modifier</Text>
+                    <Text style={[styles.locationBtnText, { color: 'white' }]}>✏️ {t('edit')}</Text>
                   </TouchableOpacity>
                 )}
 
@@ -341,7 +363,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                 {allowEdit && (
                   <View style={{ marginTop: 16 }}>
                     <Text style={[styles.shopInfoLabel, { fontSize: 14, fontWeight: 'bold', marginBottom: 8 }]}>
-                      🖼️ {isRTL ? 'الصورة الرئيسية للمتجر' : 'Image principale'}
+                      🖼️ {t('mainImage')}
                     </Text>
                     {mainImage ? (
                       <Image
@@ -356,7 +378,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                       style={{ backgroundColor: uploadingImage ? '#ccc' : '#3498db', padding: 10, borderRadius: 8, alignItems: 'center' }}
                     >
                       <Text style={{ color: 'white', fontWeight: 'bold' }}>
-                        {uploadingImage ? '⏳...' : (mainImage ? (isRTL ? 'تغيير الصورة' : 'Changer l\'image') : (isRTL ? 'إضافة صورة' : 'Ajouter une image'))}
+                        {uploadingImage ? '⏳...' : (mainImage ? t('changeImage') : t('addImage2'))}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -366,16 +388,18 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                 <View style={{ marginTop: 16 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={[styles.shopInfoLabel, { fontSize: 14, fontWeight: 'bold' }]}>
-                      🏦 أرقام الحسابات البنكية
+                      🏦 {t('bankAccountsTitle')}
                     </Text>
+                    {allowEdit && (
                     <TouchableOpacity
                       onPress={() => setShowBankEditor(!showBankEditor)}
                       style={{ backgroundColor: '#3498db', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}
                     >
                       <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-                        {showBankEditor ? '× إغلاق' : '+ إضافة'}
+                        {showBankEditor ? t('closeBankEditor') : t('addBankAccount')}
                       </Text>
                     </TouchableOpacity>
+                    )}
                   </View>
 
                   {bankAccounts.map((acc, i) => (
@@ -403,28 +427,28 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                         {acc.accountHolder ? <Text style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{acc.accountHolder}</Text> : null}
                       </View>
                       <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6, marginLeft: 8 }}>
-                        <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>
+                        {allowEdit && <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>}
                       </TouchableOpacity>
                     </View>
                   ))}
 
-                  {showBankEditor && (
+                  {allowEdit && showBankEditor && (
                     <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 12, marginTop: 4 }}>
                       <TextInput
-                        placeholder="اسم البنك *"
+                        placeholder={t('bankNamePlaceholder')}
                         value={newBank.bankName}
                         onChangeText={v => setNewBank(p => ({ ...p, bankName: v }))}
                         style={[styles.input, { marginBottom: 6 }]}
                       />
                       <TextInput
-                        placeholder="رقم الحساب *"
+                        placeholder={t('accountNumberPlaceholder')}
                         value={newBank.accountNumber}
                         onChangeText={v => setNewBank(p => ({ ...p, accountNumber: v }))}
                         style={[styles.input, { marginBottom: 6 }]}
                         keyboardType="numeric"
                       />
                       <TextInput
-                        placeholder="اسم صاحب الحساب (اختياري)"
+                        placeholder={t('accountHolderPlaceholder')}
                         value={newBank.accountHolder}
                         onChangeText={v => setNewBank(p => ({ ...p, accountHolder: v }))}
                         style={[styles.input, { marginBottom: 8 }]}
@@ -433,7 +457,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                         onPress={addBankAccount}
                         style={{ backgroundColor: '#2ecc71', padding: 10, borderRadius: 8, alignItems: 'center' }}
                       >
-                        <Text style={{ color: 'white', fontWeight: 'bold' }}>+ حفظ الحساب</Text>
+                        <Text style={{ color: 'white', fontWeight: 'bold' }}>{t('saveBankAccount')}</Text>
                       </TouchableOpacity>
                     </View>
                   )}

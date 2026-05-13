@@ -50,11 +50,14 @@ router.put('/shops/:shopId', async (req, res) => {
 router.put('/users/update-by-shop/:shopId', async (req, res) => {
   try {
     const User = require('../models/User');
-    const { username, email } = req.body;
+    const { username, email, password } = req.body;
     
+    const updateData = { username, email };
+    if (password) updateData.password = password;
+
     const user = await User.findOneAndUpdate(
       { linkedShopId: req.params.shopId },
-      { username, email },
+      updateData,
       { new: true }
     );
     
