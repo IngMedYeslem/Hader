@@ -19,7 +19,7 @@ const ORDER_STEPS = [
 
 const TERMINAL_STATUSES = ['delivered', 'cancelled', 'failed'];
 
-export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
+export default function OrderTrackingScreen({ order, onBack, onNewOrder, onReview }) {
   const { currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
   const [currentStep, setCurrentStep] = useState(0);
@@ -343,13 +343,24 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder }) {
             </Text>
           </TouchableOpacity>
 
-          {(isDelivered || isCancelled) && (
+        {(isDelivered || isCancelled) && (
             <TouchableOpacity
               onPress={onNewOrder}
               style={{ backgroundColor: '#FF6B35', borderRadius: 16, padding: 14, alignItems: 'center' }}
             >
               <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
                 {isRTL ? '🛒 طلب جديد' : '🛒 Nouvelle commande'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {isDelivered && !liveOrder?.reviewSubmitted && onReview && (
+            <TouchableOpacity
+              onPress={onReview}
+              style={{ backgroundColor: '#FFD700', borderRadius: 16, padding: 14, alignItems: 'center', marginTop: 10 }}
+            >
+              <Text style={{ color: '#333', fontWeight: 'bold', fontSize: 15 }}>
+                {isRTL ? '⭐ قيّم المتجر' : '⭐ Évaluer le magasin'}
               </Text>
             </TouchableOpacity>
           )}

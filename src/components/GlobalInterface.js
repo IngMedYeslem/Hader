@@ -6,6 +6,7 @@ import RestaurantScreen from './RestaurantScreen';
 import CartScreen from './CartScreen';
 import CheckoutScreen from './CheckoutScreen';
 import OrderTrackingScreen from './OrderTrackingScreen';
+import ReviewForm from './ReviewForm';
 import { fetchProductsWithShops } from '../services/apiService';
 import { getServerStatus } from '../services/serverCheck';
 import { getMediaUrl } from '../services/api';
@@ -30,6 +31,7 @@ export default function GlobalInterface({ onShopLogin }) {
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [showReview, setShowReview] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -39,7 +41,7 @@ export default function GlobalInterface({ onShopLogin }) {
         setServerAvailable(status.isAvailable);
         if (status.isAvailable) {
           // جلب المتاجر مباشرة
-          const shopsRes = await fetch('${API_URL}/shops');
+          const shopsRes = await fetch(`${API_URL}/shops`);
           if (shopsRes.ok) {
             const shopsData = await shopsRes.json();
             setShops(Array.isArray(shopsData) ? shopsData : []);
@@ -62,12 +64,26 @@ export default function GlobalInterface({ onShopLogin }) {
     return <AdminInterface onBack={() => setShowAdminInterface(false)} />;
   }
 
+  if (placedOrder && showReview) {
+    return (
+      <ReviewForm
+        orderId={placedOrder._id}
+        customerPhone={placedOrder.phone}
+        customerName={placedOrder.customerName || ''}
+        shopName={selectedShop?.name || ''}
+        onDone={() => setShowReview(false)}
+        onBack={() => setShowReview(false)}
+      />
+    );
+  }
+
   if (placedOrder) {
     return (
       <OrderTrackingScreen
         order={placedOrder}
         onBack={() => setPlacedOrder(null)}
         onNewOrder={() => { setPlacedOrder(null); setSelectedShop(null); }}
+        onReview={() => setShowReview(true)}
       />
     );
   }
@@ -147,7 +163,6 @@ export default function GlobalInterface({ onShopLogin }) {
                 key={shop._id}
                 onPress={() => {
                   setSelectedShop(shop);
-                  navigate('restaurant');
                 }}
                 style={{
                   backgroundColor: 'white',

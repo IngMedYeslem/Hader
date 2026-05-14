@@ -146,8 +146,11 @@ app.post('/api/admin/login', async (req, res) => {
       return res.status(401).json({ error: 'Identifiants incorrects' });
     }
 
-    // Comparaison simple du mot de passe (temporaire)
-    if (user.password !== password) {
+    const bcrypt = require('bcryptjs');
+    const isValid = user.password.startsWith('$2')
+      ? await bcrypt.compare(password, user.password)
+      : user.password === password;
+    if (!isValid) {
       return res.status(401).json({ error: 'Identifiants incorrects' });
     }
 
@@ -347,7 +350,19 @@ app.post('/api/shops/:shopId/convert-to-user', async (req, res) => {
 app.get('/api/shops', async (req, res) => {
   try {
     const shops = await Shop.find();
-    res.json(shops);
+    const shopsWithCount = await Promise.all(shops.map(async (shop) => {
+      const productCount = await Product.countDocuments({
+        shopId: shop._id.toString(),
+        $or: [{ isActive: true }, { isActive: { $exists: false } }]
+      });
+      return {
+        ...shop.toObject(),
+        productCount,
+        averageRating: Math.round((shop.averageRating || 0) * 10) / 10,
+        totalRatings: shop.totalRatings || 0
+      };
+    }));
+    res.json(shopsWithCount);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -700,34 +715,6 @@ const Shop = require('./models/Shop');
 const Product = require('./models/Product');
 
 // Routes Boutiques
-app.get('/api/shops/:shopId/bank-accounts', async (req, res) => {
-  try {
-    console.log('GET bank-accounts for shopId:', req.params.shopId);
-    const shop = await Shop.findById(req.params.shopId).select('bankAccounts');
-    console.log('shop found:', shop ? 'yes' : 'no', 'accounts:', shop?.bankAccounts?.length);
-    if (!shop) return res.status(404).json({ error: 'Boutique non trouvée' });
-    res.json(shop.bankAccounts || []);
-  } catch (error) {
-    console.log('bank-accounts error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.put('/api/shops/:shopId/bank-accounts', async (req, res) => {
-  try {
-    const { bankAccounts } = req.body;
-    const shop = await Shop.findByIdAndUpdate(
-      req.params.shopId,
-      { bankAccounts },
-      { new: true }
-    ).select('bankAccounts');
-    if (!shop) return res.status(404).json({ error: 'Boutique non trouvée' });
-    res.json(shop.bankAccounts);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 app.get('/api/shops/:shopId', async (req, res) => {
   try {
     const shop = await Shop.findById(req.params.shopId);
@@ -751,24 +738,27 @@ app.get('/api/shops/:shopId', async (req, res) => {
 
 app.post('/api/shops/login', async (req, res) => {
   try {
+    const bcrypt = require('bcryptjs');
     const { email, password } = req.body;
-    const shop = await Shop.findOne({ email, password });
-    if (shop) {
-      // Vérifier le statut d'approbation
-      const user = await User.findOne({ linkedShopId: shop._id }).populate('roles', 'name');
-      
-      // Permettre la connexion même si non approuvée
-      res.json({
-        ...shop.toObject(),
-        isApproved: user ? user.isApproved : false,
-        isRejected: user ? user.isRejected : false,
-        rejectionReason: user ? user.rejectionReason : null,
-        approvedAt: user ? user.approvedAt : null,
-        userRoles: user ? user.roles.map(role => role.name) : []
-      });
-    } else {
-      res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-    }
+    const shop = await Shop.findOne({ email });
+    if (!shop) return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+
+    const isValid = shop.password.startsWith('$2')
+      ? await bcrypt.compare(password, shop.password)
+      : password === shop.password;
+    if (!isValid) return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+
+    // Vérifier le statut d'approbation
+    const user = await User.findOne({ linkedShopId: shop._id }).populate('roles', 'name');
+    
+    res.json({
+      ...shop.toObject(),
+      isApproved: user ? user.isApproved : false,
+      isRejected: user ? user.isRejected : false,
+      rejectionReason: user ? user.rejectionReason : null,
+      approvedAt: user ? user.approvedAt : null,
+      userRoles: user ? user.roles.map(role => role.name) : []
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -838,11 +828,14 @@ app.post('/api/shops/register', async (req, res) => {
       return res.status(400).json({ error: 'Cet email est déjà utilisé' });
     }
     
-    // Créer la boutique
+    // Créer la boutique avec كلمة مرور مشفرة
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
     const shopData = { 
       name, 
       email, 
-      password, 
+      password: hashedPassword, 
       address, 
       phone, 
       whatsapp,
@@ -872,7 +865,7 @@ app.post('/api/shops/register', async (req, res) => {
     const user = new User({
       username: name,
       email: email,
-      password: password,
+      password: hashedPassword, // استخدام نفس كلمة المرور المشفرة
       roles: [shopRole._id, userRole._id],
       isApproved: false, // En attente d'approbation
       linkedShopId: shop._id

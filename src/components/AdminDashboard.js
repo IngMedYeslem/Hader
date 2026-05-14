@@ -4,6 +4,7 @@ import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
 import { API_URL } from '../config/api';
+import ShopRatingBadge from './ShopRatingBadge';
 
 
 
@@ -61,17 +62,12 @@ export default function AdminDashboard() {
       const usersResponse = await fetch(`${API_URL}/users`);
       const users = usersResponse.ok ? await usersResponse.json() : [];
       
-      // Récupérer les produits pour compter ceux de chaque boutique
-      const productsResponse = await fetch(`${API_URL}/debug/products`);
-      const products = productsResponse.ok ? await productsResponse.json() : [];
-      
       // Enrichir les boutiques avec le statut d'approbation et le nombre de produits
       const enrichedShops = shops.map(shop => {
         const linkedUser = users.find(user => user.linkedShop && user.linkedShop.id === shop._id);
-        const productCount = products.filter(p => p.shopId === shop._id).length;
         return {
           ...shop,
-          productCount,
+          productCount: shop.productCount ?? 0,
           isValidated: linkedUser ? linkedUser.isApproved === true : false,
           isRejected: linkedUser ? linkedUser.isRejected === true : false,
           rejectionReason: linkedUser ? linkedUser.rejectionReason : null
@@ -112,30 +108,30 @@ export default function AdminDashboard() {
         method: 'POST'
       });
       if (response.ok) {
-        Platform.OS === 'web' ? alert(`Compte de ${username} approuvé`) : Alert.alert('Succès', `Compte de ${username} approuvé`);
-        // Actualisation automatique immédiate
+        const msg = t('accountApproved').replace('%s', username);
+        Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
         await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
   const handleReject = async (userId, username) => {
-    let reason = 'Informations incomplètes ou incorrectes';
+    let reason = t('incompleteInfo');
     
     if (Platform.OS === 'web') {
-      const userReason = window.prompt(`Raison du rejet pour ${username}:`, reason);
-      if (userReason === null) return; // Annulé
+      const userReason = window.prompt(`${t('rejectReasonFor')} ${username}:`, reason);
+      if (userReason === null) return;
       reason = userReason || reason;
     } else {
       const confirmed = await new Promise(resolve => {
         Alert.alert(
-          'Rejeter le compte',
-          `Voulez-vous rejeter ${username} ?\n\nRaison: ${reason}`,
+          t('rejectAccount'),
+          `${t('wantToReject')} ${username} ?\n\n${t('reason')}: ${reason}`,
           [
-            { text: 'Annuler', onPress: () => resolve(false) },
-            { text: 'Rejeter', onPress: () => resolve(true) }
+            { text: t('cancel'), onPress: () => resolve(false) },
+            { text: t('reject'), onPress: () => resolve(true) }
           ]
         );
       });
@@ -150,11 +146,12 @@ export default function AdminDashboard() {
       });
       
       if (response.ok) {
-        Platform.OS === 'web' ? alert(`Compte de ${username} rejeté`) : Alert.alert('Succès', `Compte de ${username} rejeté`);
+        const msg = t('accountRejectedMsg').replace('%s', username);
+        Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
         await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
@@ -166,11 +163,12 @@ export default function AdminDashboard() {
         method: 'POST'
       });
       if (response.ok) {
-        Platform.OS === 'web' ? alert(`Boutique liée à ${username}`) : Alert.alert('Succès', `Boutique liée à ${username}`);
+        const msg = t('shopLinked').replace('%s', username);
+        Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
         await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
@@ -180,25 +178,26 @@ export default function AdminDashboard() {
         method: 'DELETE'
       });
       if (response.ok) {
-        Platform.OS === 'web' ? alert(`Boutique déliée de ${username}`) : Alert.alert('Succès', `Boutique déliée de ${username}`);
+        const msg = t('shopUnlinked').replace('%s', username);
+        Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
         await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
   const handleValidateShop = async (shopId, shopName) => {
     if (Platform.OS === 'web') {
-      if (!window.confirm(`Êtes-vous sûr de vouloir valider la boutique "${shopName}" ?`)) return;
+      if (!window.confirm(`هل أنت متأكد أنك تريد اعتماد المتجر "${shopName}"?`)) return;
     } else {
       const confirmed = await new Promise(resolve => {
         Alert.alert(
-          'Valider la boutique',
-          `Êtes-vous sûr de vouloir valider la boutique "${shopName}" ?`,
+          t('validateShop'),
+          `هل أنت متأكد أنك تريد اعتماد المتجر "${shopName}"?`,
           [
-            { text: 'Annuler', onPress: () => resolve(false) },
-            { text: 'Valider', onPress: () => resolve(true) }
+            { text: t('cancel'), onPress: () => resolve(false) },
+            { text: t('approve'), onPress: () => resolve(true) }
           ]
         );
       });
@@ -216,38 +215,38 @@ export default function AdminDashboard() {
           method: 'POST'
         });
         if (response.ok) {
-          Platform.OS === 'web' ? alert(`Boutique "${shopName}" validée`) : Alert.alert('Succès', `Boutique "${shopName}" validée`);
-          // Actualiser et changer de filtre si on était sur "rejetées"
+          const msg = t('shopValidated').replace('%s', shopName);
+          Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
           if (shopFilter === 'rejected') {
             setShopFilter('validated');
           }
           await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
         } else {
-          Platform.OS === 'web' ? alert('Erreur lors de la validation') : Alert.alert('Erreur', 'Erreur lors de la validation');
+          Platform.OS === 'web' ? alert(t('validationError')) : Alert.alert(t('error'), t('validationError'));
         }
       } else {
-        Platform.OS === 'web' ? alert('Utilisateur lié non trouvé') : Alert.alert('Erreur', 'Utilisateur lié non trouvé');
+        Platform.OS === 'web' ? alert(t('linkedUserNotFound')) : Alert.alert(t('error'), t('linkedUserNotFound'));
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
   const handleRejectShop = async (shopId, shopName) => {
-    let reason = 'Boutique non conforme aux critères';
+    let reason = t('shopNonCompliant');
     
     if (Platform.OS === 'web') {
-      const userReason = window.prompt(`Raison du rejet pour la boutique "${shopName}":`, reason);
-      if (userReason === null) return; // Annulé
+      const userReason = window.prompt(`${t('rejectReasonFor')} "${shopName}":`, reason);
+      if (userReason === null) return;
       reason = userReason || reason;
     } else {
       const confirmed = await new Promise(resolve => {
         Alert.alert(
-          'Rejeter la boutique',
-          `Voulez-vous rejeter la boutique "${shopName}" ?\n\nRaison: ${reason}`,
+          t('rejectShop'),
+          `${t('wantToRejectShop')} "${shopName}" ?\n\n${t('reason')}: ${reason}`,
           [
-            { text: 'Annuler', onPress: () => resolve(false) },
-            { text: 'Rejeter', style: 'destructive', onPress: () => resolve(true) }
+            { text: t('cancel'), onPress: () => resolve(false) },
+            { text: t('reject'), style: 'destructive', onPress: () => resolve(true) }
           ]
         );
       });
@@ -266,16 +265,17 @@ export default function AdminDashboard() {
           body: JSON.stringify({ reason })
         });
         if (response.ok) {
-          Platform.OS === 'web' ? alert(`Boutique "${shopName}" rejetée`) : Alert.alert('Succès', `Boutique "${shopName}" rejetée`);
+          const msg = t('shopRejected').replace('%s', shopName);
+          Platform.OS === 'web' ? alert(msg) : Alert.alert(t('success'), msg);
           await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
         } else {
-          Platform.OS === 'web' ? alert('Erreur lors du rejet') : Alert.alert('Erreur', 'Erreur lors du rejet');
+          Platform.OS === 'web' ? alert(t('rejectionError')) : Alert.alert(t('error'), t('rejectionError'));
         }
       } else {
-        Platform.OS === 'web' ? alert('Utilisateur lié non trouvé') : Alert.alert('Erreur', 'Utilisateur lié non trouvé');
+        Platform.OS === 'web' ? alert(t('linkedUserNotFound')) : Alert.alert(t('error'), t('linkedUserNotFound'));
       }
     } catch (error) {
-      Platform.OS === 'web' ? alert('Erreur de connexion') : Alert.alert('Erreur', 'Erreur de connexion');
+      Platform.OS === 'web' ? alert(t('connectionError')) : Alert.alert(t('error'), t('connectionError'));
     }
   };
 
@@ -350,18 +350,19 @@ export default function AdminDashboard() {
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>
-              <Text style={{ color: '#333', fontSize: 12, fontWeight: '600' }}>📦 {item.productCount} produits</Text>
+              <Text style={{ color: '#333', fontSize: 12, fontWeight: '600' }}>📦 {item.productCount} {t('productsCount')}</Text>
             </View>
+            <ShopRatingBadge averageRating={item.averageRating} totalRatings={item.totalRatings} />
             {item.location && (
               <TouchableOpacity onPress={() => Linking.openURL(`https://www.google.com/maps?q=${item.location.latitude},${item.location.longitude}`)}>
-                <Text style={{ color: '#FF6B35', fontSize: 12 }}>🗺️ Carte</Text>
+                <Text style={{ color: '#FF6B35', fontSize: 12 }}>🗺️ {t('map')}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {isRejected && item.rejectionReason && (
             <View style={{ backgroundColor: '#fdecea', padding: 10, borderRadius: 8, marginTop: 8 }}>
-              <Text style={{ color: '#c62828', fontSize: 12 }}>Raison: {item.rejectionReason}</Text>
+              <Text style={{ color: '#c62828', fontSize: 12 }}>{t('reason')}: {item.rejectionReason}</Text>
             </View>
           )}
 
@@ -371,17 +372,17 @@ export default function AdminDashboard() {
                 style={{ flex: 1, backgroundColor: '#2ecc71', paddingVertical: 9, borderRadius: 8, alignItems: 'center' }}
                 onPress={() => handleValidateShop(item._id, item.name)}
               >
-                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>Valider</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>{t('validate')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, backgroundColor: '#f44336', paddingVertical: 9, borderRadius: 8, alignItems: 'center' }}
                 onPress={async () => {
                   const linkedUser = users.find(user => user.linkedShop && (user.linkedShop.id === item._id || user.linkedShop._id === item._id));
                   if (linkedUser) await handleRejectShop(item._id, item.name);
-                  else Platform.OS === 'web' ? alert(`Utilisateur lié non trouvé`) : Alert.alert('Erreur', `Utilisateur lié non trouvé`);
+                  else Platform.OS === 'web' ? alert(t('linkedUserNotFound')) : Alert.alert(t('error'), t('linkedUserNotFound'));
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>Rejeter</Text>
+                <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>{t('reject')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -391,7 +392,7 @@ export default function AdminDashboard() {
               style={{ backgroundColor: '#FF6B35', paddingVertical: 9, borderRadius: 8, alignItems: 'center', marginTop: 10 }}
               onPress={() => handleValidateShop(item._id, item.name)}
             >
-              <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>🔄 Réactiver</Text>
+              <Text style={{ color: 'white', fontSize: 13, fontWeight: 'bold' }}>🔄 {t('reactivate')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -399,8 +400,8 @@ export default function AdminDashboard() {
     );
   };
 
-  if (loading) return <Text style={styles.loadingText}>Chargement...</Text>;
-  if (error) return <Text style={styles.errorText}>Erreur: {error}</Text>;
+  if (loading) return <Text style={styles.loadingText}>{t('loading')}</Text>;
+  if (error) return <Text style={styles.errorText}>{t('error')}: {error}</Text>;
   
   console.log('AdminDashboard - Rendu:', { activeTab, usersCount: users.length, shopsCount: shops.length });
   
@@ -427,14 +428,10 @@ export default function AdminDashboard() {
   
   const getEmptyMessage = () => {
     switch (shopFilter) {
-      case 'validated':
-        return 'Aucune boutique validée';
-      case 'pending':
-        return 'Aucune boutique en attente';
-      case 'rejected':
-        return 'Aucune boutique rejetée';
-      default:
-        return 'Aucune boutique trouvée';
+      case 'validated': return t('noShopValidated');
+      case 'pending': return t('noShopPending');
+      case 'rejected': return t('noShopRejected');
+      default: return t('noShopFound');
     }
   };
 
@@ -493,7 +490,7 @@ export default function AdminDashboard() {
           <View style={{ padding: 40, alignItems: 'center' }}>
             <Text style={{ fontSize: 36 }}>🔍</Text>
             <Text style={{ color: '#777', fontSize: 15, textAlign: 'center', marginTop: 10 }}>
-              {activeTab === 'users' ? 'Aucun utilisateur trouvé' : getEmptyMessage()}
+              {activeTab === 'users' ? t('noUserFound') : getEmptyMessage()}
             </Text>
           </View>
         }

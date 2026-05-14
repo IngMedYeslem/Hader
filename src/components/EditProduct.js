@@ -10,7 +10,8 @@ import { showAlert } from '../utils/alert';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  const isRTL = currentLanguage === 'ar';
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -65,14 +66,11 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.price.trim()) {
-      showAlert('Erreur', 'Le nom et le prix sont obligatoires');
+      showAlert(t('error'), t('fillAllFields'));
       return;
     }
 
     try {
-      console.log('=== Sauvegarde ===');
-      console.log('FormData:', formData);
-      
       const updatedProduct = {
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -81,18 +79,14 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
         stock: parseInt(formData.stock) || 0,
         images: formData.images
       };
-      
-      console.log('Produit à envoyer:', updatedProduct);
 
       const result = await productAPI.update(product._id, updatedProduct);
-      console.log('Résultat API:', result);
       
       onProductUpdated({ ...product, ...updatedProduct });
-      showAlert('Succès', 'Produit mis à jour');
+      showAlert(t('success'), t('editSuccess'));
       onClose();
     } catch (error) {
-      console.error('Erreur sauvegarde:', error);
-      showAlert('Erreur', `Impossible de mettre à jour le produit: ${error.message}`);
+      showAlert(t('error'), error.message);
     }
   };
 
@@ -109,22 +103,21 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
 
   const handleDelete = () => {
     showAlert(
-      'Confirmer la suppression',
-      'Voulez-vous vraiment supprimer ce produit ? Cette action est irréversible.',
+      t('confirmDelete') || (isRTL ? 'تأكيد الحذف' : 'Confirmer la suppression'),
+      isRTL ? 'هل تريد حذف هذا المنتج؟ لا يمكن التراجع.' : 'Voulez-vous vraiment supprimer ce produit ?',
       [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Supprimer', 
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete') || (isRTL ? 'حذف' : 'Supprimer'),
           style: 'destructive',
           onPress: async () => {
             try {
               await productAPI.delete(product._id);
-              showAlert('Succès', 'Produit supprimé');
-              onProductUpdated(null); // Signal pour supprimer de la liste
+              showAlert(t('success'), isRTL ? 'تم حذف المنتج' : 'Produit supprimé');
+              onProductUpdated(null);
               onClose();
             } catch (error) {
-              console.error('Erreur suppression:', error);
-              showAlert('Erreur', `Impossible de supprimer le produit: ${error.message}`);
+              showAlert(t('error'), error.message);
             }
           }
         }

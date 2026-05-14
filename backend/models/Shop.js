@@ -21,6 +21,9 @@ const shopSchema = new mongoose.Schema({
     accountHolder: { type: String, default: '' }
   }],
   mainImage: { type: String, default: '' },
+  status: { type: String, enum: ['ACTIVE', 'BUSY', 'CLOSED'], default: 'ACTIVE' },
+  averageRating: { type: Number, default: 0 },
+  totalRatings: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 

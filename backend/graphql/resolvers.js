@@ -56,7 +56,13 @@ module.exports = {
       
     if (!user) throw new Error("Utilisateur non trouvé.");
   
-    const isValid = await bcrypt.compare(password, user.password);
+    // Support both bcrypt hashed and plain text passwords (legacy)
+    let isValid = false;
+    if (user.password.startsWith('$2')) {
+      isValid = await bcrypt.compare(password, user.password);
+    } else {
+      isValid = password === user.password;
+    }
     if (!isValid) throw new Error("Mot de passe incorrect.");
 
     // Vérifier si l'utilisateur a un rôle boutique et s'il est approuvé

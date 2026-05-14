@@ -38,9 +38,6 @@ const SHOP_CATEGORIES = [
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
-    // Synchroniser automatiquement au démarrage
-    syncLocalData();
-    
     // Animations d'entrée
     Animated.parallel([
       Animated.timing(slideAnim, {

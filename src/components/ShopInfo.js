@@ -19,24 +19,29 @@ const SHOP_CATEGORIES = [
 const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) => {
   const { t, currentLanguage } = useTranslation();
   const isRTL = currentLanguage === 'ar';
-  const [isEditing, setIsEditing] = useState(false);
-  const [isEditingLocation, setIsEditingLocation] = useState(false);
-  const [editData, setEditData] = useState({
-    name: shop.name || '',
-    email: shop.email || '',
-    address: shop.address || '',
-    phone: shop.phone || '',
-    whatsapp: shop.whatsapp || '',
-    location: shop.location || { latitude: '', longitude: '' },
-    missingDataNote: shop.missingDataNote || '',
-    category: shop.category || ''
+
+  const buildEditData = (s) => ({
+    name: s.name || '',
+    email: s.email || '',
+    address: s.address || '',
+    phone: s.phone || '',
+    whatsapp: s.whatsapp || '',
+    location: s.location || { latitude: '', longitude: '' },
+    missingDataNote: s.missingDataNote || '',
+    category: s.category || '',
+    oldPassword: '',
+    newPassword: '',
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(buildEditData(shop));
   const [updatedShop, setUpdatedShop] = useState(shop);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [showBankEditor, setShowBankEditor] = useState(false);
   const [newBank, setNewBank] = useState({ bankName: '', accountNumber: '', accountHolder: '' });
   const [mainImage, setMainImage] = useState(shop.mainImage || null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (visible && shop._id) {
@@ -47,6 +52,14 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
     }
   }, [visible, shop._id]);
 
+  // Reset form when opening
+  useEffect(() => {
+    if (visible) {
+      setEditData(buildEditData(shop));
+      setIsEditing(false);
+    }
+  }, [visible]);
+
   const saveBankAccounts = async (accounts) => {
     try {
       const res = await fetch(`${BASE}/shops/${shop._id}/bank-accounts`, {
@@ -55,31 +68,28 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
         body: JSON.stringify({ bankAccounts: accounts }),
       });
       if (res.ok) setBankAccounts(accounts);
-    } catch (e) {
-      Alert.alert('Erreur', 'Impossible de sauvegarder');
+    } catch {
+      Alert.alert('', isRTL ? 'تعذر الحفظ' : 'Impossible de sauvegarder');
     }
   };
 
   const addBankAccount = () => {
     if (!newBank.bankName.trim() || !newBank.accountNumber.trim()) {
-      Alert.alert('', 'اسم البنك ورقم الحساب مطلوبان');
+      Alert.alert('', isRTL ? 'اسم البنك ورقم الحساب مطلوبان' : 'Nom et numéro requis');
       return;
     }
-    const updated = [...bankAccounts, { ...newBank }];
-    saveBankAccounts(updated);
+    saveBankAccounts([...bankAccounts, { ...newBank }]);
     setNewBank({ bankName: '', accountNumber: '', accountHolder: '' });
   };
 
   const removeBankAccount = (index) => {
-    const updated = bankAccounts.filter((_, i) => i !== index);
-    saveBankAccounts(updated);
+    saveBankAccounts(bankAccounts.filter((_, i) => i !== index));
   };
 
   const pickAndUploadMainImage = async () => {
     setUploadingImage(true);
     try {
       if (Platform.OS === 'web') {
-        // Web: use file input
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -101,13 +111,12 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
               onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
               Alert.alert('', t('imageUpdated'));
             }
-          } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
+          } catch { Alert.alert('', isRTL ? 'تعذر الرفع' : 'Impossible de télécharger'); }
           finally { setUploadingImage(false); }
         };
         input.click();
         return;
       }
-      // Mobile: use ImagePicker
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') { Alert.alert('', t('galleryAccess')); setUploadingImage(false); return; }
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
@@ -126,61 +135,91 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
         onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
         Alert.alert('', t('imageUpdated'));
       }
-    } catch (e) { Alert.alert('Erreur', 'Impossible de télécharger'); }
+    } catch { Alert.alert('', isRTL ? 'تعذر الرفع' : 'Impossible de télécharger'); }
     finally { setUploadingImage(false); }
   };
-  const handleCall = (number) => {
-    Linking.openURL(`tel:${number}`);
-  };
 
-  const handleWhatsApp = (number) => {
-    Linking.openURL(`whatsapp://send?phone=${number}`);
-  };
-
-  const handleLocation = () => {
-    if (shop.location?.latitude && shop.location?.longitude) {
-      const url = `https://maps.google.com/?q=${shop.location.latitude},${shop.location.longitude}`;
-      Linking.openURL(url);
+  const openLocationOnMap = () => {
+    const loc = updatedShop.location;
+    if (loc?.latitude && loc?.longitude) {
+      Linking.openURL(`https://maps.google.com/?q=${loc.latitude},${loc.longitude}`);
     } else {
       Alert.alert(t('info'), t('locationNotAvailable'));
     }
   };
 
   const handleSave = async () => {
-    try {
-      const dataToSend = { ...editData };
-      if (!dataToSend.newPassword) delete dataToSend.newPassword;
-
-      const shopResponse = await fetch(`${BASE}/shops/${shop._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSend)
-      });
-      
-      const userResponse = await fetch(`${BASE}/users/update-by-shop/${shop._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: editData.name,
-          email: editData.email,
-          ...(editData.newPassword ? { password: editData.newPassword } : {})
-        })
-      });
-      
-      if (shopResponse.ok && userResponse.ok) {
-        const updatedShopData = await shopResponse.json();
-        setUpdatedShop(updatedShopData.shop);
-        onShopUpdated?.(updatedShopData.shop);
-        setEditData(prev => ({ ...prev, newPassword: '' }));
-        Alert.alert(t('success'), t('productsAdded').replace('produits ajoutés', 'informations mises à jour'));
-        setIsEditing(false);
-        onClose();
-      } else {
-        Alert.alert(t('error'), 'Impossible de mettre à jour');
-      }
-    } catch (error) {
-      Alert.alert(t('error'), 'Erreur de connexion');
+    if (!editData.name.trim() || !editData.phone.trim()) {
+      Alert.alert(t('error'), isRTL ? 'الاسم والهاتف مطلوبان' : 'Nom et téléphone requis');
+      return;
     }
+    setSaving(true);
+    try {
+      // Validate location if provided
+      const lat = parseFloat(editData.location?.latitude);
+      const lng = parseFloat(editData.location?.longitude);
+      const hasValidLocation = !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+
+      const shopPayload = {
+        name: editData.name,
+        email: editData.email,
+        address: editData.address,
+        phone: editData.phone,
+        whatsapp: editData.whatsapp,
+        category: editData.category,
+        missingDataNote: editData.missingDataNote,
+        ...(hasValidLocation && { location: { latitude: lat, longitude: lng } }),
+      };
+
+      const shopRes = await fetch(`${BASE}/shops/${shop._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(shopPayload),
+      });
+
+      await fetch(`${BASE}/users/update-by-shop/${shop._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: editData.name, email: editData.email }),
+      });
+
+      // Change password if provided
+      if (editData.oldPassword && editData.newPassword) {
+        const pwRes = await fetch(`${BASE}/shops/${shop._id}/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPassword: editData.oldPassword, newPassword: editData.newPassword }),
+        });
+        const pwData = await pwRes.json();
+        if (!pwRes.ok) {
+          Alert.alert(t('error'), pwData.error || (isRTL ? 'كلمة المرور القديمة غير صحيحة' : 'Ancien mot de passe incorrect'));
+          setSaving(false);
+          return;
+        }
+      }
+
+      if (shopRes.ok) {
+        const data = await shopRes.json();
+        const newShop = data.shop || data;
+        setUpdatedShop(newShop);
+        onShopUpdated?.(newShop);
+        setEditData(prev => ({ ...prev, oldPassword: '', newPassword: '' }));
+        setIsEditing(false);
+        Alert.alert(t('success'), isRTL ? 'تم التعديل بنجاح' : 'Modifié avec succès');
+      } else {
+        const errData = await shopRes.json().catch(() => ({}));
+        Alert.alert(t('error'), errData.error || (isRTL ? 'تعذر التحديث' : 'Impossible de mettre à jour'));
+      }
+    } catch {
+      Alert.alert(t('error'), isRTL ? 'خطأ في الاتصال' : 'Erreur de connexion');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditData(buildEditData(updatedShop));
+    setIsEditing(false);
   };
 
   return (
@@ -189,72 +228,79 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
         <View style={styles.shopInfoContainer}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.shopInfoTitle}>
-              {isEditing ? t('editInfo') : shop.name}
+              {isEditing ? t('editInfo') : updatedShop.name}
             </Text>
-            
+
             {isEditing ? (
               <>
+                {/* Name */}
                 <View style={styles.shopInfoItem}>
-                  <Text style={styles.shopInfoLabel}>🏪 Nom:</Text>
+                  <Text style={styles.shopInfoLabel}>🏪 {isRTL ? 'الاسم' : 'Nom'}:</Text>
                   <TextInput
                     style={[styles.input, { marginTop: 5 }]}
                     value={editData.name}
-                    onChangeText={(text) => setEditData({...editData, name: text})}
-                    placeholder="Nom de la boutique"
+                    onChangeText={v => setEditData(p => ({ ...p, name: v }))}
+                    placeholder={isRTL ? 'اسم المتجر' : 'Nom de la boutique'}
                   />
                 </View>
-                
+
+                {/* Email */}
                 <View style={styles.shopInfoItem}>
-                  <Text style={styles.shopInfoLabel}>👤 Email:</Text>
+                  <Text style={styles.shopInfoLabel}>📧 Email:</Text>
                   <TextInput
                     style={[styles.input, { marginTop: 5 }]}
                     value={editData.email}
-                    onChangeText={(text) => setEditData({...editData, email: text})}
+                    onChangeText={v => setEditData(p => ({ ...p, email: v }))}
                     placeholder="Email"
                     keyboardType="email-address"
+                    autoCapitalize="none"
                   />
                 </View>
-                
+
+                {/* Address */}
                 <View style={styles.shopInfoItem}>
-                  <Text style={styles.shopInfoLabel}>📍 Adresse:</Text>
+                  <Text style={styles.shopInfoLabel}>📍 {isRTL ? 'العنوان' : 'Adresse'}:</Text>
                   <TextInput
                     style={[styles.input, { marginTop: 5 }]}
                     value={editData.address}
-                    onChangeText={(text) => setEditData({...editData, address: text})}
-                    placeholder="Adresse"
+                    onChangeText={v => setEditData(p => ({ ...p, address: v }))}
+                    placeholder={isRTL ? 'العنوان' : 'Adresse'}
                     multiline
                   />
                 </View>
-                
+
+                {/* Phone */}
                 <View style={styles.shopInfoItem}>
-                  <Text style={styles.shopInfoLabel}>📞 Téléphone:</Text>
+                  <Text style={styles.shopInfoLabel}>📞 {isRTL ? 'الهاتف' : 'Téléphone'}:</Text>
                   <TextInput
                     style={[styles.input, { marginTop: 5 }]}
                     value={editData.phone}
-                    onChangeText={(text) => setEditData({...editData, phone: text})}
-                    placeholder="Téléphone"
+                    onChangeText={v => setEditData(p => ({ ...p, phone: v }))}
+                    placeholder={isRTL ? 'رقم الهاتف' : 'Téléphone'}
                     keyboardType="phone-pad"
                   />
                 </View>
-                
+
+                {/* WhatsApp */}
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>💬 WhatsApp:</Text>
                   <TextInput
                     style={[styles.input, { marginTop: 5 }]}
                     value={editData.whatsapp}
-                    onChangeText={(text) => setEditData({...editData, whatsapp: text})}
+                    onChangeText={v => setEditData(p => ({ ...p, whatsapp: v }))}
                     placeholder="WhatsApp"
                     keyboardType="phone-pad"
                   />
                 </View>
-                
+
+                {/* Category */}
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>🏷️ {isRTL ? 'الصنف' : 'Catégorie'}:</Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 }}>
                     {SHOP_CATEGORIES.map(cat => (
                       <TouchableOpacity
                         key={cat.id}
-                        onPress={() => setEditData({...editData, category: cat.id})}
+                        onPress={() => setEditData(p => ({ ...p, category: cat.id }))}
                         style={{
                           flexDirection: 'row', alignItems: 'center',
                           paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16,
@@ -271,88 +317,123 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                     ))}
                   </View>
                 </View>
-                
-                <TouchableOpacity 
-                  style={[styles.locationBtn, { marginTop: 10 }]} 
-                  onPress={handleLocation}
-                >
-                  <Text style={styles.locationBtnText}>
-                    🗺️ {editData.location.latitude && editData.location.longitude 
-                      ? t('editLocation') 
-                      : t('setLocation')}
-                  </Text>
-                </TouchableOpacity>
-                
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
-                  <TouchableOpacity 
-                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#FF6B35' }]} 
+
+                {/* Location - manual input */}
+                <View style={styles.shopInfoItem}>
+                  <Text style={styles.shopInfoLabel}>🗺️ {isRTL ? 'الموقع (إحداثيات)' : 'Localisation (coordonnées)'}:</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 5 }}>
+                    <TextInput
+                      style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                      value={editData.location?.latitude?.toString() || ''}
+                      onChangeText={v => setEditData(p => ({ ...p, location: { ...p.location, latitude: v } }))}
+                      placeholder={isRTL ? 'خط العرض' : 'Latitude'}
+                      keyboardType="numeric"
+                    />
+                    <TextInput
+                      style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                      value={editData.location?.longitude?.toString() || ''}
+                      onChangeText={v => setEditData(p => ({ ...p, location: { ...p.location, longitude: v } }))}
+                      placeholder={isRTL ? 'خط الطول' : 'Longitude'}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  {editData.location?.latitude && editData.location?.longitude && (
+                    <TouchableOpacity
+                      style={{ marginTop: 6, alignSelf: 'flex-start' }}
+                      onPress={() => {
+                        const lat = parseFloat(editData.location.latitude);
+                        const lng = parseFloat(editData.location.longitude);
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                          Linking.openURL(`https://maps.google.com/?q=${lat},${lng}`);
+                        }
+                      }}
+                    >
+                      <Text style={{ color: '#FF6B35', fontSize: 12 }}>🔍 {isRTL ? 'معاينة على الخريطة' : 'Aperçu sur la carte'}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Password change */}
+                <View style={styles.shopInfoItem}>
+                  <Text style={styles.shopInfoLabel}>🔑 {isRTL ? 'تغيير كلمة المرور' : 'Changer le mot de passe'}:</Text>
+                  <TextInput
+                    style={[styles.input, { marginTop: 5 }]}
+                    value={editData.oldPassword}
+                    onChangeText={v => setEditData(p => ({ ...p, oldPassword: v }))}
+                    placeholder={isRTL ? 'كلمة المرور الحالية' : 'Mot de passe actuel'}
+                    secureTextEntry
+                  />
+                  <TextInput
+                    style={[styles.input, { marginTop: 5 }]}
+                    value={editData.newPassword}
+                    onChangeText={v => setEditData(p => ({ ...p, newPassword: v }))}
+                    placeholder={isRTL ? 'كلمة المرور الجديدة' : 'Nouveau mot de passe'}
+                    secureTextEntry
+                  />
+                </View>
+
+                {/* Save / Cancel buttons */}
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 20, marginBottom: 10 }}>
+                  <TouchableOpacity
+                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: saving ? '#ccc' : '#FF6B35' }]}
                     onPress={handleSave}
+                    disabled={saving}
                   >
-                    <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>{t('save')}</Text>
+                    <Text style={[styles.closeInfoBtnText, { color: 'white' }]}>
+                      {saving ? (isRTL ? 'جاري الحفظ...' : 'Sauvegarde...') : t('save')}
+                    </Text>
                   </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#ccc' }]} 
-                    onPress={() => setIsEditing(false)}
+                  <TouchableOpacity
+                    style={[styles.closeInfoBtn, { flex: 1, backgroundColor: '#ccc' }]}
+                    onPress={handleCancel}
+                    disabled={saving}
                   >
                     <Text style={styles.closeInfoBtnText}>{t('cancel')}</Text>
                   </TouchableOpacity>
-                </View>
-
-                {/* تعديل كلمة المرور */}
-                <View style={styles.shopInfoItem}>
-                  <Text style={styles.shopInfoLabel}>🔑 {t('newPassword')}:</Text>
-                  <TextInput
-                    style={[styles.input, { marginTop: 5 }]}
-                    value={editData.newPassword || ''}
-                    onChangeText={(text) => setEditData({...editData, newPassword: text})}
-                    placeholder={t('newPasswordPlaceholder')}
-                    secureTextEntry
-                  />
                 </View>
               </>
             ) : (
               <>
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>👤 {t('loginLabel')}:</Text>
-                  <Text style={styles.shopInfoValue}>{shop.email}</Text>
+                  <Text style={styles.shopInfoValue}>{updatedShop.email}</Text>
                 </View>
-                
+
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>📍 {t('addressLabel')}:</Text>
-                  <Text style={styles.shopInfoValue}>{shop.address}</Text>
+                  <Text style={styles.shopInfoValue}>{updatedShop.address}</Text>
                 </View>
-                
+
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>📞 {t('phoneLabel')}:</Text>
-                  <TouchableOpacity onPress={() => handleCall(shop.phone)}>
-                    <Text style={[styles.shopInfoValue, { color: '#FF6B35' }]}>{shop.phone}</Text>
+                  <TouchableOpacity onPress={() => Linking.openURL(`tel:${updatedShop.phone}`)}>
+                    <Text style={[styles.shopInfoValue, { color: '#FF6B35' }]}>{updatedShop.phone}</Text>
                   </TouchableOpacity>
                 </View>
-                
+
                 <View style={styles.shopInfoItem}>
                   <Text style={styles.shopInfoLabel}>💬 {t('whatsappLabel')}:</Text>
-                  <TouchableOpacity onPress={() => handleWhatsApp(updatedShop.whatsapp)}>
+                  <TouchableOpacity onPress={() => Linking.openURL(`whatsapp://send?phone=${updatedShop.whatsapp}`)}>
                     <Text style={[styles.shopInfoValue, { color: '#25D366' }]}>{updatedShop.whatsapp}</Text>
                   </TouchableOpacity>
                 </View>
-                
+
                 {updatedShop.category ? (
                   <View style={styles.shopInfoItem}>
                     <Text style={styles.shopInfoLabel}>🏷️ {isRTL ? 'الصنف' : 'Catégorie'}:</Text>
                     <Text style={[styles.shopInfoValue, { color: '#FF6B35' }]}>{updatedShop.category}</Text>
                   </View>
                 ) : null}
-                
+
                 {updatedShop.location?.latitude && updatedShop.location?.longitude && (
-                  <TouchableOpacity style={styles.locationBtn} onPress={handleLocation}>
+                  <TouchableOpacity style={styles.locationBtn} onPress={openLocationOnMap}>
                     <Text style={styles.locationBtnText}>🗺️ {t('viewOnMap')}</Text>
                   </TouchableOpacity>
                 )}
-                
+
                 {allowEdit && (
-                  <TouchableOpacity 
-                    style={[styles.locationBtn, { backgroundColor: '#FF6B35', marginTop: 10 }]} 
+                  <TouchableOpacity
+                    style={[styles.locationBtn, { backgroundColor: '#FF6B35', marginTop: 10 }]}
                     onPress={() => setIsEditing(true)}
                   >
                     <Text style={[styles.locationBtnText, { color: 'white' }]}>✏️ {t('edit')}</Text>
@@ -384,21 +465,21 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                   </View>
                 )}
 
-                {/* Bank Accounts Management */}
+                {/* Bank Accounts */}
                 <View style={{ marginTop: 16 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={[styles.shopInfoLabel, { fontSize: 14, fontWeight: 'bold' }]}>
                       🏦 {t('bankAccountsTitle')}
                     </Text>
                     {allowEdit && (
-                    <TouchableOpacity
-                      onPress={() => setShowBankEditor(!showBankEditor)}
-                      style={{ backgroundColor: '#3498db', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}
-                    >
-                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-                        {showBankEditor ? t('closeBankEditor') : t('addBankAccount')}
-                      </Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setShowBankEditor(!showBankEditor)}
+                        style={{ backgroundColor: '#3498db', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}
+                      >
+                        <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                          {showBankEditor ? t('closeBankEditor') : t('addBankAccount')}
+                        </Text>
+                      </TouchableOpacity>
                     )}
                   </View>
 
@@ -426,9 +507,11 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                         </TouchableOpacity>
                         {acc.accountHolder ? <Text style={{ color: '#555', fontSize: 12, marginTop: 2 }}>{acc.accountHolder}</Text> : null}
                       </View>
-                      <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6, marginLeft: 8 }}>
-                        {allowEdit && <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>}
-                      </TouchableOpacity>
+                      {allowEdit && (
+                        <TouchableOpacity onPress={() => removeBankAccount(i)} style={{ padding: 6, marginLeft: 8 }}>
+                          <Text style={{ color: '#e74c3c', fontSize: 16 }}>🗑</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   ))}
 
@@ -464,8 +547,8 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                 </View>
               </>
             )}
-            
-            <TouchableOpacity style={styles.closeInfoBtn} onPress={onClose}>
+
+            <TouchableOpacity style={[styles.closeInfoBtn, { marginTop: 12 }]} onPress={onClose}>
               <Text style={styles.closeInfoBtnText}>{t('close')}</Text>
             </TouchableOpacity>
           </ScrollView>

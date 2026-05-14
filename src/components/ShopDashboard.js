@@ -368,7 +368,7 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
                   <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🔔</Text>
                 </TouchableOpacity>
               )}
-              {isApproved && (
+              {(isApproved || autoRefreshRejected) && (
                 <TouchableOpacity
                   onPress={() => setShopInfoVisible(true)}
                   style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}

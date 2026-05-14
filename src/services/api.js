@@ -55,25 +55,20 @@ export const shopAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
-      timeout: 5000
     });
     
-    if (!response.ok) {
-      throw new Error('Network error');
+    const data = await response.json();
+
+    // 401 = بيانات خاطئة، نرجع الخطأ مباشرة بدون fallback
+    if (response.status === 401) {
+      return { error: data.error || 'Email ou mot de passe incorrect' };
     }
-    
-    const shop = await response.json();
 
-    // جلب البيانات الكاملة للمتجر بعد تسجيل الدخول
-    try {
-      const fullRes = await fetch(`${API_URL}/shops/${shop._id}`);
-      if (fullRes.ok) {
-        const fullShop = await fullRes.json();
-        return { ...shop, ...fullShop };
-      }
-    } catch {}
+    if (!response.ok) {
+      throw new Error('Server error');
+    }
 
-    return shop;
+    return data;
   },
 
   register: async (shopData) => {

@@ -197,7 +197,7 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
       }
 
       clearCart();
-      onOrderPlaced({ orderNumber, phone, address, total, paymentMethod });
+      onOrderPlaced({ _id: orderId, orderNumber, phone, address, total, paymentMethod, customerName: name });
     } catch (error) {
       Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل إنشاء الطلب' : 'Impossible de créer la commande');
     } finally {
