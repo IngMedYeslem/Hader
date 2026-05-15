@@ -45,11 +45,11 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
       if (status.isAvailable) {
         const { API_URL } = require('../config/api');
 
-        // جلب المتاجر ذات المنتجات بكمية > 0 مباشرة من الباكند
-        const shopsRes = await fetch(`${API_URL}/shops/with-stock`);
+        // جلب المتاجر مع عدد المنتجات من الباكند
+        const shopsRes = await fetch(`${API_URL}/shops`);
         if (shopsRes.ok) {
           const allShops = await shopsRes.json();
-          setShops(allShops.map(s => ({ ...s, productCount: 0, minPrice: null })));
+          setShops(allShops);
         }
 
         // جلب المنتجات للعرض في الواجهة
@@ -298,7 +298,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 }
 
 function ShopCard({ shop, onPress, isRTL }) {
-  const rating = (3.5 + Math.random() * 1.5).toFixed(1);
+  const rating = shop.averageRating > 0 ? shop.averageRating.toFixed(1) : null;
   const deliveryTime = Math.floor(15 + Math.random() * 30);
   const deliveryFee = Math.floor(5 + Math.random() * 20);
 
@@ -354,8 +354,12 @@ function ShopCard({ shop, onPress, isRTL }) {
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF8E7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 }}>
-            <Text style={{ fontSize: 12 }}>⭐</Text>
-            <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#FF6B35', marginLeft: 2 }}>{rating}</Text>
+            {rating ? (
+              <><Text style={{ fontSize: 12 }}>⭐</Text>
+              <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#FF6B35', marginLeft: 2 }}>{rating}</Text></>
+            ) : (
+              <Text style={{ fontSize: 12, color: '#aaa' }}>☆☆☆☆☆</Text>
+            )}
           </View>
         </View>
 

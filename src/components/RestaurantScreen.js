@@ -75,10 +75,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     }
   };
 
-  const visibleProducts = useMemo(() => products.filter(p => {
-    const stock = availableStock[p._id || p.id];
-    return stock === undefined || stock > 0;
-  }), [products, availableStock]);
+  const visibleProducts = useMemo(() => products, [products]);
 
   const categories = useMemo(() =>
     ['all', ...new Set(visibleProducts.map(p => p.category).filter(Boolean))]
@@ -350,7 +347,13 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
 
             <View style={{ flexDirection: 'row', marginTop: 12, gap: 16 }}>
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>⭐ 4.5</Text>
+                {shop.averageRating > 0 ? (
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>
+                    {'⭐'.repeat(Math.round(shop.averageRating))} {shop.averageRating.toFixed(1)}
+                  </Text>
+                ) : (
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#aaa' }}>☆☆☆☆☆</Text>
+                )}
                 <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'التقييم' : 'Note'}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />

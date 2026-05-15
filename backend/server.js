@@ -351,10 +351,7 @@ app.get('/api/shops', async (req, res) => {
   try {
     const shops = await Shop.find();
     const shopsWithCount = await Promise.all(shops.map(async (shop) => {
-      const productCount = await Product.countDocuments({
-        shopId: shop._id.toString(),
-        $or: [{ isActive: true }, { isActive: { $exists: false } }]
-      });
+      const productCount = await Product.countDocuments({ shopId: shop._id.toString() });
       return {
         ...shop.toObject(),
         productCount,
@@ -362,7 +359,7 @@ app.get('/api/shops', async (req, res) => {
         totalRatings: shop.totalRatings || 0
       };
     }));
-    res.json(shopsWithCount);
+    res.json(shopsWithCount.filter(s => s.productCount > 0));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

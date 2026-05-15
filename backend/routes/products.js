@@ -71,7 +71,31 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Récupérer les produits d'une boutique
+// عدد منتجات متجر (الكمية > 0 فقط)
+router.get('/shop/:shopId/count', async (req, res) => {
+  try {
+    const count = await Product.countDocuments({ shopId: req.params.shopId, stock: { $gt: 0 } });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// منتجات متجر مع pagination
+router.get('/shop/:shopId', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const products = await Product.find({ shopId: req.params.shopId })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Récupérer les produits d'une boutique (legacy)
 router.get('/:shopId', async (req, res) => {
   try {
     const products = await Product.find({ shopId: req.params.shopId });

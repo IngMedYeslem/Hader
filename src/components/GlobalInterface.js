@@ -7,7 +7,6 @@ import CartScreen from './CartScreen';
 import CheckoutScreen from './CheckoutScreen';
 import OrderTrackingScreen from './OrderTrackingScreen';
 import ReviewForm from './ReviewForm';
-import { fetchProductsWithShops } from '../services/apiService';
 import { getServerStatus } from '../services/serverCheck';
 import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
@@ -23,7 +22,6 @@ export default function GlobalInterface({ onShopLogin }) {
   const isRTL = currentLanguage === 'ar';
 
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
   const [shops, setShops] = useState([]);
   const [serverAvailable, setServerAvailable] = useState(false);
   const [showAdminInterface, setShowAdminInterface] = useState(false);
@@ -40,15 +38,12 @@ export default function GlobalInterface({ onShopLogin }) {
         const status = await getServerStatus();
         setServerAvailable(status.isAvailable);
         if (status.isAvailable) {
-          // جلب المتاجر مباشرة
-          const shopsRes = await fetch(`${API_URL}/shops`);
+          const shopsRes = await fetch(`${API_URL}/shops?t=${Date.now()}`);
           if (shopsRes.ok) {
             const shopsData = await shopsRes.json();
+            // البيانات تحتوي على productCount والفلترة تتم في الباكند
             setShops(Array.isArray(shopsData) ? shopsData : []);
           }
-          // جلب المنتجات لحساب عدد منتجات كل متجر
-          const data = await fetchProductsWithShops();
-          setProducts(data);
         }
       } catch (error) {
         console.error('Erreur chargement:', error);
@@ -154,7 +149,6 @@ export default function GlobalInterface({ onShopLogin }) {
           </View>
         ) : (
           shops.map((shop) => {
-            const shopProducts = products.filter(p => p.shop?._id === shop._id);
             const coverUri = shop.coverImage ? getMediaUrl(shop.coverImage)
               : shop.mainImage ? getMediaUrl(shop.mainImage) : null;
             const avatarUri = shop.profileImage ? getMediaUrl(shop.profileImage) : null;
@@ -211,7 +205,7 @@ export default function GlobalInterface({ onShopLogin }) {
                       </Text>
                     )}
                     <Text style={{ fontSize: 12, color: '#FF6B35', marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
-                      {shopProducts.length > 0 ? `${shopProducts.length} ${isRTL ? 'منتج' : 'produits'}` : (isRTL ? 'متجر جديد' : 'Nouveau magasin')}
+                      {`${shop.productCount} ${isRTL ? 'منتج' : 'produits'}`}
                     </Text>
                   </View>
                   <Text style={{ fontSize: 20, color: '#FF6B35' }}>{isRTL ? '←' : '→'}</Text>
