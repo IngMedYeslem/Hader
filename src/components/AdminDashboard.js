@@ -45,26 +45,34 @@ export default function AdminDashboard() {
 
   const fetchShops = async () => {
     try {
-      console.log('Récupération des boutiques depuis la vraie API...');
-      
-      // Récupérer toutes les boutiques depuis la vraie API
-      const shopsResponse = await fetch(`${API_URL}/shops`);
-      if (!shopsResponse.ok) {
-        console.log('Erreur API boutiques:', shopsResponse.status);
-        setShops([]);
-        return;
-      }
-      
-      const shops = await shopsResponse.json();
-      console.log('Boutiques récupérées:', shops.length);
-      
-      // Récupérer les utilisateurs pour obtenir le statut d'approbation
-      const usersResponse = await fetch(`${API_URL}/users`);
-      const users = usersResponse.ok ? await usersResponse.json() : [];
-      
-      // Enrichir les boutiques avec le statut d'approbation et le nombre de produits
-      const enrichedShops = shops.map(shop => {
-        const linkedUser = users.find(user => user.linkedShop && user.linkedShop.id === shop._id);
+      // جلب المستخدمين والمتاجر معاً
+      const [usersResponse, shopsResponse] = await Promise.all([
+        fetch(`${API_URL}/users`),
+        fetch(`${API_URL}/shops/all`).catch(() => fetch(`${API_URL}/shops`))
+      ]);
+
+      const usersData = usersResponse.ok ? await usersResponse.json() : [];
+      const shopsData = shopsResponse.ok ? await shopsResponse.json() : [];
+
+      // بناء خريطة المتاجر من API
+      const shopsMap = {};
+      shopsData.forEach(shop => { shopsMap[shop._id] = shop; });
+
+      // جمع كل المتاجر: من API + من linkedShop للمستخدمين غير الموجودين
+      const allShopsMap = { ...shopsMap };
+      usersData.forEach(user => {
+        if (user.linkedShop) {
+          const id = user.linkedShop.id || user.linkedShop._id;
+          if (id && !allShopsMap[id]) {
+            allShopsMap[id] = { ...user.linkedShop, _id: id };
+          }
+        }
+      });
+
+      const enrichedShops = Object.values(allShopsMap).map(shop => {
+        const linkedUser = usersData.find(user =>
+          user.linkedShop && (user.linkedShop.id === shop._id || user.linkedShop._id === shop._id)
+        );
         return {
           ...shop,
           productCount: shop.productCount ?? 0,
@@ -73,7 +81,7 @@ export default function AdminDashboard() {
           rejectionReason: linkedUser ? linkedUser.rejectionReason : null
         };
       });
-      
+
       setShops(enrichedShops);
     } catch (error) {
       console.log('Erreur récupération boutiques:', error);

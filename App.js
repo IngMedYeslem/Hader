@@ -13,6 +13,7 @@ import RestaurantScreen from './src/components/RestaurantScreen';
 import CartScreen from './src/components/CartScreen';
 import CheckoutScreen from './src/components/CheckoutScreen';
 import OrderTrackingScreen from './src/components/OrderTrackingScreen';
+import ReviewForm from './src/components/ReviewForm';
 import ShopLogin from './src/components/ShopLogin';
 import ShopDashboard from './src/components/ShopDashboard';
 import AdminInterface from './src/components/AdminInterface';
@@ -38,7 +39,7 @@ const clearCache = async () => {
   } catch (e) {}
 };
 
-// VIEWS: 'home' | 'restaurant' | 'cart' | 'checkout' | 'tracking' | 'shopLogin' | 'shopDashboard' | 'admin'
+// VIEWS: 'home' | 'restaurant' | 'cart' | 'checkout' | 'tracking' | 'review' | 'shopLogin' | 'shopDashboard' | 'admin'
 function AppContent() {
   const { t } = useTranslation();
   const [view, setView] = useState('home');
@@ -188,6 +189,19 @@ function AppContent() {
           order={currentOrder}
           onBack={() => setView('home')}
           onNewOrder={() => setView('home')}
+          onReview={() => navigate('review')}
+        />
+      );
+
+    case 'review':
+      return (
+        <ReviewForm
+          orderId={currentOrder?._id}
+          customerPhone={currentOrder?.phone}
+          customerName={currentOrder?.customerName || ''}
+          shopName={selectedShop?.name || selectedShop?.username || ''}
+          onDone={() => setView('home')}
+          onBack={() => setView('tracking')}
         />
       );
 

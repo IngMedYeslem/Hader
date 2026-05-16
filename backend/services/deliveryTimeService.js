@@ -21,15 +21,16 @@ const BASE_TIMES = {
 };
 
 const CATEGORY_MAP = {
-  food:       ['food', 'restaurant', 'مطعم', 'مطاعم', 'طعام'],
-  pharmacy:   ['pharmacy', 'pharmacie', 'صيدلية', 'صيدليات'],
-  grocery:    ['grocery', 'store', 'متجر', 'متاجر', 'supermarket', 'سوبرماركت'],
+  pharmacy: ['pharmacy', 'pharmacie', 'صيدلية', 'صيدليات', 'pharma'],
+  food:     ['food', 'restaurant', 'مطعم', 'مطاعم', 'طعام', 'resto', 'fastfood', 'fast food'],
+  grocery:  ['grocery', 'store', 'supermarket', 'supermarché', 'épicerie', 'متجر', 'متاجر', 'سوبرماركت', 'بقالة', 'shop'],
 };
 
 const resolveCategory = (category = '') => {
   const lower = category.toLowerCase().trim();
+  // pharmacy first to avoid 'store' matching pharmacy names
   for (const [key, aliases] of Object.entries(CATEGORY_MAP)) {
-    if (aliases.some(a => lower.includes(a))) return key;
+    if (aliases.some(a => lower === a || lower.startsWith(a) || lower.endsWith(a) || lower.includes(a))) return key;
   }
   return 'default';
 };

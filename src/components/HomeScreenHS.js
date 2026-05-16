@@ -299,8 +299,16 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 
 function ShopCard({ shop, onPress, isRTL }) {
   const rating = shop.averageRating > 0 ? shop.averageRating.toFixed(1) : null;
-  const deliveryTime = Math.floor(15 + Math.random() * 30);
-  const deliveryFee = Math.floor(5 + Math.random() * 20);
+  const [deliveryTime, setDeliveryTime] = useState(null);
+
+  useEffect(() => {
+    if (!shop._id) return;
+    const { API_URL } = require('../config/api');
+    fetch(`${API_URL}/shops/${shop._id}/delivery-time`)
+      .then(r => r.json())
+      .then(data => data.deliveryTime && setDeliveryTime(data.deliveryTime))
+      .catch(() => {});
+  }, [shop._id]);
 
   const coverUri = shop.mainImage
     ? (shop.mainImage.startsWith('/uploads') ? getMediaUrl(shop.mainImage) : shop.mainImage)
@@ -324,16 +332,16 @@ function ShopCard({ shop, onPress, isRTL }) {
           <Text style={{ fontSize: 50 }}>🏪</Text>
         )}
         {/* Delivery time badge */}
-        <View style={{
-          position: 'absolute', top: 10, left: 10,
-          backgroundColor: 'white', borderRadius: 12,
-          paddingHorizontal: 8, paddingVertical: 4,
-          flexDirection: 'row', alignItems: 'center',
-        }}>
-          <Text style={{ fontSize: 10, color: '#333', fontWeight: 'bold' }}>
-            🕐 {deliveryTime} {isRTL ? 'دقيقة' : 'min'}
-          </Text>
-        </View>
+        {deliveryTime && (
+          <View style={{
+            position: 'absolute', top: 10, left: 10,
+            backgroundColor: 'white', borderRadius: 12,
+            paddingHorizontal: 8, paddingVertical: 4,
+            flexDirection: 'row', alignItems: 'center',
+          }}>
+            <Text style={{ fontSize: 10, color: '#333', fontWeight: 'bold' }}>🕐 {deliveryTime}</Text>
+          </View>
+        )}
       </View>
 
       {/* Info */}
@@ -367,9 +375,11 @@ function ShopCard({ shop, onPress, isRTL }) {
           <Text style={{ fontSize: 12, color: '#777' }}>
             📦 {shop.productCount} {isRTL ? 'منتج' : 'produits'}
           </Text>
-          <Text style={{ fontSize: 12, color: '#777' }}>
-            🛵 {deliveryFee} MRU {isRTL ? 'توصيل' : 'livraison'}
-          </Text>
+          {shop.deliveryFee > 0 && (
+            <Text style={{ fontSize: 12, color: '#777' }}>
+              🛵 {shop.deliveryFee} MRU {isRTL ? 'توصيل' : 'livraison'}
+            </Text>
+          )}
           {shop.minPrice !== Infinity && (
             <Text style={{ fontSize: 12, color: '#FF6B35', fontWeight: '600' }}>
               {isRTL ? 'من' : 'Dès'} {shop.minPrice} MRU
