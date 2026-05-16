@@ -8,6 +8,7 @@ import { getServerStatus } from '../services/serverCheck';
 import { useTranslation } from '../translations';
 import { useCart } from '../contexts/CartContext';
 import { getMediaUrl } from '../services/api';
+import { useLastOrder } from '../hooks/useLastOrder';
 
 const { width } = Dimensions.get('window');
 
@@ -15,9 +16,10 @@ const { width } = Dimensions.get('window');
 
 
 
-export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess, onOpenCart }) {
+export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess, onOpenCart, onResumeOrder }) {
   const { t, currentLanguage, setLanguage } = useTranslation();
   const { getTotalItems } = useCart();
+  const { lastOrder } = useLastOrder();
   const [products, setProducts] = useState([]);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,6 +160,32 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Active Order Banner */}
+        {lastOrder && onResumeOrder && (
+          <TouchableOpacity
+            onPress={() => onResumeOrder(lastOrder)}
+            style={{
+              margin: 16, marginBottom: 0, backgroundColor: '#2C3E50',
+              borderRadius: 14, padding: 14,
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              alignItems: 'center', gap: 12,
+            }}
+          >
+            <Text style={{ fontSize: 28 }}>📦</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
+                {isRTL ? 'لديك طلب نشط' : currentLanguage === 'fr' ? 'Vous avez une commande active' : 'You have an active order'}
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
+                #{lastOrder.orderNumber} • {lastOrder.total} MRU
+              </Text>
+            </View>
+            <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 13 }}>
+              {isRTL ? 'متابعة ←' : currentLanguage === 'fr' ? 'Suivre →' : 'Track →'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Search Bar */}
         <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingBottom: 16 }}>
           <View style={{

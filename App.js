@@ -215,6 +215,10 @@ function AppContent() {
           onShopLogin={() => navigate('shopLogin')}
           onAdminAccess={() => navigate('admin')}
           onOpenCart={() => navigate('cart')}
+          onResumeOrder={(order) => {
+            setCurrentOrder(order);
+            navigate('tracking');
+          }}
         />
       );
   }

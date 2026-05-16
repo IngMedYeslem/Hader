@@ -9,6 +9,7 @@ import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
 import { API_URL, API_CONFIG } from '../config/api';
 import ShopHeader from './ShopHeader';
+import { saveLastOrder } from '../hooks/useLastOrder';
 
 const BASE = API_CONFIG.BASE_URL;
 
@@ -196,8 +197,10 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
         await uploadReceipt(orderId, receiptImage);
       }
 
+      const orderObj = { _id: orderId, orderNumber, phone, address, total, paymentMethod, customerName: name };
+      await saveLastOrder(orderObj);
       clearCart();
-      onOrderPlaced({ _id: orderId, orderNumber, phone, address, total, paymentMethod, customerName: name });
+      onOrderPlaced(orderObj);
     } catch (error) {
       Alert.alert(isRTL ? 'خطأ' : 'Erreur', isRTL ? 'فشل إنشاء الطلب' : 'Impossible de créer la commande');
     } finally {

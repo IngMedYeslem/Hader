@@ -6,6 +6,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '../translations';
 import { API_CONFIG } from '../config/api';
+import { clearLastOrder, isTerminalStatus } from '../hooks/useLastOrder';
 import ShopHeader from './ShopHeader';
 const BASE = API_CONFIG.BASE_URL;
 
@@ -64,6 +65,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
         // Stop polling when order reaches a terminal state
         if (TERMINAL_STATUSES.includes(data.status)) {
           clearInterval(intervalRef.current);
+          clearLastOrder();
         }
       }
     } catch (e) {
