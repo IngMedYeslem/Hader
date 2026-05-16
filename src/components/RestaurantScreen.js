@@ -13,7 +13,7 @@ const { width } = Dimensions.get('window');
 
 export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const { addToCart, cartItems, getTotalItems, getTotalAmount, cartShop } = useCart();
-  const { currentLanguage } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [products, setProducts] = useState([]);
   const [availableStock, setAvailableStock] = useState({});
   const [loading, setLoading] = useState(true);
@@ -25,6 +25,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const [quantity, setQuantity] = useState(1);
   const [showDifferentShopAlert, setShowDifferentShopAlert] = useState(false);
   const [pendingProduct, setPendingProduct] = useState(null);
+  const [deliveryTime, setDeliveryTime] = useState(null);
   const cartBarAnim = useRef(new Animated.Value(0)).current;
   const isRTL = currentLanguage === 'ar';
 
@@ -33,6 +34,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     setHasMore(true);
     setProducts([]);
     loadShopProducts(1, false);
+    const shopId = shop._id || shop.id;
+    fetch(`${API_CONFIG.BASE_URL}/shops/${shopId}/delivery-time`)
+      .then(r => r.json())
+      .then(data => data.deliveryTime && setDeliveryTime(data.deliveryTime))
+      .catch(() => {});
   }, [shop]);
 
   useEffect(() => {
@@ -358,8 +364,8 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>25 {isRTL ? 'دق' : 'min'}</Text>
-                <Text style={{ fontSize: 11, color: '#777' }}>{isRTL ? 'التوصيل' : 'Livraison'}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FF6B35' }}>{deliveryTime ? `${deliveryTime} ${t('minutes')}` : t('notDefined')}</Text>
+                <Text style={{ fontSize: 11, color: '#777' }}>{t('deliveryLabel')}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: '#eee' }} />
               <View style={{ alignItems: 'center' }}>

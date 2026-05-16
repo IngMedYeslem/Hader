@@ -300,6 +300,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 function ShopCard({ shop, onPress, isRTL }) {
   const rating = shop.averageRating > 0 ? shop.averageRating.toFixed(1) : null;
   const [deliveryTime, setDeliveryTime] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!shop._id) return;
@@ -339,7 +340,7 @@ function ShopCard({ shop, onPress, isRTL }) {
             paddingHorizontal: 8, paddingVertical: 4,
             flexDirection: 'row', alignItems: 'center',
           }}>
-            <Text style={{ fontSize: 10, color: '#333', fontWeight: 'bold' }}>🕐 {deliveryTime}</Text>
+            <Text style={{ fontSize: 10, color: '#333', fontWeight: 'bold' }}>🕐 {deliveryTime} {t('minutes')}</Text>
           </View>
         )}
       </View>

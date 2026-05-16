@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { API_URL } from '../config/api';
+import { useTranslation } from '../translations';
 
 /**
  * @param {string} shopId
@@ -9,6 +10,7 @@ import { API_URL } from '../config/api';
  */
 const DeliveryTimeBadge = ({ shopId, customerLocation, style }) => {
   const [deliveryTime, setDeliveryTime] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!shopId) return;
@@ -26,7 +28,7 @@ const DeliveryTimeBadge = ({ shopId, customerLocation, style }) => {
 
   return (
     <View style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,107,53,0.1)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 }, style]}>
-      <Text style={{ fontSize: 11, color: '#FF6B35', fontWeight: '600' }}>🕐 {deliveryTime}</Text>
+      <Text style={{ fontSize: 11, color: '#FF6B35', fontWeight: '600' }}>🕐 {deliveryTime} {t('minutes')}</Text>
     </View>
   );
 };

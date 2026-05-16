@@ -38,7 +38,7 @@ const resolveCategory = (category = '') => {
 /**
  * @param {object} shop  - { category, status, location: { latitude, longitude } }
  * @param {object} customerLocation - { latitude, longitude } (optional)
- * @returns {string} e.g. "40 - 55 دقيقة"
+ * @returns {string} e.g. "40 - 55 "
  */
 const calculateDeliveryTime = (shop, customerLocation = null) => {
   const cat = resolveCategory(shop.category);
@@ -65,7 +65,7 @@ const calculateDeliveryTime = (shop, customerLocation = null) => {
     maxTime += 15;
   }
 
-  return `${roundToNearest5(minTime)} - ${roundToNearest5(maxTime)} دقيقة`;
+  return `${roundToNearest5(minTime)} - ${roundToNearest5(maxTime)} `;
 };
 
 module.exports = { calculateDeliveryTime, haversineDistance };
