@@ -13,6 +13,7 @@ const shopRoutes = require('./routes/shops');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const reviewRoutes = require('./routes/reviews');
+const offerRoutes = require('./routes/offers');
 
 // Fonction pour envoyer des notifications push Expo
 async function sendExpoPushNotification(expoPushToken, { title, body, data }) {
@@ -57,6 +58,7 @@ app.use('/api', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', reviewRoutes);
+app.use('/api', offerRoutes);
 
 // Middleware de debug pour upload
 const debugUpload = (req, res, next) => {

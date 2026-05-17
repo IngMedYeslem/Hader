@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, Linking, Platform, TextInput, ScrollView, Modal } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { showPendingShops, clearLocalShops } from '../services/api';
@@ -17,7 +17,67 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
+  const [offers, setOffers] = useState([]);
+  const [offerForm, setOfferForm] = useState({ title: '', subtitle: '', emoji: '🎁', color: '#FF6B35', link_type: 'none', end_date: '' });
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null); // id العرض الذي يُعدَّل
+  const [savingOffer, setSavingOffer] = useState(false);
   const [shopFilter, setShopFilter] = useState('all'); // 'all', 'validated', 'pending', 'rejected'
+
+  const fetchOffers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/offers`);
+      const json = await res.json();
+      setOffers((json.data || []).map(o => ({ ...o, id: o._id })));
+    } catch (e) { console.log('offers error', e); }
+  };
+
+  const EMPTY_FORM = { title: '', subtitle: '', emoji: '🎁', color: '#FF6B35', link_type: 'none', end_date: '' };
+
+  const openEdit = (offer) => {
+    setEditingOffer(offer.id);
+    setOfferForm({ title: offer.title, subtitle: offer.subtitle || '', emoji: offer.emoji || '🎁', color: offer.color || '#FF6B35', link_type: offer.link_type || 'none', end_date: offer.end_date || '' });
+    setShowOfferForm(true);
+  };
+
+  const cancelForm = () => {
+    setShowOfferForm(false);
+    setEditingOffer(null);
+    setOfferForm(EMPTY_FORM);
+  };
+
+  const saveOffer = async () => {
+    if (!offerForm.title.trim()) return Alert.alert('', 'العنوان مطلوب');
+    setSavingOffer(true);
+    try {
+      const url = editingOffer ? `${API_URL}/offers/${editingOffer}` : `${API_URL}/offers`;
+      const method = editingOffer ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...offerForm, active: true }),
+      });
+      if (res.ok) {
+        cancelForm();
+        fetchOffers();
+      }
+    } finally { setSavingOffer(false); }
+  };
+
+  const deleteOffer = (id, title) => {
+    const doDelete = async () => {
+      await fetch(`${API_URL}/offers/${id}`, { method: 'DELETE' });
+      fetchOffers();
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm(`حذف العرض "${title}"?`)) doDelete();
+    } else {
+      Alert.alert('حذف العرض', `"${title}"`, [
+        { text: 'إلغاء', style: 'cancel' },
+        { text: 'حذف', style: 'destructive', onPress: doDelete },
+      ]);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -93,6 +153,7 @@ export default function AdminDashboard() {
     fetchUsers();
     fetchShops();
     fetchPendingLocalShops();
+    fetchOffers();
     
     // Actualisation automatique toutes les 30 secondes
     const interval = setInterval(() => {
@@ -106,7 +167,7 @@ export default function AdminDashboard() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops()]);
+    await Promise.all([fetchUsers(), fetchShops(), fetchPendingLocalShops(), fetchOffers()]);
     setRefreshing(false);
   };
 
@@ -451,22 +512,11 @@ export default function AdminDashboard() {
     <View style={{ flex: 1, backgroundColor: '#FF6B35' }}>
       {/* Tabs */}
       <View style={{ flexDirection: 'row', backgroundColor: 'white', marginHorizontal: 16, marginTop: 12, borderRadius: 25, padding: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 2 }}>
-        <TouchableOpacity
-          style={{ flex: 1, paddingVertical: 10, borderRadius: 22, backgroundColor: activeTab === 'users' ? '#FF6B35' : 'transparent', alignItems: 'center' }}
-          onPress={() => setActiveTab('users')}
-        >
-          <Text style={{ fontSize: 13, fontWeight: '600', color: activeTab === 'users' ? 'white' : '#666' }}>
-            👥 {t('users')} ({users.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ flex: 1, paddingVertical: 10, borderRadius: 22, backgroundColor: activeTab === 'shops' ? '#FF6B35' : 'transparent', alignItems: 'center' }}
-          onPress={() => setActiveTab('shops')}
-        >
-          <Text style={{ fontSize: 13, fontWeight: '600', color: activeTab === 'shops' ? 'white' : '#666' }}>
-            🏪 {t('shops')} ({shops.length + pendingLocalShops.length})
-          </Text>
-        </TouchableOpacity>
+        {[['users', `👥 ${t('users')} (${users.length})`], ['shops', `🏪 ${t('shops')} (${shops.length + pendingLocalShops.length})`], ['offers', `🎯 العروض (${offers.length})`]].map(([key, label]) => (
+          <TouchableOpacity key={key} style={{ flex: 1, paddingVertical: 10, borderRadius: 22, backgroundColor: activeTab === key ? '#FF6B35' : 'transparent', alignItems: 'center' }} onPress={() => setActiveTab(key)}>
+            <Text style={{ fontSize: 11, fontWeight: '600', color: activeTab === key ? 'white' : '#666' }}>{label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {activeTab === 'shops' && (
@@ -488,21 +538,111 @@ export default function AdminDashboard() {
         </View>
       )}
 
-      <FlatList
-        data={activeTab === 'users' ? users : getFilteredShops()}
-        renderItem={activeTab === 'users' ? renderUser : renderShop}
-        keyExtractor={(item) => activeTab === 'users' ? item.id : item._id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor='#FF6B35' />}
-        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16, paddingTop: 12 }}
-        ListEmptyComponent={
-          <View style={{ padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: 36 }}>🔍</Text>
-            <Text style={{ color: '#777', fontSize: 15, textAlign: 'center', marginTop: 10 }}>
-              {activeTab === 'users' ? t('noUserFound') : getEmptyMessage()}
-            </Text>
-          </View>
-        }
-      />
+      {activeTab === 'offers' ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor='#FF6B35' />}>
+          <TouchableOpacity
+            onPress={() => { if (showOfferForm) cancelForm(); else setShowOfferForm(true); }}
+            style={{ backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          >
+            <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 15 }}>{showOfferForm ? '× إلغاء' : '+ إضافة عرض جديد'}</Text>
+          </TouchableOpacity>
+
+          {showOfferForm && (
+            <View style={{ backgroundColor: 'white', borderRadius: 14, padding: 16, marginBottom: 16 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333', textAlign: 'right', marginBottom: 12 }}>
+                {editingOffer ? '✏️ تعديل العرض' : '➕ عرض جديد'}
+              </Text>
+              <TextInput
+                placeholder='عنوان العرض *'
+                value={offerForm.title}
+                onChangeText={v => setOfferForm(f => ({ ...f, title: v }))}
+                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 10, textAlign: 'right' }}
+              />
+              <TextInput
+                placeholder='وصف قصير (اختياري)'
+                value={offerForm.subtitle}
+                onChangeText={v => setOfferForm(f => ({ ...f, subtitle: v }))}
+                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 10, textAlign: 'right' }}
+              />
+              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 10 }}>
+                <TextInput
+                  placeholder='إيموجي 🎁'
+                  value={offerForm.emoji}
+                  onChangeText={v => setOfferForm(f => ({ ...f, emoji: v }))}
+                  style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, textAlign: 'center' }}
+                />
+                <TextInput
+                  placeholder='لون #FF6B35'
+                  value={offerForm.color}
+                  onChangeText={v => setOfferForm(f => ({ ...f, color: v }))}
+                  style={{ flex: 2, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10 }}
+                />
+              </View>
+              <TextInput
+                placeholder='تاريخ الانتهاء YYYY-MM-DD (اختياري)'
+                value={offerForm.end_date}
+                onChangeText={v => setOfferForm(f => ({ ...f, end_date: v }))}
+                style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 14 }}
+              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <View style={{ width: 50, height: 50, borderRadius: 10, backgroundColor: offerForm.color, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24 }}>{offerForm.emoji}</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={saveOffer}
+                  disabled={savingOffer}
+                  style={{ flex: 1, backgroundColor: '#FF6B35', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>{savingOffer ? 'جاري الحفظ...' : '✓ حفظ العرض'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {offers.length === 0 ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 36 }}>🎯</Text>
+              <Text style={{ color: '#777', marginTop: 10 }}>لا توجد عروض</Text>
+            </View>
+          ) : offers.map(offer => (
+            <View key={offer.id} style={{ backgroundColor: 'white', borderRadius: 12, marginBottom: 10, overflow: 'hidden', borderLeftWidth: 5, borderLeftColor: offer.color }}>
+              <View style={{ padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: offer.color, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 22 }}>{offer.emoji}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 14, color: '#333', textAlign: 'right' }}>{offer.title}</Text>
+                  {offer.subtitle ? <Text style={{ color: '#777', fontSize: 12, textAlign: 'right' }}>{offer.subtitle}</Text> : null}
+                  {offer.end_date ? <Text style={{ color: '#aaa', fontSize: 11, textAlign: 'right' }}>حتى: {offer.end_date}</Text> : null}
+                  <Text style={{ color: '#aaa', fontSize: 11, textAlign: 'right' }}>نقرات: {offer.clicks || 0}</Text>
+                </View>
+                <TouchableOpacity onPress={() => deleteOffer(offer.id, offer.title)} style={{ padding: 8 }}>
+                  <Text style={{ fontSize: 20 }}>🗑️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => openEdit(offer)} style={{ padding: 8 }}>
+                  <Text style={{ fontSize: 20 }}>✏️</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={activeTab === 'users' ? users : getFilteredShops()}
+          renderItem={activeTab === 'users' ? renderUser : renderShop}
+          keyExtractor={(item) => activeTab === 'users' ? item.id : item._id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor='#FF6B35' />}
+          contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16, paddingTop: 12 }}
+          ListEmptyComponent={
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 36 }}>🔍</Text>
+              <Text style={{ color: '#777', fontSize: 15, textAlign: 'center', marginTop: 10 }}>
+                {activeTab === 'users' ? t('noUserFound') : getEmptyMessage()}
+              </Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }

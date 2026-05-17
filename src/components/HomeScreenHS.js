@@ -9,8 +9,8 @@ import { useTranslation } from '../translations';
 import { useCart } from '../contexts/CartContext';
 import { getMediaUrl } from '../services/api';
 import { useLastOrder } from '../hooks/useLastOrder';
+import { useOffers } from '../hooks/useOffers';
 
-const { width } = Dimensions.get('window');
 
 
 
@@ -28,17 +28,37 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
   const [currentBanner, setCurrentBanner] = useState(0);
   const bannerAnim = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef(null);
+  const { offers } = useOffers();
+
+  const cartCount = getTotalItems();
+  const isRTL = currentLanguage === 'ar';
+
+  const STATIC_BANNERS = [
+    { id: 's1', title: isRTL ? 'توصيل سريع' : (currentLanguage === 'fr' ? 'Livraison rapide' : 'Fast Delivery'), subtitle: isRTL ? 'في أقل من 30 دقيقة' : (currentLanguage === 'fr' ? 'En moins de 30 minutes' : 'In less than 30 minutes'), color: '#FF6B35', icon: '🚀' },
+    { id: 's2', title: isRTL ? 'عروض حصرية' : (currentLanguage === 'fr' ? 'Offres exclusives' : 'Exclusive Offers'), subtitle: isRTL ? 'خصومات تصل إلى 50%' : (currentLanguage === 'fr' ? "Jusqu'\u00e0 50% de r\u00e9duction" : 'Up to 50% off'), color: '#6B3FA0', icon: '🎁' },
+    { id: 's3', title: isRTL ? 'متاجر متنوعة' : (currentLanguage === 'fr' ? 'Boutiques vari\u00e9es' : 'Various Shops'), subtitle: isRTL ? 'اختر من أفضل المتاجر' : (currentLanguage === 'fr' ? 'Choisissez parmi les meilleurs' : 'Choose from the best'), color: '#1D7A4F', icon: '🏪' },
+  ];
+
+  const BANNERS = offers.length > 0
+    ? offers.map(o => ({ id: o.id, title: o.title, subtitle: o.subtitle || '', color: o.color || '#FF6B35', icon: o.emoji || '🎁', offer: o }))
+    : STATIC_BANNERS;
 
   useEffect(() => {
     loadData();
   }, []);
 
   useEffect(() => {
+    setCurrentBanner(0);
+  }, [offers.length]);
+
+  useEffect(() => {
+    const len = BANNERS.length;
+    if (!len) return;
     const interval = setInterval(() => {
-      setCurrentBanner(prev => (prev + 1) % BANNERS.length);
+      setCurrentBanner(prev => (prev + 1) % len);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [BANNERS.length]);
 
   const loadData = async () => {
     try {
@@ -75,32 +95,6 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
     return matchSearch && matchCategory;
   });
 
-  const cartCount = getTotalItems();
-  const isRTL = currentLanguage === 'ar';
-
-  const BANNERS = [
-    { 
-      id: 1, 
-      title: isRTL ? 'توصيل سريع' : (currentLanguage === 'fr' ? 'Livraison rapide' : 'Fast Delivery'),
-      subtitle: isRTL ? 'في أقل من 30 دقيقة' : (currentLanguage === 'fr' ? 'En moins de 30 minutes' : 'In less than 30 minutes'),
-      color: '#FF6B35', 
-      icon: '🚀' 
-    },
-    { 
-      id: 2, 
-      title: isRTL ? 'عروض حصرية' : (currentLanguage === 'fr' ? 'Offres exclusives' : 'Exclusive Offers'),
-      subtitle: isRTL ? 'خصومات تصل إلى 50%' : (currentLanguage === 'fr' ? 'Jusqu\'à 50% de réduction' : 'Up to 50% off'),
-      color: '#FF6B35', 
-      icon: '🎁' 
-    },
-    { 
-      id: 3, 
-      title: isRTL ? 'متاجر متنوعة' : (currentLanguage === 'fr' ? 'Boutiques variées' : 'Various Shops'),
-      subtitle: isRTL ? 'اختر من أفضل المتاجر' : (currentLanguage === 'fr' ? 'Choisissez parmi les meilleurs' : 'Choose from the best'),
-      color: '#333', 
-      icon: '🏪' 
-    },
-  ];
 
   const CATEGORIES = [
     { id: 'all', label: isRTL ? 'الكل' : (currentLanguage === 'fr' ? 'Tout' : 'All'), icon: '🏪' },
@@ -127,7 +121,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
       }}>
         <View style={{ flex: 1 }}>
           <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
-            📍 {isRTL ? 'توصيل إلى' : 'Livraison à'}
+            📍 {isRTL ? ' نوصّل في كل' : 'Livraison partout en'}
           </Text>
           <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
             {isRTL ? 'موريتانيا' : 'Mauritanie'} ▾
@@ -205,30 +199,31 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
         </View>
 
         {/* Banner Carousel */}
-        <View style={{ margin: 16, borderRadius: 16, overflow: 'hidden', height: 140 }}>
-          <View style={{
-            backgroundColor: BANNERS[currentBanner].color,
-            flex: 1, padding: 20, justifyContent: 'center',
-            borderRadius: 16,
-          }}>
-            <Text style={{ fontSize: 40 }}>{BANNERS[currentBanner].icon}</Text>
-            <Text style={{ color: 'white', fontSize: 22, fontWeight: 'bold', marginTop: 8 }}>
-              {BANNERS[currentBanner].title}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>
-              {BANNERS[currentBanner].subtitle}
-            </Text>
-          </View>
-          {/* Dots */}
-          <View style={{ position: 'absolute', bottom: 10, right: 10, flexDirection: 'row', gap: 5 }}>
-            {BANNERS.map((_, i) => (
-              <View key={i} style={{
-                width: i === currentBanner ? 16 : 6, height: 6,
-                borderRadius: 3, backgroundColor: i === currentBanner ? 'white' : 'rgba(255,255,255,0.5)',
-              }} />
-            ))}
-          </View>
-        </View>
+        {BANNERS.length > 0 && (() => {
+          const safeIndex = currentBanner % BANNERS.length;
+          const banner = BANNERS[safeIndex];
+          return (
+            <TouchableOpacity
+              activeOpacity={0.92}
+              style={{ margin: 16, borderRadius: 16, overflow: 'hidden', height: 140 }}
+              onPress={() => {
+                if (banner.offer?.link_type === 'store' && banner.offer?.store_id)
+                  onSelectShop({ _id: banner.offer.store_id });
+              }}
+            >
+              <View style={{ backgroundColor: banner.color, flex: 1, padding: 20, justifyContent: 'center', borderRadius: 16 }}>
+                <Text style={{ fontSize: 40 }}>{banner.icon}</Text>
+                <Text style={{ color: 'white', fontSize: 22, fontWeight: 'bold', marginTop: 8 }}>{banner.title}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>{banner.subtitle}</Text>
+              </View>
+              <View style={{ position: 'absolute', bottom: 10, right: 10, flexDirection: 'row', gap: 5 }}>
+                {BANNERS.map((_, i) => (
+                  <View key={i} style={{ width: i === safeIndex ? 16 : 6, height: 6, borderRadius: 3, backgroundColor: i === safeIndex ? 'white' : 'rgba(255,255,255,0.5)' }} />
+                ))}
+              </View>
+            </TouchableOpacity>
+          );
+        })()}
 
         {/* Categories */}
         <View style={{ marginBottom: 8 }}>
