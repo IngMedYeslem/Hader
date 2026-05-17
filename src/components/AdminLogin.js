@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Animated, ScrollView, KeyboardAvoidingView, SafeAreaView } from 'react-native';
 import { useTranslation } from '../translations';
 import SimplePasswordInput from './SimplePasswordInput';
+import LanguageSwitcher from './LanguageSwitcher';
 import styles from './styles';
 import { API_URL } from '../config/api';
 
@@ -90,7 +91,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
         {/* Deuxième niveau - Boutons */}
         <View style={{ 
           flexDirection: 'row', 
-          justifyContent: 'flex-start', 
+          justifyContent: 'space-between', 
           alignItems: 'center',
           paddingHorizontal: 20,
           paddingBottom: 12,
@@ -102,6 +103,7 @@ export default function AdminLogin({ onLoginSuccess, onBack }) {
               ← {t('back')}
             </Text>
           </TouchableOpacity>
+          <LanguageSwitcher />
         </View>
         </View>
       </SafeAreaView>

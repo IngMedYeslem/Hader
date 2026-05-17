@@ -15,8 +15,8 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
     setLanguage(nextLang);
   };
   
-  const getLanguageFlag = () => {
-    return currentLanguage === 'fr' ? '🇫🇷' : currentLanguage === 'en' ? '🇬🇧' : '🇲🇷';
+  const getLanguageLabel = () => {
+    return currentLanguage === 'fr' ? '🇫🇷 FR' : currentLanguage === 'en' ? '🇬🇧 EN' : '🇲🇷 AR';
   };
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function GlobalNavbar({ onShopLogin, onAdminAccess, productCount 
             onPress={handleLanguageChange}
             style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 }}
           >
-            <Text style={{ fontSize: 12, color: 'white' }}>{getLanguageFlag()}</Text>
+            <Text style={{ fontSize: 12, color: 'white', fontWeight: 'bold' }}>{getLanguageLabel()}</Text>
           </TouchableOpacity>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

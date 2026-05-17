@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } 
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { API_URL } from '../config/api';
+import LanguageSwitcher from './LanguageSwitcher';
 
 
 
@@ -144,6 +145,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               {t('newShopRegistration')}
             </Text>
           </View>
+          <LanguageSwitcher style={{ backgroundColor: 'rgba(255,107,53,0.15)' }} />
         </View>
 
         <View style={styles.centeredContainer}>

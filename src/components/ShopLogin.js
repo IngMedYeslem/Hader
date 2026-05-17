@@ -10,6 +10,7 @@ import { shopAPI } from '../services/api';
 import { syncService, markShopForSync } from '../services/syncService';
 import { RTLTextInput, RTLFormField } from './RTLInput';
 import { RTLView } from './RTLComponents';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -254,6 +255,10 @@ const SHOP_CATEGORIES = [
         backgroundColor: '#FF6B35',
         borderBottomLeftRadius: 60, borderBottomRightRadius: 60,
       }} />
+      {/* زر تغيير اللغة */}
+      <View style={{ position: 'absolute', top: Platform.OS === 'ios' ? 55 : 15, right: 15, zIndex: 10 }}>
+        <LanguageSwitcher />
+      </View>
       <View style={{
         position: 'absolute', top: -60, right: -60,
         width: 200, height: 200, borderRadius: 100,
