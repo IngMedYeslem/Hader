@@ -24,7 +24,7 @@ export default {
         ]
       ],
       ios: {
-        bundleIdentifier: "com.mycompany.myecommerceapp",
+        bundleIdentifier: "com.hader.app",
         supportsTablet: true,
         infoPlist: {
           NSPhotoLibraryUsageDescription: "L'application a besoin d'accéder à votre galerie pour sélectionner des images.",
@@ -33,7 +33,7 @@ export default {
         }
       },
       android: {
-        package: "com.mycompany.myecommerceapp",
+        package: "com.hader.app",
         compileSdkVersion: 34,
         targetSdkVersion: 34,
         permissions: [

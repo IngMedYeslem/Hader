@@ -1,6 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const { graphqlHTTP } = require('express-graphql');
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolvers = require('./graphql/resolvers');
 const { upload, processUploads } = require('./upload');
 const fs = require('fs');
 const path = require('path');
@@ -59,6 +63,26 @@ app.use('/api/products', productRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', reviewRoutes);
 app.use('/api', offerRoutes);
+
+// GraphQL endpoint
+app.use('/api/graphql', graphqlHTTP((req) => {
+  let user = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      user = jwt.verify(
+        authHeader.slice(7),
+        process.env.JWT_SECRET || 'hader_secret_key'
+      );
+    } catch (_) {}
+  }
+  return {
+    schema: graphqlSchema,
+    rootValue: graphqlResolvers,
+    context: { user },
+    graphiql: process.env.NODE_ENV !== 'production',
+  };
+}));
 
 // Middleware de debug pour upload
 const debugUpload = (req, res, next) => {
