@@ -1,76 +1,76 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
+const makeStorage = (folder, resourceType = "image") =>
+  new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder,
+      resource_type: resourceType,
+      allowed_formats: ["jpg", "jpeg", "png", "gif", "mp4", "mov", "avi", "webm"],
+    },
+  });
+
+const mediaUpload = multer({
+  storage: makeStorage("hader/media", "auto"),
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
-const upload = multer({ 
-  storage, 
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB pour les vidéos
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|webm/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Type de fichier non supporté'));
-    }
-  }
+const imageUpload = multer({
+  storage: makeStorage("hader/images", "image"),
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-router.post("/upload-profile-image", upload.single("profileImage"), (req, res) => {
-  if (!req.file) return res.status(400).send("Aucun fichier téléchargé.");
-  res.json({ imagePath: `/assets/${req.file.filename}` });
-});
-
-router.post("/upload-media", upload.single("media"), (req, res) => {
+// رفع الصور والفيديوهات (المنتجات)
+router.post("/upload-media", mediaUpload.single("media"), (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "Aucun fichier téléchargé" });
-    }
-    
-    console.log('✅ Fichier uploadé:', req.file.filename);
-    
-    const isVideo = /\.(mp4|mov|avi|webm)$/i.test(req.file.originalname);
-    const mediaType = isVideo ? 'video' : 'image';
-    
-    res.json({ 
-      mediaPath: `/uploads/${req.file.filename}`,
-      mediaType: mediaType,
-      filename: req.file.filename
+    if (!req.file) return res.status(400).json({ error: "Aucun fichier téléchargé" });
+
+    const isVideo = req.file.mimetype.startsWith("video/");
+    console.log("✅ Fichier uploadé sur Cloudinary:", req.file.path);
+
+    res.json({
+      mediaPath: req.file.path,
+      mediaType: isVideo ? "video" : "image",
+      filename: req.file.filename,
     });
   } catch (error) {
-    console.error('❌ Erreur upload:', error);
+    console.error("❌ Erreur upload:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Upload shop main image
-router.post("/upload-shop-image", upload.single("mainImage"), (req, res) => {
+// رفع صورة الملف الشخصي
+router.post("/upload-profile-image", imageUpload.single("profileImage"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Aucun fichier téléchargé" });
+  res.json({ imagePath: req.file.path });
+});
+
+// رفع صورة المتجر الرئيسية
+router.post("/upload-shop-image", imageUpload.single("mainImage"), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier" });
-    res.json({ imagePath: `/uploads/${req.file.filename}` });
+    res.json({ imagePath: req.file.path });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Upload payment receipt
-router.post("/upload-receipt", upload.single("receipt"), (req, res) => {
+// رفع إيصال الدفع
+router.post("/upload-receipt", imageUpload.single("receipt"), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier" });
-    res.json({ receiptPath: `/uploads/${req.file.filename}` });
+    res.json({ receiptPath: req.file.path });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

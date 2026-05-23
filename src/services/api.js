@@ -38,9 +38,11 @@ console.log('[api.js] BASE_URL:', API_URL);
 // Construire l'URL complète pour les médias
 export const getMediaUrl = (mediaPath) => {
   if (!mediaPath) return null;
+  // Cloudinary و URLs كاملة
   if (mediaPath.startsWith('http')) return mediaPath;
+  // مسارات محلية مؤقتة (للعرض فقط قبل الرفع)
   if (mediaPath.startsWith('file://') || mediaPath.startsWith('data:')) return mediaPath;
-
+  // مسارات /uploads قديمة (للتوافق مع البيانات السابقة)
   const baseUrl = API_URL.replace('/api', '');
   const cleanPath = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
   return `${baseUrl}${cleanPath}`;

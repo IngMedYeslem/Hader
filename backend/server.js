@@ -754,6 +754,8 @@ app.get('/api/shops/:shopId', async (req, res) => {
       res.json({
         ...shop.toObject(),
         isApproved: user ? user.isApproved : false,
+        isRejected: user ? user.isRejected : false,
+        rejectionReason: user ? user.rejectionReason : null,
         approvedAt: user ? user.approvedAt : null,
         userRoles: user ? user.roles.map(role => role.name) : []
       });
