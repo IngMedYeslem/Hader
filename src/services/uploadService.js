@@ -7,50 +7,33 @@ export const uploadService = {
   uploadMedia: async (mediaUri, mediaType = 'image') => {
     try {
       console.log(`📤 Upload ${mediaType}:`, mediaUri.substring(0, 50) + '...');
-      
-      
-      const formData = new FormData();
-      
-      if (mediaUri.startsWith('data:')) {
-        // Convertir base64 en blob - Version simplifiée et robuste
-        const response = await fetch(mediaUri);
-        const blob = await response.blob();
-        
-        console.log(`📎 Blob créé: ${blob.size} bytes, type: ${blob.type}`);
-        
-        if (blob.size === 0) {
-          console.error('❌ Blob vide, abandon upload');
-          return null;
-        }
-        
-        const extension = mediaType === 'video' ? 'mp4' : 'jpg';
-        formData.append('media', blob, `media.${extension}`);
-      } else if (Platform.OS !== 'web' && mediaUri.startsWith('file://')) {
-        // Mobile - fichier local
-        const mimeType = mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
-        const extension = mediaType === 'video' ? 'mp4' : 'jpg';
-        
-        formData.append('media', {
-          uri: mediaUri,
-          type: mimeType,
-          name: `media.${extension}`,
+
+      let dataUri = mediaUri;
+
+      // تحويل file:// إلى base64 data URI
+      if (Platform.OS !== 'web' && mediaUri.startsWith('file://')) {
+        const FileSystem = require('expo-file-system/legacy');
+        const base64 = await FileSystem.readAsStringAsync(mediaUri, {
+          encoding: FileSystem.EncodingType.Base64,
         });
-        console.log(`📱 Fichier mobile préparé: ${mimeType}`);
-      } else {
+        const mimeType = mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
+        dataUri = `data:${mimeType};base64,${base64}`;
+      }
+
+      if (!dataUri.startsWith('data:')) {
         console.log('⚠️ Format non supporté:', mediaUri.substring(0, 50));
         return null;
       }
-      
-
 
       console.log(`🚀 Envoi vers: ${API_URL}/upload-media`);
       const response = await fetch(`${API_URL}/upload-media`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: dataUri }),
       });
 
       console.log(`📊 Réponse status: ${response.status}`);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Erreur serveur:', errorText);
@@ -60,7 +43,7 @@ export const uploadService = {
       const result = await response.json();
       console.log('✅ Upload réussi:', result.mediaPath);
       return result.mediaPath;
-      
+
     } catch (error) {
       console.error('❌ Erreur upload:', error);
       return null;
