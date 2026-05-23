@@ -8,6 +8,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+console.log('☁️ Cloudinary config:', {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET ? '***set***' : 'MISSING',
+});
+
 const router = express.Router();
 
 const upload = multer({
@@ -44,8 +50,8 @@ router.post("/upload-media", upload.single("media"), async (req, res) => {
       filename: result.public_id,
     });
   } catch (error) {
-    console.error("❌ Erreur upload Cloudinary:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Erreur upload Cloudinary:", JSON.stringify(error));
+    res.status(500).json({ error: error.message || error.error?.message || JSON.stringify(error) });
   }
 });
 
