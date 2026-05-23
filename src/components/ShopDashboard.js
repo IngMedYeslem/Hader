@@ -511,7 +511,7 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
                   activeOpacity={0.9}
                   onPress={() => {
                     setSelectedProduct(product);
-                    if (product.images && product.images.length > 0) {
+                    if (product.mainImage || (product.images && product.images.length > 0)) {
                       setGalleryVisible(true);
                     }
                   }}
@@ -569,6 +569,7 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
       )}
       <MediaGallery
           visible={galleryVisible}
+          mainImage={selectedProduct?.mainImage}
           images={selectedProduct ? (Array.isArray(selectedProduct.images) ? selectedProduct.images : (selectedProduct.images ? [selectedProduct.images] : [])) : []}
           productName={selectedProduct?.name}
           productPrice={selectedProduct?.price}

@@ -8,6 +8,7 @@ import { getMediaUrl } from '../services/api';
 import { API_CONFIG } from '../config/api';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
+import MediaCarousel from './MediaCarousel';
 
 const { width } = Dimensions.get('window');
 
@@ -192,19 +193,13 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
             <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
               <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }}>
                 <ScrollView>
-                  {/* Product Image */}
-                  <View style={{ height: 220, backgroundColor: '#FFF0EB' }}>
-                    {(selectedProduct.mainImage || selectedProduct.images?.[0]) ? (
-                      <Image
-                        source={{ uri: getMediaUrl(selectedProduct.mainImage || selectedProduct.images[0]) }}
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 60 }}>🍽️</Text>
-                      </View>
-                    )}
+                  {/* Product Images Carousel */}
+                  <View>
+                    <MediaCarousel
+                      mainImage={selectedProduct.mainImage}
+                      images={selectedProduct.images || []}
+                      height={240}
+                    />
                     <TouchableOpacity
                       onPress={() => { setSelectedProduct(null); setQuantity(1); }}
                       style={{

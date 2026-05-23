@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, ScrollView, Dimensions, Platform, Linking, Alert } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import {
+  View, Text, TouchableOpacity, Modal, FlatList, Image,
+  Dimensions, StatusBar, Linking, Alert, Platform
+} from 'react-native';
 import { getMediaUrl } from '../services/api';
 import { useTranslation } from '../translations';
-import styles from './styles';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-function MediaGallery({ images = [], visible, onClose, productName, productPrice, shop }) {
+function MediaGallery({ visible, mainImage, images = [], onClose, productName, productPrice, shop }) {
   const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const flatRef = useRef(null);
 
-  const allMedia = images
-    .filter(i => i && i.trim() && !i.startsWith('file://'))
-    .map(i => ({ type: 'image', uri: getMediaUrl(i) }));
+  const allMedia = React.useMemo(() => {
+    const sources = [mainImage, ...images]
+      .filter(i => i && typeof i === 'string' && i.trim() && !i.startsWith('file://'))
+      .map(i => getMediaUrl(i))
+      .filter(Boolean);
+    return [...new Set(sources)];
+  }, [mainImage, images]);
 
-  const currentMedia = allMedia[currentIndex] || { type: 'image', uri: '' };
+  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index ?? 0);
+    }
+  }, []);
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
+  const onViewableRef = useRef(onViewableItemsChanged);
 
   const handleWhatsApp = () => {
     if (shop?.whatsapp) {
@@ -28,107 +42,129 @@ function MediaGallery({ images = [], visible, onClose, productName, productPrice
     if (shop?.phone) Linking.openURL(`tel:${shop.phone}`);
   };
 
-  if (allMedia.length === 0) return null;
+  const renderItem = ({ item }) => (
+    <View style={{ width: SCREEN_WIDTH, flex: 1, justifyContent: 'center' }}>
+      <Image
+        source={{ uri: item }}
+        style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+
+  const hasContact = shop && (shop.whatsapp || shop.phone);
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.galleryOverlay}>
+    <Modal visible={visible} transparent={false} animationType="fade" onRequestClose={onClose}>
+      <StatusBar hidden />
+      <View style={{ flex: 1, backgroundColor: '#111' }}>
+
         {/* Header */}
-        <View style={[styles.galleryHeader, { backgroundColor: 'rgba(44, 62, 80, 0.95)', paddingVertical: 20 }]}>
+        <View style={{
+          backgroundColor: 'rgba(0,0,0,0.85)', paddingTop: 50, paddingBottom: 16,
+          paddingHorizontal: 16, flexDirection: 'row', alignItems: 'flex-start',
+        }}>
           <View style={{ flex: 1 }}>
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 15, alignSelf: 'flex-start', marginBottom: 8 }}>
-              <Text style={{ fontSize: 20, color: '#FF6B35', fontWeight: 'bold' }}>{productName}</Text>
-            </View>
-            {productPrice && (
-              <Text style={{ fontSize: 18, color: '#ff6b35', fontWeight: 'bold', marginBottom: 5 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF6B35' }} numberOfLines={2}>
+              {productName}
+            </Text>
+            {productPrice != null && (
+              <Text style={{ fontSize: 15, color: '#ff9f6b', marginTop: 4 }}>
                 {productPrice} MRU
               </Text>
             )}
-            {shop && (
-              <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, alignSelf: 'flex-start' }}>
-                <Text style={{ fontSize: 14, color: '#FF6B35', fontWeight: '600' }}>🏦 {shop.username}</Text>
-              </View>
+            {shop?.username && (
+              <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
+                🏪 {shop.username}
+              </Text>
             )}
           </View>
-          <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Text style={[styles.closeBtnText, { color: 'white', fontSize: 18 }]}>✕</Text>
+          <TouchableOpacity
+            onPress={onClose}
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20,
+              width: 36, height: 36, justifyContent: 'center', alignItems: 'center', marginLeft: 12,
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>✕</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Media viewer */}
-        {Platform.OS === 'web' ? (
-          <View style={styles.mainImageContainer}>
-            {allMedia.length > 1 && (
-              <TouchableOpacity
-                style={{ position: 'absolute', left: 20, top: '50%', zIndex: 10, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 25, width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}
-                onPress={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : allMedia.length - 1)}
-              >
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>‹</Text>
-              </TouchableOpacity>
-            )}
-            {allMedia.length > 1 && (
-              <TouchableOpacity
-                style={{ position: 'absolute', right: 20, top: '50%', zIndex: 10, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 25, width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}
-                onPress={() => setCurrentIndex(prev => prev < allMedia.length - 1 ? prev + 1 : 0)}
-              >
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>›</Text>
-              </TouchableOpacity>
-            )}
-            <View style={styles.singleImageContainer}>
-              <img src={currentMedia.uri} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Product" />
-            </View>
-          </View>
-        ) : (
-          <ScrollView
+        {/* Images */}
+        {allMedia.length > 0 ? (
+          <FlatList
+            ref={flatRef}
+            data={allMedia}
+            renderItem={renderItem}
+            keyExtractor={(_, i) => `gallery-${i}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(event) => {
-              const index = Math.round(event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width);
-              if (index >= 0 && index < allMedia.length) setCurrentIndex(index);
-            }}
-          >
-            {allMedia.map((media, index) => (
-              <View key={`media-${index}`} style={[styles.singleImageContainer, { width }]}>
-                <Image source={{ uri: media.uri }} style={styles.mainImage} resizeMode="contain" />
-              </View>
-            ))}
-          </ScrollView>
+            onViewableItemsChanged={onViewableRef.current}
+            viewabilityConfig={viewabilityConfig.current}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index,
+            })}
+            style={{ flex: 1 }}
+          />
+        ) : (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 60 }}>📷</Text>
+            <Text style={{ color: '#888', marginTop: 8 }}>لا توجد صور</Text>
+          </View>
         )}
 
-        {/* Dots + counter */}
-        <View style={{ position: 'absolute', bottom: 90, alignSelf: 'center', alignItems: 'center' }}>
-          <View style={[styles.imageIndicators, { backgroundColor: 'rgba(0,0,0,0.8)', borderRadius: 25, paddingHorizontal: 20, paddingVertical: 12, marginBottom: 15 }]}>
-            {allMedia.map((_, index) => (
-              <TouchableOpacity
-                key={`dot-${index}`}
-                style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: currentIndex === index ? '#FF6B35' : 'rgba(255,255,255,0.6)', marginHorizontal: 8, borderWidth: 2, borderColor: currentIndex === index ? '#FFD700' : 'rgba(255,255,255,0.9)' }}
-                onPress={() => setCurrentIndex(index)}
-              />
-            ))}
+        {/* Counter + dots */}
+        {allMedia.length > 1 && (
+          <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}>
+              {allMedia.map((_, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: i === currentIndex ? 20 : 7,
+                    height: 7,
+                    borderRadius: 4,
+                    backgroundColor: i === currentIndex ? '#FF6B35' : 'rgba(255,255,255,0.35)',
+                  }}
+                />
+              ))}
+            </View>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>
+              {currentIndex + 1} / {allMedia.length}
+            </Text>
           </View>
-          <Text style={[styles.imageCounter, { backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 15 }]}>
-            {currentIndex + 1} / {allMedia.length}
-          </Text>
-        </View>
+        )}
 
         {/* Contact buttons */}
-        {shop && (
-          <View style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
-              {shop.whatsapp && (
-                <TouchableOpacity style={[styles.contactBtn, { flex: 1, maxWidth: 150 }]} onPress={handleWhatsApp}>
-                  <Text style={styles.contactBtnText}>📱 WhatsApp</Text>
-                </TouchableOpacity>
-              )}
-              {shop.phone && (
-                <TouchableOpacity style={[styles.contactBtn, styles.callBtn, { flex: 1, maxWidth: 150 }]} onPress={handleCall}>
-                  <Text style={styles.contactBtnText}>📞 Appeler</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+        {hasContact && (
+          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingBottom: 36, paddingTop: 4 }}>
+            {shop.whatsapp && (
+              <TouchableOpacity
+                onPress={handleWhatsApp}
+                style={{
+                  flex: 1, backgroundColor: '#25D366', borderRadius: 14,
+                  paddingVertical: 14, alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>📱 WhatsApp</Text>
+              </TouchableOpacity>
+            )}
+            {shop.phone && (
+              <TouchableOpacity
+                onPress={handleCall}
+                style={{
+                  flex: 1, backgroundColor: '#3498DB', borderRadius: 14,
+                  paddingVertical: 14, alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>📞 اتصال</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
+        {!hasContact && <View style={{ height: 36 }} />}
+
       </View>
     </Modal>
   );
