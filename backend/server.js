@@ -207,8 +207,8 @@ app.get('/api/users', async (req, res) => {
     const users = await User.find()
       .populate('roles', 'name')
       .populate('approvedBy', 'username')
-      .populate('linkedShopId', 'name email');
-    
+      .populate('linkedShopId', 'name email phone whatsapp address category location');
+
     const formattedUsers = users.map(user => ({
       id: user._id,
       username: user.username,
@@ -223,7 +223,12 @@ app.get('/api/users', async (req, res) => {
       linkedShop: user.linkedShopId ? {
         id: user.linkedShopId._id,
         name: user.linkedShopId.name,
-        email: user.linkedShopId.email
+        email: user.linkedShopId.email,
+        phone: user.linkedShopId.phone,
+        whatsapp: user.linkedShopId.whatsapp,
+        address: user.linkedShopId.address,
+        category: user.linkedShopId.category,
+        location: user.linkedShopId.location
       } : null
     }));
     
