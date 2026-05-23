@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
@@ -5,7 +6,7 @@ const Role = require('./models/Role');
 
 async function initAdmin() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/hader');
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/hader');
     console.log('✅ Connexion à MongoDB réussie');
 
     // Créer les rôles

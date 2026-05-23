@@ -1,7 +1,7 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 
-// Connexion à MongoDB
-mongoose.connect('mongodb://localhost:27017/hader', {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/hader', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

@@ -1,7 +1,8 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Offer = require('./models/Offer');
 
-mongoose.connect('mongodb://localhost:27017/hader').then(async () => {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/hader').then(async () => {
   await Offer.deleteMany({});
   await Offer.insertMany([
     { title: 'عرض الأسبوع', subtitle: 'خصم 20% على جميع المنتجات', emoji: '🔥', color: '#FF6B35' },
