@@ -7,8 +7,8 @@ const CartView = ({ navigation }) => {
 
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
-      {item.images?.[0] && (
-        <Image source={{ uri: item.images[0] }} style={styles.itemImage} />
+      {(item.mainImage || item.images?.[0]) && (
+        <Image source={{ uri: item.mainImage || item.images[0] }} style={styles.itemImage} />
       )}
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>

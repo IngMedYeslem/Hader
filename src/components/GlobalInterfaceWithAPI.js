@@ -104,9 +104,9 @@ export default function GlobalInterfaceWithAPI({ onShopLogin }) {
             {products.map((product) => (
               <TouchableOpacity key={product.id} style={[styles.globalCard, { width: cardWidth }]} activeOpacity={0.92}>
                 <View style={styles.imageContainer}>
-                  {product.images && product.images.length > 0 ? (
-                    <Image 
-                      source={{ uri: getMediaUrl(product.images[0]) }} 
+                  {(product.mainImage || (product.images && product.images.length > 0)) ? (
+                    <Image
+                      source={{ uri: getMediaUrl(product.mainImage || product.images[0]) }}
                       style={styles.globalImage}
                       resizeMode="cover"
                     />

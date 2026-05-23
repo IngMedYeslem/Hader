@@ -194,9 +194,9 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                 <ScrollView>
                   {/* Product Image */}
                   <View style={{ height: 220, backgroundColor: '#FFF0EB' }}>
-                    {selectedProduct.images?.[0] ? (
+                    {(selectedProduct.mainImage || selectedProduct.images?.[0]) ? (
                       <Image
-                        source={{ uri: getMediaUrl(selectedProduct.images[0]) }}
+                        source={{ uri: getMediaUrl(selectedProduct.mainImage || selectedProduct.images[0]) }}
                         style={{ width: '100%', height: '100%' }}
                         resizeMode="cover"
                       />
@@ -487,7 +487,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
 
 function ProductRow({ product, onPress, isRTL, cartItems, onQuickAdd, availableStock }) {
   const inCart = cartItems.find(i => i._id === (product._id || product.id));
-  const imageUri = product.images?.[0] ? getMediaUrl(product.images[0]) : null;
+  const imageUri = (product.mainImage || product.images?.[0]) ? getMediaUrl(product.mainImage || product.images[0]) : null;
   const pid = product._id || product.id;
   const stock = availableStock?.[pid];
 

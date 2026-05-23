@@ -7,7 +7,9 @@ const ProductThumbnail = ({ product, style }) => {
     ? product.images.filter(i => i && i.trim() && !i.startsWith('file://'))
     : [];
 
-  const firstImage = images.length > 0 ? getMediaUrl(images[0]) : null;
+  const rawFirst = product.mainImage || (images.length > 0 ? images[0] : null);
+  const firstImage = rawFirst ? getMediaUrl(rawFirst) : null;
+  const totalExtra = images.length + (product.mainImage ? 1 : 0) - 1;
 
   return (
     <View style={[{ overflow: 'hidden', backgroundColor: '#FFF0EB' }, style]}>
@@ -41,9 +43,9 @@ const ProductThumbnail = ({ product, style }) => {
         </Text>
       </View>
 
-      {images.length > 1 && (
+      {totalExtra > 0 && (
         <View style={{ position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 8, paddingHorizontal: 5, paddingVertical: 2 }}>
-          <Text style={{ color: 'white', fontSize: 9, fontWeight: 'bold' }}>+{images.length - 1}</Text>
+          <Text style={{ color: 'white', fontSize: 9, fontWeight: 'bold' }}>+{totalExtra}</Text>
         </View>
       )}
     </View>
