@@ -85,26 +85,6 @@ app.use('/api/graphql', graphqlHTTP((req) => {
   };
 }));
 
-// Middleware de debug pour upload
-const debugUpload = (req, res, next) => {
-  console.log('🔍 DEBUG UPLOAD:');
-  console.log('Content-Type:', req.get('Content-Type'));
-  console.log('Content-Length:', req.get('Content-Length'));
-  
-  let totalSize = 0;
-  req.on('data', chunk => {
-    totalSize += chunk.length;
-  });
-  
-  req.on('end', () => {
-    console.log('📊 Total données reçues:', totalSize, 'bytes');
-  });
-  
-  next();
-};
-
-app.use('/api/upload-media', debugUpload);
-
 // Route d'upload média
 const uploadRoutes = require('./routes/upload');
 app.use('/api', uploadRoutes);
