@@ -182,7 +182,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
                 ) : (
                   liveOrder.paymentReceiptUrl
                     ? <View>
-                        <Image source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200 }} resizeMode="cover" />
+                        <Image source={{ uri: liveOrder.paymentReceiptUrl?.startsWith('http') ? liveOrder.paymentReceiptUrl : `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200 }} resizeMode="cover" />
                         <View style={{ backgroundColor: 'rgba(231,76,60,0.85)', padding: 8, alignItems: 'center' }}>
                           <Text style={{ color: 'white', fontWeight: 'bold' }}>📷 {isRTL ? 'اضغط لرفع إيصال جديد' : 'Appuyer pour envoyer un nouveau reçu'}</Text>
                         </View>
@@ -195,7 +195,7 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
               </TouchableOpacity>
             ) : (
               liveOrder.paymentReceiptUrl
-                ? <Image source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200, borderRadius: 10, marginBottom: 8 }} resizeMode="cover" />
+                ? <Image source={{ uri: liveOrder.paymentReceiptUrl?.startsWith('http') ? liveOrder.paymentReceiptUrl : `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }} style={{ width: '100%', height: 200, borderRadius: 10, marginBottom: 8 }} resizeMode="cover" />
                 : null
             )}
 

@@ -271,7 +271,7 @@ export default function OrderDetailView({ order, shopId, onBack, onOrderUpdated 
             {liveOrder.paymentReceiptUrl ? (
               <>
                 <Image
-                  source={{ uri: `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }}
+                  source={{ uri: liveOrder.paymentReceiptUrl?.startsWith('http') ? liveOrder.paymentReceiptUrl : `${BASE.replace('/api', '')}${liveOrder.paymentReceiptUrl}` }}
                   style={s.receiptImage}
                   resizeMode="contain"
                 />
