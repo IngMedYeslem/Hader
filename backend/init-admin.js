@@ -22,7 +22,7 @@ const User = mongoose.model('User', userSchema);
 
 async function initAdmin() {
   try {
-    await mongoose.connect('mongodb+srv://mohamedouldyeslem_db_user:vLmJHVpqEc7fe9ic@cluster0.8viqdjl.mongodb.net/?appName=Cluster0');
+    await mongoose.connect('mongodb+srv://mohamedouldyeslem_db_user:vLmJHVpqEc7fe9ic@cluster0.8viqdjl.mongodb.net/hader?appName=Cluster0');
     console.log('✅ Connexion à MongoDB réussie');
 
     // Créer les rôles
