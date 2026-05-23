@@ -99,6 +99,12 @@ export default function ShopOrderManagement({ shopId, onClose, onSelectOrder }) 
         }
         prevOrderIds.current = new Set(list.map(o => o._id));
         setOrders(list);
+        // تحديث الطلب المفتوح إذا تغيرت بياناته (مثل إيصال جديد)
+        setSelectedOrder(prev => {
+          if (!prev) return prev;
+          const updated = list.find(o => o._id === prev._id);
+          return updated || prev;
+        });
       }
     } catch (e) {
       console.log('Orders fetch error:', e);
