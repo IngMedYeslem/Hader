@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { productAPI } from '../services/api';
 import { uploadService } from '../services/uploadService';
@@ -10,6 +10,7 @@ import styles from './styles';
 const MediaManager = ({ product, onMediaDeleted, onMediaAdded }) => {
   const [deleting, setDeleting] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState({});
 
   const handleAddImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -97,10 +98,18 @@ const MediaManager = ({ product, onMediaDeleted, onMediaAdded }) => {
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {product.images.map((uri, index) => (
               <View key={`img-${index}`} style={[styles.mediaItem, { position: 'relative' }]}>
-                <Image
-                  source={{ uri: getMediaUrl(uri) || uri }}
-                  style={[styles.mediaPreview, { width: 90, height: 90, borderRadius: 10 }]}
-                />
+                {brokenImages[index] ? (
+                  <View style={{ width: 90, height: 90, borderRadius: 10, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 22 }}>🖼️</Text>
+                    <Text style={{ fontSize: 9, color: '#aaa', textAlign: 'center' }}>احذف وأضف من جديد</Text>
+                  </View>
+                ) : (
+                  <Image
+                    source={{ uri: getMediaUrl(uri) || uri }}
+                    style={[styles.mediaPreview, { width: 90, height: 90, borderRadius: 10 }]}
+                    onError={() => setBrokenImages(prev => ({ ...prev, [index]: true }))}
+                  />
+                )}
                 <TouchableOpacity
                   style={[
                     styles.deleteButton,

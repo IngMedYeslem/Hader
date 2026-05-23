@@ -38,11 +38,8 @@ console.log('[api.js] BASE_URL:', API_URL);
 // Construire l'URL complète pour les médias
 export const getMediaUrl = (mediaPath) => {
   if (!mediaPath) return null;
-  
-  console.log('🔗 Construction URL pour:', mediaPath);
-  
-  // Si c'est déjà une URL complète
   if (mediaPath.startsWith('http')) return mediaPath;
+  if (mediaPath.startsWith('file://') || mediaPath.startsWith('data:')) return mediaPath;
 
   const baseUrl = API_URL.replace('/api', '');
   const cleanPath = mediaPath.startsWith('/') ? mediaPath : `/${mediaPath}`;
