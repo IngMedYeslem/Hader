@@ -1,6 +1,5 @@
 const express = require("express");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -11,67 +10,92 @@ cloudinary.config({
 
 const router = express.Router();
 
-const makeStorage = (folder, resourceType = "image") =>
-  new CloudinaryStorage({
-    cloudinary,
-    params: {
-      folder,
-      resource_type: resourceType,
-      allowed_formats: ["jpg", "jpeg", "png", "gif", "mp4", "mov", "avi", "webm"],
-    },
-  });
-
-const mediaUpload = multer({
-  storage: makeStorage("hader/media", "auto"),
+const upload = multer({
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|mp4|mov|avi|webm/;
+    if (allowed.test(file.mimetype)) cb(null, true);
+    else cb(new Error("Type de fichier non supporté"));
+  },
 });
 
-const imageUpload = multer({
-  storage: makeStorage("hader/images", "image"),
-  limits: { fileSize: 10 * 1024 * 1024 },
-});
+const uploadToCloudinary = (buffer, mimetype, options) => {
+  const base64 = buffer.toString("base64");
+  const dataUri = `data:${mimetype};base64,${base64}`;
+  return cloudinary.uploader.upload(dataUri, options);
+};
 
 // رفع الصور والفيديوهات (المنتجات)
-router.post("/upload-media", mediaUpload.single("media"), (req, res) => {
+router.post("/upload-media", upload.single("media"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier téléchargé" });
 
     const isVideo = req.file.mimetype.startsWith("video/");
-    console.log("✅ Fichier uploadé sur Cloudinary:", req.file.path);
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype, {
+      folder: "hader/media",
+      resource_type: isVideo ? "video" : "image",
+    });
 
+    console.log("✅ Uploadé sur Cloudinary:", result.secure_url);
     res.json({
-      mediaPath: req.file.path,
+      mediaPath: result.secure_url,
       mediaType: isVideo ? "video" : "image",
-      filename: req.file.filename,
+      filename: result.public_id,
     });
   } catch (error) {
-    console.error("❌ Erreur upload:", error);
+    console.error("❌ Erreur upload Cloudinary:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
 // رفع صورة الملف الشخصي
-router.post("/upload-profile-image", imageUpload.single("profileImage"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "Aucun fichier téléchargé" });
-  res.json({ imagePath: req.file.path });
+router.post("/upload-profile-image", upload.single("profileImage"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Aucun fichier téléchargé" });
+
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype, {
+      folder: "hader/profiles",
+      resource_type: "image",
+    });
+
+    res.json({ imagePath: result.secure_url });
+  } catch (error) {
+    console.error("❌ Erreur upload profil:", error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // رفع صورة المتجر الرئيسية
-router.post("/upload-shop-image", imageUpload.single("mainImage"), (req, res) => {
+router.post("/upload-shop-image", upload.single("mainImage"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier" });
-    res.json({ imagePath: req.file.path });
+
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype, {
+      folder: "hader/shops",
+      resource_type: "image",
+    });
+
+    res.json({ imagePath: result.secure_url });
   } catch (error) {
+    console.error("❌ Erreur upload shop:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
 // رفع إيصال الدفع
-router.post("/upload-receipt", imageUpload.single("receipt"), (req, res) => {
+router.post("/upload-receipt", upload.single("receipt"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier" });
-    res.json({ receiptPath: req.file.path });
+
+    const result = await uploadToCloudinary(req.file.buffer, req.file.mimetype, {
+      folder: "hader/receipts",
+      resource_type: "image",
+    });
+
+    res.json({ receiptPath: result.secure_url });
   } catch (error) {
+    console.error("❌ Erreur upload reçu:", error.message);
     res.status(500).json({ error: error.message });
   }
 });
