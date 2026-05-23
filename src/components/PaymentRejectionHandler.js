@@ -45,21 +45,8 @@ export default function PaymentRejectionHandler({ order, onReceiptUploaded, visi
 
     setUploading(true);
     try {
-      // رفع الصورة
-      const formData = new FormData();
-      formData.append('receipt', {
-        uri: receiptImage,
-        type: 'image/jpeg',
-        name: `new_receipt_${order._id}.jpg`,
-      });
-
-      const uploadRes = await fetch(`${BASE}/upload-receipt`, {
-        method: 'POST',
-        body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const uploadData = await uploadRes.json();
+      const { uploadFileAsJson } = require('../services/uploadService');
+      const uploadData = await uploadFileAsJson(receiptImage, 'upload-receipt');
       
       if (uploadData.receiptPath) {
         // تحديث الطلب بالإيصال الجديد

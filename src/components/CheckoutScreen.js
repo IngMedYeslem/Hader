@@ -96,19 +96,9 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
   const uploadReceipt = async (orderId, imageUri) => {
     setUploadingReceipt(true);
     try {
-      const formData = new FormData();
-      formData.append('receipt', {
-        uri: imageUri,
-        type: 'image/jpeg',
-        name: `receipt_${orderId}.jpg`,
-      });
-      const uploadRes = await fetch(`${BASE}/upload-receipt`, {
-        method: 'POST',
-        body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const uploadData = await uploadRes.json();
-      if (uploadData.receiptPath) {
+      const { uploadFileAsJson } = require('../services/uploadService');
+      const uploadData = await uploadFileAsJson(imageUri, 'upload-receipt');
+      if (uploadData?.receiptPath) {
         await fetch(`${BASE}/orders/${orderId}/receipt`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

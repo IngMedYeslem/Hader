@@ -2,6 +2,30 @@ import { Platform } from 'react-native';
 
 import { API_URL } from '../config/api';
 
+// دالة مشتركة لتحويل file:// أو data: إلى data URI ورفعه كـ JSON
+export const uploadFileAsJson = async (uri, endpoint) => {
+  let dataUri = uri;
+
+  if (Platform.OS !== 'web' && uri.startsWith('file://')) {
+    const FileSystem = require('expo-file-system/legacy');
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    dataUri = `data:image/jpeg;base64,${base64}`;
+  }
+
+  if (!dataUri.startsWith('data:')) return null;
+
+  const res = await fetch(`${API_URL}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file: dataUri }),
+  });
+
+  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+  return res.json();
+};
+
 export const uploadService = {
   // Uploader un média et retourner l'URL
   uploadMedia: async (mediaUri, mediaType = 'image') => {

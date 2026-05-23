@@ -96,14 +96,8 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
     if (!newReceipt || !liveOrder?._id) return;
     setUploadingReceipt(true);
     try {
-      const formData = new FormData();
-      if (Platform.OS === 'web') {
-        formData.append('receipt', newReceipt);
-      } else {
-        formData.append('receipt', { uri: newReceipt, type: 'image/jpeg', name: 'receipt.jpg' });
-      }
-      const uploadRes = await fetch(`${BASE}/upload-receipt`, { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
+      const { uploadFileAsJson } = require('../services/uploadService');
+      const uploadData = await uploadFileAsJson(newReceipt, 'upload-receipt');
       if (uploadData.receiptPath) {
         await fetch(`${BASE}/orders/${liveOrder._id}/new-receipt`, {
           method: 'PUT',
