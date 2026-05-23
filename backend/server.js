@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -721,7 +722,7 @@ app.post('/api/debug/fix-urls', async (req, res) => {
   }
 });
 
-mongoose.connect('mongodb://localhost:27017/hader', {
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/hader', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

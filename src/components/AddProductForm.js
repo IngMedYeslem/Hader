@@ -8,6 +8,7 @@ import Navbar from "./Navbar";
 import { useTranslation } from "react-i18next";  // Importer la traduction
 import { launchImageLibrary } from "react-native-image-picker";
 import axios from 'axios';
+import { API_CONFIG } from '../config/api';
 import styles from "./styles";  // Importer les styles
 
 const AddProductForm = () => {
@@ -67,7 +68,7 @@ const AddProductForm = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/upload', data, {
+      const response = await axios.post(`${API_CONFIG.BASE_URL.replace('/api', '')}/upload`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
