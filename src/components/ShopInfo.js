@@ -89,42 +89,44 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
   const pickAndUploadMainImage = async () => {
     setUploadingImage(true);
     try {
+      let dataUri = null;
+
       if (Platform.OS === 'web') {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = async (e) => {
-          const file = e.target.files[0];
-          if (!file) { setUploadingImage(false); return; }
-          const formData = new FormData();
-          formData.append('mainImage', file);
-          try {
-            const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData });
-            const uploadData = await uploadRes.json();
-            if (uploadData.imagePath) {
-              await fetch(`${BASE}/shops/${shop._id}/main-image`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mainImage: uploadData.imagePath }),
-              });
-              setMainImage(uploadData.imagePath);
-              onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
-              Alert.alert('', t('imageUpdated'));
-            }
-          } catch { Alert.alert('', isRTL ? 'تعذر الرفع' : 'Impossible de télécharger'); }
-          finally { setUploadingImage(false); }
-        };
-        input.click();
-        return;
+        dataUri = await new Promise((resolve) => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) { resolve(null); return; }
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target.result);
+            reader.readAsDataURL(file);
+          };
+          input.click();
+        });
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') { Alert.alert('', t('galleryAccess')); return; }
+        const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+        if (result.canceled || !result.assets?.[0]) return;
+
+        const FileSystem = require('expo-file-system/legacy');
+        const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        dataUri = `data:image/jpeg;base64,${base64}`;
       }
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') { Alert.alert('', t('galleryAccess')); setUploadingImage(false); return; }
-      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-      if (result.canceled || !result.assets?.[0]) { setUploadingImage(false); return; }
-      const formData = new FormData();
-      formData.append('mainImage', { uri: result.assets[0].uri, type: 'image/jpeg', name: 'main.jpg' });
-      const uploadRes = await fetch(`${BASE}/upload-shop-image`, { method: 'POST', body: formData });
+
+      if (!dataUri) return;
+
+      const uploadRes = await fetch(`${BASE}/upload-shop-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: dataUri }),
+      });
       const uploadData = await uploadRes.json();
+
       if (uploadData.imagePath) {
         await fetch(`${BASE}/shops/${shop._id}/main-image`, {
           method: 'PUT',
@@ -135,8 +137,12 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
         onShopUpdated?.({ ...updatedShop, mainImage: uploadData.imagePath });
         Alert.alert('', t('imageUpdated'));
       }
-    } catch { Alert.alert('', isRTL ? 'تعذر الرفع' : 'Impossible de télécharger'); }
-    finally { setUploadingImage(false); }
+    } catch (e) {
+      console.error('❌ Erreur upload image boutique:', e.message);
+      Alert.alert('', isRTL ? 'تعذر الرفع' : 'Impossible de télécharger');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const openLocationOnMap = () => {
