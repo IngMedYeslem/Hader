@@ -1,7 +1,8 @@
 export default {
     expo: {
       name: "Hader",
-      slug: "Hader",
+      slug: "my-ecommerce-app",
+      owner: "medbit",
       version: "1.0.0",
       projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a",
       icon: "./assets/icon.png",
@@ -45,7 +46,7 @@ export default {
           "WAKE_LOCK"
         ],
         adaptiveIcon: {
-          foregroundImage: "./assets/icon.png",
+          foregroundImage: "./assets/adaptive-icon.png",
           backgroundColor: "#FFFFFF"
         },
         useNextNotificationsApi: true
