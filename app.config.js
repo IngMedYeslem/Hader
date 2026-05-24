@@ -1,10 +1,10 @@
 export default {
     expo: {
       name: "Hader",
-      slug: "my-ecommerce-app",
+      slug: "my-hader-app",
       owner: "medbit",
       version: "1.0.0",
-      projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a",
+      projectId: "705c711c-8f51-485d-844b-c066b53cb16b",
       icon: "./assets/icon.png",
       orientation: "portrait",
       platforms: ["ios", "android", "web"],
@@ -57,7 +57,7 @@ export default {
       extra: {
         API_URL: process.env.API_URL || "http://172.20.10.8:3000", // Utilisation d'une variable d'environnement si elle est définie
         eas: {
-          projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a"
+          projectId: "705c711c-8f51-485d-844b-c066b53cb16b"
         }
       }
     }
