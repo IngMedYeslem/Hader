@@ -4,6 +4,7 @@ export default {
       slug: "Hader",
       version: "1.0.0",
       projectId: "f4c5d89a-8df8-42e8-85d1-19deee902f1a",
+      icon: "./assets/icon.png",
       orientation: "portrait",
       platforms: ["ios", "android", "web"],
       newArchEnabled: false,
@@ -44,7 +45,7 @@ export default {
           "WAKE_LOCK"
         ],
         adaptiveIcon: {
-          foregroundImage: "./assets/logof.png",
+          foregroundImage: "./assets/icon.png",
           backgroundColor: "#FFFFFF"
         },
         useNextNotificationsApi: true
