@@ -47,12 +47,12 @@ export default {
         ],
         adaptiveIcon: {
           foregroundImage: "./assets/adaptive-icon.png",
-          backgroundColor: "#FFFFFF"
+          backgroundImage: "./assets/adaptive-icon-bg.png"
         },
         useNextNotificationsApi: true
       },
       web: {
-        favicon: "./assets/logof.png"
+        favicon: "./assets/adaptive-icon.png"
       },
       extra: {
         API_URL: process.env.API_URL || "http://172.20.10.8:3000", // Utilisation d'une variable d'environnement si elle est définie
