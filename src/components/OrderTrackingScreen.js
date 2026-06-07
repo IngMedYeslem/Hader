@@ -119,6 +119,19 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
     }
   };
 
+  const confirmReceived = async () => {
+    if (!liveOrder?._id) return;
+    try {
+      await fetch(`${BASE}/orders/${liveOrder._id}/confirm-received`, { method: 'PUT' });
+      fetchOrderStatus();
+      Platform.OS === 'web'
+        ? window.alert(isRTL ? 'شكراً! تم تأكيد استلام طلبك' : 'Merci! Réception confirmée')
+        : Alert.alert(isRTL ? 'شكراً 🎉' : 'Merci 🎉', isRTL ? 'تم تأكيد استلام طلبك' : 'Réception de votre commande confirmée');
+    } catch (e) {
+      console.log('confirm-received failed', e);
+    }
+  };
+
   const isCancelled = liveOrder?.status === 'cancelled' || liveOrder?.status === 'failed';
   const currentStepData = ORDER_STEPS[currentStep];
   const isDelivered = currentStep === ORDER_STEPS.length - 1;
@@ -348,6 +361,25 @@ export default function OrderTrackingScreen({ order, onBack, onNewOrder, onRevie
                 {isRTL ? '🛒 طلب جديد' : '🛒 Nouvelle commande'}
               </Text>
             </TouchableOpacity>
+          )}
+
+          {isDelivered && !liveOrder?.customerConfirmed && (
+            <TouchableOpacity
+              onPress={confirmReceived}
+              style={{ backgroundColor: '#2ecc71', borderRadius: 16, padding: 14, alignItems: 'center', marginTop: 10 }}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                {isRTL ? '✅ تأكيد استلام الطلبية' : '✅ Confirmer la réception'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {isDelivered && liveOrder?.customerConfirmed && (
+            <View style={{ backgroundColor: '#e8f5e9', borderRadius: 12, padding: 12, alignItems: 'center', marginTop: 10 }}>
+              <Text style={{ color: '#2e7d32', fontWeight: 'bold' }}>
+                {isRTL ? '✅ تم تأكيد الاستلام' : '✅ Réception confirmée'}
+              </Text>
+            </View>
           )}
 
           {isDelivered && !liveOrder?.reviewSubmitted && onReview && (

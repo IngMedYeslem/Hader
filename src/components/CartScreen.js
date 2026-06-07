@@ -135,17 +135,6 @@ export default function CartScreen({ onBack, onCheckout }) {
           <SummaryRow label={isRTL ? 'الإجمالي' : 'Total'} value={`${grandTotal} MRU`} isRTL={isRTL} bold />
         </View>
 
-        {/* Promo Code */}
-        <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 12, padding: 14, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ fontSize: 20 }}>🎟️</Text>
-          <Text style={{ flex: 1, color: '#777', fontSize: 14 }}>
-            {isRTL ? 'هل لديك كود خصم؟' : 'Vous avez un code promo?'}
-          </Text>
-          <Text style={{ color: '#FF6B35', fontWeight: 'bold', fontSize: 13 }}>
-            {isRTL ? 'إضافة' : 'Ajouter'}
-          </Text>
-        </View>
-
         <View style={{ height: 120 }} />
       </ScrollView>
 

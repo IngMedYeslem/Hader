@@ -11,6 +11,7 @@ import NotificationCenter from "./NotificationCenter";
 import NotificationsList from "./NotificationsList";
 import ValidationStatusIndicator from "./ValidationStatusIndicator";
 import ShopOrderManagement from "./ShopOrderManagement";
+import ShopSchedule from "./ShopSchedule";
 import styles from "./styles";
 import { useTranslation } from '../translations';
 import { useNavigation } from '../NavigationContext';
@@ -31,6 +32,7 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
   const [shopInfoVisible, setShopInfoVisible] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [ordersVisible, setOrdersVisible] = useState(false);
+  const [scheduleVisible, setScheduleVisible] = useState(false);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [hasNewOrder, setHasNewOrder] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -368,6 +370,14 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
                   <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🔔</Text>
                 </TouchableOpacity>
               )}
+              {isApproved && (
+                <TouchableOpacity
+                  onPress={() => setScheduleVisible(true)}
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
+                >
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🕐</Text>
+                </TouchableOpacity>
+              )}
               {(isApproved || autoRefreshRejected) && (
                 <TouchableOpacity
                   onPress={() => setShopInfoVisible(true)}
@@ -597,6 +607,14 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
           onClose={() => setShopInfoVisible(false)}
           allowEdit={true}
           onShopUpdated={(updatedShop) => setShop(prev => ({ ...prev, ...updatedShop }))}
+      />
+
+      <ShopSchedule
+        shop={shop}
+        visible={scheduleVisible}
+        onClose={() => setScheduleVisible(false)}
+        onSaved={(updatedShop) => setShop(prev => ({ ...prev, ...updatedShop }))}
+        isRTL={isRTL}
       />
 
       {ordersVisible && (

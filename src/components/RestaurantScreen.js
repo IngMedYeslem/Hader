@@ -4,6 +4,7 @@ import {
   SafeAreaView, StatusBar, Animated, Dimensions, Modal, Alert, ActivityIndicator
 } from 'react-native';
 import { fetchProductsByShop } from '../services/apiService';
+import { isShopOpen } from '../utils/shopSchedule';
 import { getMediaUrl } from '../services/api';
 import { API_CONFIG } from '../config/api';
 import { useCart } from '../contexts/CartContext';
@@ -108,7 +109,16 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     return rows;
   }, [visibleProducts, selectedCategory, isRTL]);
 
+  const shopOpen = isShopOpen(shop);
+
   const handleAddToCart = useCallback((product) => {
+    if (!shopOpen) {
+      Alert.alert(
+        isRTL ? 'المتجر مغلق حالياً' : 'Magasin fermé',
+        isRTL ? 'هذا المتجر خارج أوقات العمل' : 'Ce magasin est en dehors de ses horaires d\'ouverture'
+      );
+      return;
+    }
     if (cartShop && cartShop._id !== shop._id && getTotalItems() > 0) {
       setPendingProduct(product);
       setShowDifferentShopAlert(true);
@@ -149,6 +159,15 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
+
+      {/* Closed Banner */}
+      {!shopOpen && (
+        <View style={{ backgroundColor: '#c0392b', paddingVertical: 8, paddingHorizontal: 16, alignItems: 'center' }}>
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 13 }}>
+            🔒 {isRTL ? 'المتجر مغلق حالياً — خارج أوقات الدوام' : 'Magasin fermé — hors horaires d\'ouverture'}
+          </Text>
+        </View>
+      )}
 
       {/* Different Shop Alert */}
       <Modal visible={showDifferentShopAlert} transparent animationType="fade">

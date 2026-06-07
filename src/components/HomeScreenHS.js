@@ -10,6 +10,7 @@ import { useCart } from '../contexts/CartContext';
 import { getMediaUrl } from '../services/api';
 import { useLastOrder } from '../hooks/useLastOrder';
 import { useOffers } from '../hooks/useOffers';
+import { isShopOpen } from '../utils/shopSchedule';
 
 
 
@@ -23,6 +24,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
   const [products, setProducts] = useState([]);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentBanner, setCurrentBanner] = useState(0);
@@ -64,22 +66,21 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
     try {
       setLoading(true);
       const status = await getServerStatus();
-      if (status.isAvailable) {
+      const online = status.isAvailable;
+      setIsOffline(!online);
+
+      if (online) {
         const { API_URL } = require('../config/api');
-
-        // جلب المتاجر مع عدد المنتجات من الباكند
         const shopsRes = await fetch(`${API_URL}/shops`);
-        if (shopsRes.ok) {
-          const allShops = await shopsRes.json();
-          setShops(allShops);
-        }
-
-        // جلب المنتجات للعرض في الواجهة
-        const allProducts = await fetchProductsWithShops();
-        setProducts(allProducts);
+        if (shopsRes.ok) setShops(await shopsRes.json());
       }
+
+      // fetchProductsWithShops يُرجع cache حتى offline
+      const allProducts = await fetchProductsWithShops();
+      setProducts(allProducts);
     } catch (e) {
       console.log('Error loading:', e);
+      setIsOffline(true);
     } finally {
       setLoading(false);
     }
@@ -117,6 +118,27 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" />
+
+      {/* بانر Offline */}
+      {isOffline && (
+        <View style={{
+          backgroundColor: '#2D2D2D',
+          paddingVertical: 6,
+          paddingHorizontal: 16,
+          flexDirection: isRTL ? 'row-reverse' : 'row',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          <Text style={{ fontSize: 14 }}>📵</Text>
+          <Text style={{ color: '#FFD166', fontSize: 12, fontWeight: '600', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+            {isRTL
+              ? 'أنت غير متصل — يتم عرض بيانات محفوظة'
+              : currentLanguage === 'fr'
+                ? 'Hors ligne — données en cache affichées'
+                : 'Offline — showing cached data'}
+          </Text>
+        </View>
+      )}
 
       {/* Header */}
       <View style={{
@@ -330,6 +352,7 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
 
 function ShopCard({ shop, onPress, isRTL }) {
   const rating = shop.averageRating > 0 ? shop.averageRating.toFixed(1) : null;
+  const shopOpen = isShopOpen(shop);
   const [deliveryTime, setDeliveryTime] = useState(null);
   const { t } = useTranslation();
 
@@ -372,6 +395,18 @@ function ShopCard({ shop, onPress, isRTL }) {
             flexDirection: 'row', alignItems: 'center',
           }}>
             <Text style={{ fontSize: 10, color: '#333', fontWeight: 'bold' }}>🕐 {deliveryTime} {t('minutes')}</Text>
+          </View>
+        )}
+        {/* Closed badge */}
+        {!shopOpen && (
+          <View style={{
+            position: 'absolute', top: 10, right: 10,
+            backgroundColor: 'rgba(192,57,43,0.92)', borderRadius: 10,
+            paddingHorizontal: 10, paddingVertical: 4,
+          }}>
+            <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+              🔒 {isRTL ? 'مغلق' : 'Fermé'}
+            </Text>
           </View>
         )}
       </View>

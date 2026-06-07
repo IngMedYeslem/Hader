@@ -400,4 +400,18 @@ router.put('/shops/:shopId/bank-accounts', async (req, res) => {
   }
 });
 
+router.put('/orders/:orderId/confirm-received', async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.orderId,
+      { customerConfirmed: true, customerConfirmedAt: new Date() },
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ error: 'الطلب غير موجود' });
+    res.json({ success: true, customerConfirmed: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

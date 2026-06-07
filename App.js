@@ -99,7 +99,8 @@ function AppContent() {
       if (savedShop) {
         const shop = JSON.parse(savedShop);
         setCurrentShop(shop);
-        setView('shopDashboard');
+        // لا نُحوّل تلقائياً — الواجهة العامة دائماً عند فتح التطبيق
+        // صاحب المتجر يصل للوحة التحكم بزر "لوحة التحكم" في الواجهة
       }
     } catch (e) {}
   };

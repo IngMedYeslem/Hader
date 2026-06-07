@@ -66,7 +66,9 @@ const orderSchema = new mongoose.Schema({
     lng: Number,
     updatedAt: Date
   },
-  reviewSubmitted: { type: Boolean, default: false }
+  reviewSubmitted: { type: Boolean, default: false },
+  customerConfirmed: { type: Boolean, default: false },
+  customerConfirmedAt: { type: Date }
 }, { timestamps: true });
 
 orderSchema.index({ phoneNumber: 1, deviceId: 1 });

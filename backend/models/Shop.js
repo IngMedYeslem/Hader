@@ -22,6 +22,15 @@ const shopSchema = new mongoose.Schema({
   }],
   mainImage: { type: String, default: '' },
   status: { type: String, enum: ['ACTIVE', 'BUSY', 'CLOSED'], default: 'ACTIVE' },
+  schedule: {
+    enabled:   { type: Boolean, default: false },
+    openTime:  { type: String, default: '08:00' },
+    closeTime: { type: String, default: '22:00' },
+    days: {
+      type: [Number], // 0=أحد, 1=اثنين, ..., 6=سبت
+      default: [0, 1, 2, 3, 4, 5, 6]
+    }
+  },
   averageRating: { type: Number, default: 0 },
   totalRatings: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }

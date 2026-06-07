@@ -162,4 +162,19 @@ router.put('/shops/:shopId/bank-accounts', async (req, res) => {
   }
 });
 
+router.put('/shops/:shopId/schedule', async (req, res) => {
+  try {
+    const { enabled, openTime, closeTime, days } = req.body;
+    const shop = await Shop.findByIdAndUpdate(
+      req.params.shopId,
+      { schedule: { enabled, openTime, closeTime, days } },
+      { new: true }
+    ).select('schedule');
+    if (!shop) return res.status(404).json({ error: 'المتجر غير موجود' });
+    res.json({ success: true, schedule: shop.schedule });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
