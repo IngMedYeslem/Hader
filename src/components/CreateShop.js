@@ -8,12 +8,19 @@ import LanguageSwitcher from './LanguageSwitcher';
 
 
 const SHOP_CATEGORIES = [
-  { id: 'food', icon: '🍔' },
-  { id: 'grocery', icon: '🛒' },
-  { id: 'pharmacy', icon: '💊' },
-  { id: 'electronics', icon: '📱' },
-  { id: 'fashion', icon: '👗' },
-  { id: 'other', icon: '📦' },
+  { id: 'restaurant',  label: 'مطاعم',                       icon: '🍽️' },
+  { id: 'foodstore',   label: 'محلات مواد غذائية',           icon: '🥫' },
+  { id: 'pharmacy',    label: 'صيدليات',                     icon: '💊' },
+  { id: 'clothing',    label: 'محلات ملابس',                 icon: '👗' },
+  { id: 'electronics', label: 'محلات إلكترونيات',            icon: '📱' },
+  { id: 'furniture',   label: 'محلات أثاث ومنزل',           icon: '🛋️' },
+  { id: 'sports',      label: 'محلات رياضة',                 icon: '⚽' },
+  { id: 'beauty',      label: 'محلات جمال وعناية',           icon: '💄' },
+  { id: 'books',       label: 'محلات كتب وقرطاسية',         icon: '📚' },
+  { id: 'toys',        label: 'محلات ألعاب أطفال',           icon: '🧸' },
+  { id: 'hypermarket', label: 'هايبرماركت',                  icon: '🏬' },
+  { id: 'minimarket',  label: 'بقالة صغيرة',                 icon: '🏪' },
+  { id: 'automotive',  label: 'محلات سيارات وقطع غيار',      icon: '🚗' },
 ];
 
 export default function CreateShop({ onBack, onShopCreated }) {
@@ -239,7 +246,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
                   >
                     <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
                     <Text style={{ fontSize: 12, color: selected ? 'white' : '#FF6B35', fontWeight: '600' }}>
-                      {t(cat.id)}
+                      {cat.label}
                     </Text>
                   </TouchableOpacity>
                 );

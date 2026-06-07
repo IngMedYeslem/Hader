@@ -18,11 +18,17 @@ function AddProduct({ onBack, onAdd }) {
 
   const CATEGORIES = [
     { id: 'food', icon: '🍔' },
-    { id: 'grocery', icon: '🛒' },
-    { id: 'pharmacy', icon: '💊' },
-    { id: 'electronics', icon: '📱' },
     { id: 'fashion', icon: '👗' },
-    { id: 'other', icon: '📦' },
+    { id: 'electronics', icon: '📱' },
+    { id: 'home', icon: '🛋️' },
+    { id: 'pharmacy', icon: '💊' },
+    { id: 'beauty', icon: '💄' },
+    { id: 'sports', icon: '⚽' },
+    { id: 'books', icon: '📚' },
+    { id: 'toys', icon: '🧸' },
+    { id: 'automotive', icon: '🚗' },
+    { id: 'pets', icon: '🐾' },
+    { id: 'jewelry', icon: '💍' },
   ];
 
   useEffect(() => {

@@ -8,12 +8,19 @@ import { API_CONFIG, getMediaUrl } from '../config/api';
 const BASE = API_CONFIG.BASE_URL;
 
 const SHOP_CATEGORIES = [
-  { id: 'food', icon: '🍔' },
-  { id: 'grocery', icon: '🛒' },
-  { id: 'pharmacy', icon: '💊' },
-  { id: 'electronics', icon: '📱' },
-  { id: 'fashion', icon: '👗' },
-  { id: 'other', icon: '📦' },
+  { id: 'restaurant',  label: 'مطاعم',                       icon: '🍽️' },
+  { id: 'foodstore',   label: 'محلات مواد غذائية',           icon: '🥫' },
+  { id: 'pharmacy',    label: 'صيدليات',                     icon: '💊' },
+  { id: 'clothing',    label: 'محلات ملابس',                 icon: '👗' },
+  { id: 'electronics', label: 'محلات إلكترونيات',            icon: '📱' },
+  { id: 'furniture',   label: 'محلات أثاث ومنزل',           icon: '🛋️' },
+  { id: 'sports',      label: 'محلات رياضة',                 icon: '⚽' },
+  { id: 'beauty',      label: 'محلات جمال وعناية',           icon: '💄' },
+  { id: 'books',       label: 'محلات كتب وقرطاسية',         icon: '📚' },
+  { id: 'toys',        label: 'محلات ألعاب أطفال',           icon: '🧸' },
+  { id: 'hypermarket', label: 'هايبرماركت',                  icon: '🏬' },
+  { id: 'minimarket',  label: 'بقالة صغيرة',                 icon: '🏪' },
+  { id: 'automotive',  label: 'محلات سيارات وقطع غيار',      icon: '🚗' },
 ];
 
 const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) => {
@@ -317,7 +324,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
                       >
                         <Text style={{ fontSize: 13, marginRight: 3 }}>{cat.icon}</Text>
                         <Text style={{ fontSize: 11, color: editData.category === cat.id ? 'white' : '#FF6B35', fontWeight: '600' }}>
-                          {cat.id}
+                          {cat.label}
                         </Text>
                       </TouchableOpacity>
                     ))}

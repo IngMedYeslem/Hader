@@ -27,12 +27,19 @@ function ShopLogin({ onLogin }) {
   const [category, setCategory] = useState('');
 
 const SHOP_CATEGORIES = [
-  { id: 'food',        label: 'طعام',       icon: '🍔' },
-  { id: 'grocery',     label: 'بقالة',      icon: '🛒' },
-  { id: 'pharmacy',    label: 'صيدلية',     icon: '💊' },
-  { id: 'electronics', label: 'إلكترونيات', icon: '📱' },
-  { id: 'fashion',     label: 'أزياء',      icon: '👗' },
-  { id: 'other',       label: 'أخرى',       icon: '📦' },
+  { id: 'restaurant',  label: 'مطاعم',                       icon: '🍽️' },
+  { id: 'foodstore',   label: 'محلات مواد غذائية',           icon: '🥫' },
+  { id: 'pharmacy',    label: 'صيدليات',                     icon: '💊' },
+  { id: 'clothing',    label: 'محلات ملابس',                 icon: '👗' },
+  { id: 'electronics', label: 'محلات إلكترونيات',            icon: '📱' },
+  { id: 'furniture',   label: 'محلات أثاث ومنزل',           icon: '🛋️' },
+  { id: 'sports',      label: 'محلات رياضة',                 icon: '⚽' },
+  { id: 'beauty',      label: 'محلات جمال وعناية',           icon: '💄' },
+  { id: 'books',       label: 'محلات كتب وقرطاسية',         icon: '📚' },
+  { id: 'toys',        label: 'محلات ألعاب أطفال',           icon: '🧸' },
+  { id: 'hypermarket', label: 'هايبرماركت',                  icon: '🏬' },
+  { id: 'minimarket',  label: 'بقالة صغيرة',                 icon: '🏪' },
+  { id: 'automotive',  label: 'محلات سيارات وقطع غيار',      icon: '🚗' },
 ];
   const { t } = useTranslation();
   const slideAnim = useState(new Animated.Value(300))[0];

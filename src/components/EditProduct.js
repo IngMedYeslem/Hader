@@ -190,11 +190,17 @@ const EditProduct = ({ product, visible, onClose, onProductUpdated }) => {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {[
                     { id: 'food', icon: '🍔' },
-                    { id: 'grocery', icon: '🛒' },
-                    { id: 'pharmacy', icon: '💊' },
-                    { id: 'electronics', icon: '📱' },
                     { id: 'fashion', icon: '👗' },
-                    { id: 'other', icon: '📦' },
+                    { id: 'electronics', icon: '📱' },
+                    { id: 'home', icon: '🛋️' },
+                    { id: 'pharmacy', icon: '💊' },
+                    { id: 'beauty', icon: '💄' },
+                    { id: 'sports', icon: '⚽' },
+                    { id: 'books', icon: '📚' },
+                    { id: 'toys', icon: '🧸' },
+                    { id: 'automotive', icon: '🚗' },
+                    { id: 'pets', icon: '🐾' },
+                    { id: 'jewelry', icon: '💍' },
                   ].map(cat => (
                     <TouchableOpacity
                       key={cat.id}

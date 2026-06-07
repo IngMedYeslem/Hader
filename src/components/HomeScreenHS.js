@@ -96,14 +96,22 @@ export default function HomeScreenHS({ onSelectShop, onShopLogin, onAdminAccess,
   });
 
 
+  const L = (ar, fr, en) => isRTL ? ar : (currentLanguage === 'fr' ? fr : en);
   const CATEGORIES = [
-    { id: 'all', label: isRTL ? 'الكل' : (currentLanguage === 'fr' ? 'Tout' : 'All'), icon: '🏪' },
-    { id: 'food', label: isRTL ? 'طعام' : (currentLanguage === 'fr' ? 'Restaurant' : 'Food'), icon: '🍔' },
-    { id: 'grocery', label: isRTL ? 'بقالة' : (currentLanguage === 'fr' ? 'Épicerie' : 'Grocery'), icon: '🛒' },
-    { id: 'pharmacy', label: isRTL ? 'صيدلية' : (currentLanguage === 'fr' ? 'Pharmacie' : 'Pharmacy'), icon: '💊' },
-    { id: 'electronics', label: isRTL ? 'إلكترونيات' : (currentLanguage === 'fr' ? 'Électronique' : 'Electronics'), icon: '📱' },
-    { id: 'fashion', label: isRTL ? 'أزياء' : (currentLanguage === 'fr' ? 'Mode' : 'Fashion'), icon: '👗' },
-    { id: 'other', label: isRTL ? 'أخرى' : (currentLanguage === 'fr' ? 'Autre' : 'Other'), icon: '📦' },
+    { id: 'all',         label: L('الكل',                    'Tout',          'All'),         icon: '🏪' },
+    { id: 'restaurant',  label: L('مطاعم',                   'Restaurants',   'Restaurants'), icon: '🍽️' },
+    { id: 'foodstore',   label: L('مواد غذائية',             'Alimentation',  'Food Store'),  icon: '🥫' },
+    { id: 'pharmacy',    label: L('صيدليات',                 'Pharmacies',    'Pharmacies'),  icon: '💊' },
+    { id: 'clothing',    label: L('ملابس',                   'Vêtements',     'Clothing'),    icon: '👗' },
+    { id: 'electronics', label: L('إلكترونيات',              'Électronique',  'Electronics'), icon: '📱' },
+    { id: 'furniture',   label: L('أثاث ومنزل',              'Meubles',       'Furniture'),   icon: '🛋️' },
+    { id: 'sports',      label: L('رياضة',                   'Sports',        'Sports'),      icon: '⚽' },
+    { id: 'beauty',      label: L('جمال وعناية',             'Beauté',        'Beauty'),      icon: '💄' },
+    { id: 'books',       label: L('كتب وقرطاسية',            'Livres',        'Books'),       icon: '📚' },
+    { id: 'toys',        label: L('ألعاب أطفال',             'Jouets',        'Toys'),        icon: '🧸' },
+    { id: 'hypermarket', label: L('هايبرماركت',              'Hypermarché',   'Hypermarket'), icon: '🏬' },
+    { id: 'minimarket',  label: L('بقالة صغيرة',             'Épicerie',      'Mini Market'), icon: '🏪' },
+    { id: 'automotive',  label: L('سيارات وقطع غيار',        'Automobile',    'Automotive'),  icon: '🚗' },
   ];
 
   return (
