@@ -29,7 +29,11 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const [pendingProduct, setPendingProduct] = useState(null);
   const [infoAlert, setInfoAlert] = useState(null); // { title, message }
 
-  const showAlert = (title, message) => setInfoAlert({ title, message });
+  // يغلق أي modal مفتوح أولاً ثم يُظهر التنبيه — يحل مشكلة الظهور خلف modal التفاصيل
+  const showAlert = (title, message) => {
+    setSelectedProduct(null);
+    setTimeout(() => setInfoAlert({ title, message }), 50);
+  };
   const [deliveryTime, setDeliveryTime] = useState(null);
   const cartBarAnim = useRef(new Animated.Value(0)).current;
   const isRTL = currentLanguage === 'ar';
@@ -172,21 +176,21 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
         </View>
       )}
 
-      {/* Info Alert — يعمل على الويب والموبايل */}
-      <Modal visible={!!infoAlert} transparent animationType="fade">
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 10 }}>
+      {/* Info Alert — يعمل على الويب والموبايل، يظهر دائماً فوق كل شيء */}
+      <Modal visible={!!infoAlert} transparent animationType="fade" statusBarTranslucent>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 320 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 10, writingDirection: isRTL ? 'rtl' : 'ltr' }}>
               {infoAlert?.title}
             </Text>
-            <Text style={{ color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 20 }}>
+            <Text style={{ color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 20, writingDirection: isRTL ? 'rtl' : 'ltr' }}>
               {infoAlert?.message}
             </Text>
             <TouchableOpacity
               onPress={() => setInfoAlert(null)}
-              style={{ backgroundColor: '#FF6B35', padding: 14, borderRadius: 12, alignItems: 'center' }}
+              style={{ backgroundColor: '#FF6B35', paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, alignItems: 'center' }}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, textAlign: 'center' }} numberOfLines={1}>
                 {isRTL ? 'حسناً' : 'OK'}
               </Text>
             </TouchableOpacity>
