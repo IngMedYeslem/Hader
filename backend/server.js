@@ -1095,7 +1095,20 @@ app.delete('/api/products/:productId', async (req, res) => {
 
 
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log('Serveur démarré sur le port 3000');
-  console.log('API REST disponible sur http://localhost:3000/api');
+// ─── تقديم تطبيق الويب (PWA) ─────────────────────────────────────────────────
+// يخدم ملفات dist/ إذا كانت موجودة (بعد npx expo export --platform web)
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath, { maxAge: '1d' }));
+  // أي مسار غير معروف → index.html (SPA routing)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+  console.log('🌐 Web app served from dist/');
+}
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+  console.log(`API REST disponible sur http://localhost:${PORT}/api`);
 });
