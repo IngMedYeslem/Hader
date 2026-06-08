@@ -3,173 +3,122 @@ import * as FileSystem from 'expo-file-system/legacy';
 
 import { API_URL } from '../config/api';
 
+// إعدادات الضغط — مُحسَّنة للإنترنت البطيء في موريتانيا
+const COMPRESSION = {
+  // صورة عرض القائمة (thumbnail) — خفيفة جداً للتصفح السريع
+  thumbnail: { width: 400, quality: 0.45 },
+  // صورة تفاصيل المنتج — جودة معقولة
+  detail:    { width: 800, quality: 0.60 },
+  // ويب
+  web:       { maxWidth: 500, quality: 0.55 },
+};
+
 export const imageService = {
-  // تحويل صورة محلية إلى base64 مع ضغط
-  convertToBase64: async (uri) => {
+  // تحويل صورة محلية إلى base64 مع ضغط مُحسَّن
+  convertToBase64: async (uri, mode = 'detail') => {
     try {
-      console.log('🔄 تحويل صورة:', uri.substring(0, 50) + '...');
-      
-      // إذا كانت محولة بالفعل
-      if (uri.startsWith('data:')) {
-        console.log('✅ الصورة محولة بالفعل');
-        return uri;
-      }
-      
+      if (uri.startsWith('data:')) return uri;
+
       if (Platform.OS === 'web') {
-        console.log('🌐 Web: ضغط الصورة...');
         return await imageService.compressImage(uri);
       }
 
-      if (!uri.startsWith('file://')) {
-        console.log('ℹ️ ليست صورة محلية، إرجاع مباشر');
-        return uri;
-      }
-      
-      console.log('📱 معالجة صورة محلية من الهاتف...');
+      if (!uri.startsWith('file://')) return uri;
 
-      // للهاتف، استخدام ImageManipulator للضغط
-      const ImageManipulator = require('expo-image-manipulator');
-      
-      console.log('🔧 ضغط الصورة...');
-      const manipulatedImage = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 1200 } }],
-        { 
-          compress: 0.8,
-          format: ImageManipulator.SaveFormat.JPEG 
-        }
-      );
-      
-      console.log('💾 قراءة الصورة كـ base64...');
-      const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
-        encoding: FileSystem.EncodingType.Base64
+      const { width, quality } = COMPRESSION[mode] || COMPRESSION.detail;
+      const { ImageManipulator, SaveFormat } = require('expo-image-manipulator');
+
+      const context = ImageManipulator.manipulate(uri);
+      context.resize({ width });
+      const imageRef = await context.renderAsync();
+      const manipulated = await imageRef.saveAsync({
+        compress: quality,
+        format: SaveFormat.JPEG,
       });
-      
+
+      const base64 = await FileSystem.readAsStringAsync(manipulated.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
       if (!base64 || base64.length < 100) {
-        console.error('❌ صورة base64 قصيرة جداً، محاولة بدون ضغط...');
-        
-        try {
-          const originalBase64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: FileSystem.EncodingType.Base64
-          });
-          
-          if (originalBase64 && originalBase64.length > 100) {
-            const dataUri = `data:image/jpeg;base64,${originalBase64}`;
-            console.log('✅ استخدام الصورة الأصلية بدون ضغط');
-            return dataUri;
-          }
-        } catch (originalError) {
-          console.error('❌ فشل قراءة الصورة الأصلية:', originalError);
-        }
-        
+        // fallback: أصلية بدون ضغط
+        const original = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        }).catch(() => null);
+        if (original && original.length > 100) return `data:image/jpeg;base64,${original}`;
         return uri;
       }
-      
-      const dataUri = `data:image/jpeg;base64,${base64}`;
-      console.log('✅ تحويل وضغط ناجح:', dataUri.substring(0, 50) + '...');
-      console.log('📊 حجم base64:', Math.round(base64.length / 1024), 'KB');
-      
-      return dataUri;
+
+      const sizeKB = Math.round(base64.length / 1024);
+      console.log(`📦 صورة مضغوطة [${mode}]: ${sizeKB} KB`);
+      return `data:image/jpeg;base64,${base64}`;
     } catch (error) {
-      console.error('❌ خطأ في تحويل base64:', error);
-      console.error('❌ تفاصيل الخطأ:', error.message);
+      console.error('خطأ في ضغط الصورة:', error.message);
       return uri;
     }
   },
 
-  // Compresser une image web
+  // ضغط صورة الويب عبر Canvas
   compressImage: async (dataUri) => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
-        // Redimensionner si trop grande
-        const maxWidth = 600;
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-        
-        canvas.width = img.width * ratio;
-        canvas.height = img.height * ratio;
-        
+        const { maxWidth, quality } = COMPRESSION.web;
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1);
+        canvas.width  = Math.round(img.width  * ratio);
+        canvas.height = Math.round(img.height * ratio);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Compresser à 50% pour réduire la taille
-        const compressedDataUri = canvas.toDataURL('image/jpeg', 0.7); // Compression moins agressive
-        
-        // Vérifier que l'image compressée est valide
-        if (!compressedDataUri || compressedDataUri.length < 100 || !compressedDataUri.startsWith('data:image/')) {
-          console.error('❌ Image compressée invalide, utilisation de l\'originale');
-          resolve(dataUri); // Retourner l'image originale
+
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        if (!compressed || compressed.length < 100 || !compressed.startsWith('data:image/')) {
+          resolve(dataUri);
         } else {
-          console.log('✅ Compression web réussie, taille:', compressedDataUri.length);
-          resolve(compressedDataUri);
+          console.log(`📦 ضغط ويب: ${Math.round(compressed.length / 1024)} KB`);
+          resolve(compressed);
         }
       };
-      
+
+      img.onerror = () => resolve(dataUri);
       img.src = dataUri;
     });
   },
 
-  // Traiter un tableau d'images - Version simplifiée
+  // معالجة مصفوفة صور
   processImages: async (images) => {
     if (!images || images.length === 0) return [];
-    
-    console.log('🔄 Traitement de', images.length, 'images');
-    const processedImages = [];
-    
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      console.log(`Image ${i + 1}:`, image.substring(0, 50) + '...');
-      
-      // Accepter toutes les images valides sans conversion automatique
-      if (image.startsWith('file://') || image.startsWith('data:') || image.startsWith('http') || image.startsWith('/uploads/')) {
-        processedImages.push(image);
-        console.log('✅ Image acceptée');
-      } else {
-        console.log('⚠️ Format image non reconnu, ignorée');
-      }
-    }
-    
-    console.log('✅ Traitement terminé:', processedImages.length, 'images valides');
-    return processedImages;
+    const valid = images.filter(img =>
+      img.startsWith('file://') ||
+      img.startsWith('data:')   ||
+      img.startsWith('http')    ||
+      img.startsWith('/uploads/')
+    );
+    return valid;
   },
 
-  // Uploader une image vers le serveur (optionnel)
+  // رفع صورة إلى الخادم
   uploadImage: async (imageUri) => {
     try {
-      
-      console.log('📤 Upload vers:', API_URL);
-
       const formData = new FormData();
-      
       if (Platform.OS === 'web') {
         const response = await fetch(imageUri);
         const blob = await response.blob();
         formData.append('image', blob, 'image.jpg');
       } else {
-        formData.append('image', {
-          uri: imageUri,
-          type: 'image/jpeg',
-          name: 'image.jpg',
-        });
+        formData.append('image', { uri: imageUri, type: 'image/jpeg', name: 'image.jpg' });
       }
 
-      const response = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
+      const response = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Upload réussi:', result.imageUrl);
         return result.imageUrl;
-      } else {
-        throw new Error('Upload failed');
       }
+      throw new Error('Upload failed');
     } catch (error) {
-      console.error('❌ Erreur upload image:', error);
+      console.error('خطأ في رفع الصورة:', error);
       return null;
     }
-  }
+  },
 };
