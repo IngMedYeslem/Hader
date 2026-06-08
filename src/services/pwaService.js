@@ -1,9 +1,15 @@
 import { Platform } from 'react-native';
 
-// تسجيل Service Worker على الويب فقط
+// تسجيل Service Worker على الويب فقط — في الإنتاج فقط لتجنّب مشاكل الـ cache أثناء التطوير
 export const registerServiceWorker = async () => {
   if (Platform.OS !== 'web') return;
   if (!('serviceWorker' in navigator)) return;
+  if (process.env.NODE_ENV !== 'production') {
+    // في التطوير: احذف أي SW قديم لتجنّب مشاكل الـ cache
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    return;
+  }
 
   try {
     const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
