@@ -1,4 +1,4 @@
-const PRODUCTION_API_URL = 'https://hader-backend-production.up.railway.app/api';
+const PRODUCTION_API_URL = 'https://hader.up.railway.app/api';
 
 // عند تفعيل Cloudflare: ضع هنا نطاق الـ CDN الخاص بك
 // مثال: 'https://cdn.hader.app'
