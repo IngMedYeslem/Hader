@@ -314,87 +314,126 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <SafeAreaView style={{ backgroundColor: '#FF6B35' }}>
-        {/* Cover Image */}
-        <View style={{ height: 160, backgroundColor: '#FF6B35' }}>
+    <View style={{ flex: 1, backgroundColor: '#f7f8fa' }}>
+      <SafeAreaView style={{ backgroundColor: '#1a1a2e' }}>
+
+        {/* ── Cover + Shop Identity ── */}
+        <View style={{ height: 185, backgroundColor: '#FF6B35' }}>
           {shop.mainImage ? (
             <Image
               source={{ uri: getMediaUrl(shop.mainImage) }}
-              style={{ width: '100%', height: '100%' }}
+              style={{ position: 'absolute', width: '100%', height: '100%' }}
               resizeMode="cover"
             />
           ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ fontSize: 60 }}>🏪</Text>
+            <View style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 64 }}>🏪</Text>
             </View>
           )}
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} />
-        </View>
-        <View style={{ backgroundColor: '#FF6B35', paddingHorizontal: 16, paddingVertical: 14 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold' }}>🏪 {shop.name}</Text>
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
-                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>{products.length} {t('products')}</Text>
-                <ValidationStatusIndicator isApproved={isApproved} isRejected={autoRefreshRejected} isChecking={false} />
-              </View>
-            </View>
+          {/* scrim */}
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.48)' }} />
 
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              {isApproved && (
-                <Animated.View style={{ transform: [{ scale: hasNewOrder ? pulseAnim : 1 }] }}>
-                  <TouchableOpacity
-                    onPress={() => { setOrdersVisible(true); setHasNewOrder(false); }}
-                    style={{
-                      backgroundColor: hasNewOrder ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.2)',
-                      paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, position: 'relative'
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-                      {hasNewOrder ? '🔔' : '📦'} {isRTL ? 'الطلبات' : 'Commandes'}
-                    </Text>
-                    {newOrdersCount > 0 && (
-                      <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#e74c3c', borderRadius: 9, width: 18, height: 18, justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>{newOrdersCount}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
-              {Platform.OS !== 'web' && (
-                <TouchableOpacity
-                  onPress={() => setNotificationsVisible(true)}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🔔</Text>
-                </TouchableOpacity>
-              )}
-              {isApproved && (
-                <TouchableOpacity
-                  onPress={() => setScheduleVisible(true)}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>🕐</Text>
-                </TouchableOpacity>
-              )}
-              {(isApproved || autoRefreshRejected) && (
-                <TouchableOpacity
-                  onPress={() => setShopInfoVisible(true)}
-                  style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
-                >
-                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>&#9432;</Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                onPress={onLogout}
-                style={{ backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 }}
-              >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{t('logout')}</Text>
-              </TouchableOpacity>
+          {/* top-right: logout */}
+          <TouchableOpacity
+            onPress={onLogout}
+            style={{ position: 'absolute', top: 12, right: 14,
+              backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 20,
+              paddingHorizontal: 14, paddingVertical: 7,
+              flexDirection: 'row', alignItems: 'center', gap: 5 }}
+          >
+            <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>
+              {isRTL ? 'خروج ↩' : '↩ Quitter'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* bottom: shop name + meta */}
+          <View style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
+            <Text
+              numberOfLines={1}
+              style={{ color: 'white', fontSize: 22, fontWeight: 'bold',
+                textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4,
+                textAlign: isRTL ? 'right' : 'left' }}
+            >
+              {shop.name}
+            </Text>
+            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginTop: 6, gap: 10 }}>
+              <ValidationStatusIndicator isApproved={isApproved} isRejected={autoRefreshRejected} isChecking={false} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>📦</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '500' }}>
+                  {products.length} {t('products')}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
+
+        {/* ── Action Bar ── */}
+        <View style={{
+          backgroundColor: 'white',
+          flexDirection: isRTL ? 'row-reverse' : 'row',
+          alignItems: 'center',
+          paddingHorizontal: 14, paddingVertical: 10,
+          gap: 10,
+          borderBottomWidth: 1, borderBottomColor: '#ebebeb',
+        }}>
+          {/* Orders — primary wide button */}
+          {isApproved && (
+            <Animated.View style={{ flex: 1, transform: [{ scale: hasNewOrder ? pulseAnim : 1 }] }}>
+              <TouchableOpacity
+                onPress={() => { setOrdersVisible(true); setHasNewOrder(false); }}
+                style={{
+                  backgroundColor: hasNewOrder ? '#e74c3c' : '#FF6B35',
+                  borderRadius: 12, paddingVertical: 11,
+                  flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6,
+                }}
+              >
+                <Text style={{ fontSize: 17 }}>{hasNewOrder ? '🔔' : '📦'}</Text>
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
+                  {isRTL ? 'الطلبات' : 'Commandes'}
+                </Text>
+                {newOrdersCount > 0 && (
+                  <View style={{ backgroundColor: 'white', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginLeft: 2 }}>
+                    <Text style={{ color: hasNewOrder ? '#e74c3c' : '#FF6B35', fontSize: 12, fontWeight: 'bold' }}>
+                      {newOrdersCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+
+          {/* Notifications */}
+          {Platform.OS !== 'web' && (
+            <TouchableOpacity
+              onPress={() => setNotificationsVisible(true)}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Text style={{ fontSize: 19 }}>🔔</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Schedule */}
+          {isApproved && (
+            <TouchableOpacity
+              onPress={() => setScheduleVisible(true)}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Text style={{ fontSize: 19 }}>🕐</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Shop Info */}
+          {(isApproved || autoRefreshRejected) && (
+            <TouchableOpacity
+              onPress={() => setShopInfoVisible(true)}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Text style={{ fontSize: 20, color: '#555' }}>ℹ️</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
       </SafeAreaView>
 
       {products.length === 0 ? (
@@ -512,13 +551,41 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
             </View>
         </ScrollView>
       ) : (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.globalGrid}>
-              {products.map((product) => (
-                <TouchableOpacity 
-                  key={product._id} 
-                  style={[styles.globalCard, { width: '48%' }]}
-                  activeOpacity={0.9}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 16, paddingBottom: 100 }}>
+
+          {/* Section header */}
+          <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1a1a2e', textAlign: isRTL ? 'right' : 'left' }}>
+              {isRTL ? '🛍️ منتجاتك' : '🛍️ Vos produits'}
+            </Text>
+            <View style={{ backgroundColor: '#FF6B35', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{products.length}</Text>
+            </View>
+          </View>
+
+          {/* Product grid */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' }}>
+            {products.map((product) => {
+              const stock = product.stock || 0;
+              const stockColor = stock === 0 ? '#e74c3c' : stock < 5 ? '#e67e22' : '#27ae60';
+              const stockLabel = stock === 0
+                ? (isRTL ? 'نفد' : 'Épuisé')
+                : (isRTL ? `${stock} قطعة` : `${stock} en stock`);
+              return (
+                <TouchableOpacity
+                  key={product._id}
+                  style={{
+                    width: '47.5%',
+                    backgroundColor: 'white',
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.07,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }}
+                  activeOpacity={0.88}
                   onPress={() => {
                     setSelectedProduct(product);
                     if (product.mainImage || (product.images && product.images.length > 0)) {
@@ -527,48 +594,61 @@ function ShopDashboard({ shop: initialShop, onLogout }) {
                   }}
                   onLongPress={() => handleEditProduct(product)}
                 >
-                  <View style={styles.imageContainer}>
-                    <ProductThumbnail 
-                      product={product} 
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                    <TouchableOpacity 
-                      style={styles.editBadge}
+                  {/* Product image */}
+                  <View style={{ height: 140, backgroundColor: '#f5f5f5', position: 'relative' }}>
+                    <ProductThumbnail product={product} style={{ width: '100%', height: '100%' }} />
+
+                    {/* Stock badge */}
+                    <View style={{
+                      position: 'absolute', bottom: 8, left: isRTL ? undefined : 8, right: isRTL ? 8 : undefined,
+                      backgroundColor: stock === 0 ? 'rgba(231,76,60,0.92)' : 'rgba(255,255,255,0.95)',
+                      borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3,
+                    }}>
+                      <Text style={{ fontSize: 10, fontWeight: 'bold', color: stock === 0 ? 'white' : stockColor }}>
+                        {stockLabel}
+                      </Text>
+                    </View>
+
+                    {/* Edit button */}
+                    <TouchableOpacity
                       onPress={() => handleEditProduct(product)}
+                      style={{
+                        position: 'absolute', top: 8, right: isRTL ? undefined : 8, left: isRTL ? 8 : undefined,
+                        backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 18,
+                        width: 32, height: 32, justifyContent: 'center', alignItems: 'center',
+                        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
+                      }}
                     >
                       <Text style={{ fontSize: 13 }}>✏️</Text>
                     </TouchableOpacity>
+
+                    {/* Multi-image indicator */}
                     {(product.images?.length || 0) > 1 && (
-                      <View style={styles.mediaCounter}>
-                        <Text style={styles.mediaCounterText}>
+                      <View style={{
+                        position: 'absolute', top: 8, left: isRTL ? undefined : 8, right: isRTL ? 8 : undefined,
+                        backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10,
+                        paddingHorizontal: 6, paddingVertical: 2,
+                      }}>
+                        <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
                           +{(product.images?.length || 0) - 1}
                         </Text>
                       </View>
                     )}
                   </View>
-                  
-                  <View style={styles.productInfo}>
-                    <Text style={styles.globalProductName} numberOfLines={2}>
+
+                  {/* Product info */}
+                  <View style={{ padding: 10 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#1a1a2e', textAlign: isRTL ? 'right' : 'left' }} numberOfLines={2}>
                       {product.name}
                     </Text>
-                    <Text style={styles.globalPrice}>
+                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#FF6B35', marginTop: 5, textAlign: isRTL ? 'right' : 'left' }}>
                       {product.price} MRU
                     </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                      <Text style={{
-                        fontSize: 11,
-                        color: (product.stock || 0) === 0 ? '#e74c3c' : (product.stock || 0) < 5 ? '#e67e22' : '#27ae60',
-                        fontWeight: '600'
-                      }}>
-                        {(product.stock || 0) === 0
-                          ? (isRTL ? 'نفد المخزون' : 'Rupture')
-                          : (isRTL ? `مخزون: ${product.stock}` : `Stock: ${product.stock}`)}
-                      </Text>
-                    </View>
                   </View>
                 </TouchableOpacity>
-              ))}
-            </View>
+              );
+            })}
+          </View>
         </ScrollView>
       )}
 
