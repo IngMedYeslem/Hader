@@ -1097,7 +1097,7 @@ app.delete('/api/products/:productId', async (req, res) => {
 
 // ─── تقديم تطبيق الويب (PWA) ─────────────────────────────────────────────────
 // يخدم ملفات dist/ إذا كانت موجودة (بعد npx expo export --platform web)
-const distPath = path.join(__dirname, '..', 'dist');
+const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath, { maxAge: '1d' }));
   // أي مسار غير معروف → index.html (SPA routing)
