@@ -5,7 +5,8 @@ node_modules/
 
 # Expo
 .expo/
-dist/
+# dist/ — مرفوع لـ Railway لخدمة الويب
+!dist/
 web-build/
 
 # Native
