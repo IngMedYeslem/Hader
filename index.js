@@ -3,6 +3,10 @@
 
 import { registerRootComponent } from 'expo';
 import App from './App';
+import { registerServiceWorker, setupInstallPrompt } from './src/services/pwaService';
 
-// Enregistre App en tant que composant racine
+// تسجيل Service Worker للـ PWA على الويب
+registerServiceWorker();
+setupInstallPrompt();
+
 registerRootComponent(App);

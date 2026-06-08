@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Image, Text, Platform } from 'react-native';
+import { View, Text } from 'react-native';
 import { getMediaUrl } from '../services/api';
+import LazyImage from './LazyImage';
 
 const ProductThumbnail = ({ product, style }) => {
   const images = Array.isArray(product.images)
@@ -14,19 +15,11 @@ const ProductThumbnail = ({ product, style }) => {
   return (
     <View style={[{ overflow: 'hidden', backgroundColor: '#FFF0EB' }, style]}>
       {firstImage ? (
-        Platform.OS === 'web' ? (
-          <img
-            src={firstImage}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            alt={product.name}
-          />
-        ) : (
-          <Image
-            source={{ uri: firstImage }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
-        )
+        <LazyImage
+          source={{ uri: firstImage }}
+          style={{ width: '100%', height: '100%' }}
+          resizeMode="cover"
+        />
       ) : (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 32 }}>🛋️</Text>

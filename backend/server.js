@@ -89,16 +89,47 @@ app.use('/api/graphql', graphqlHTTP((req) => {
 const uploadRoutes = require('./routes/upload');
 app.use('/api', uploadRoutes);
 
-// Configuration des headers pour les fichiers statiques
+// ─── Cloudflare CDN — رؤوس Cache محسّنة للأفريقيا ──────────────────────────
 app.use('/uploads', (req, res, next) => {
-  // Headers pour les images
-  if (req.path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-    res.setHeader('Content-Type', req.path.endsWith('.jpg') || req.path.endsWith('.jpeg') ? 'image/jpeg' : 'image/png');
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+  // رؤوس مشتركة لجميع الملفات الثابتة
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Vary', 'Accept-Encoding');
+
+  if (req.path.match(/\.(jpg|jpeg|png|gif|webp|avif)$/i)) {
+    const isJpeg = /\.(jpg|jpeg)$/i.test(req.path);
+    const isPng  = /\.png$/i.test(req.path);
+    const isWebp = /\.webp$/i.test(req.path);
+
+    res.setHeader('Content-Type',
+      isJpeg ? 'image/jpeg' : isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/gif');
+
+    // Cloudflare يحفظ هذا في edge cache قريب من أفريقيا
+    // s-maxage للـ CDN، max-age للمتصفح
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800');
+    // ETag للتحقق السريع بدون إعادة تحميل
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  } else if (req.path.match(/\.(mp4|webm|ogg)$/i)) {
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  }
+
+  next();
+}, express.static('uploads', {
+  // etag وlastModified يتيحان للـ CDN التحقق من التحديثات بكفاءة
+  etag: true,
+  lastModified: true,
+  maxAge: '1d',
+}));
+
+// رؤوس الاستجابة للـ API — لمنع Cloudflare من تخزين البيانات الديناميكية
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') {
+    // بيانات API العامة: يخزّنها Cloudflare 5 دقائق فقط
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=60');
+  } else {
+    res.setHeader('Cache-Control', 'no-store');
   }
   next();
-}, express.static('uploads'));
+});
 
 
 

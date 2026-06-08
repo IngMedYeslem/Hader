@@ -1,64 +1,35 @@
 import { API_CONFIG } from '../config/api';
 import { apiClient } from './apiClient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { db, TTL as DB_TTL } from './dbService';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
-// ─── مدد الـ Cache ────────────────────────────────────────────────────────────
-// مدة طويلة تناسب الإنترنت البطيء في موريتانيا
-const CACHE_TTL         = 2  * 60 * 60 * 1000; // 2 ساعة  — المنتجات
-const SHOP_CACHE_TTL    = 30 * 60 * 1000;       // 30 دقيقة — منتجات المتجر
-const SHOPS_CACHE_TTL   = 60 * 60 * 1000;       // ساعة     — قائمة المتاجر
+// ─── مدد الـ Cache (SQLite) ───────────────────────────────────────────────────
+const CACHE_TTL      = DB_TTL.products; // 2 ساعة — المنتجات
+const SHOP_CACHE_TTL = DB_TTL.offers;   // 30 دقيقة — منتجات المتجر
+const SHOPS_CACHE_TTL = DB_TTL.shops;  // ساعة — قائمة المتاجر
 
 const KEYS = {
-  products:       'cache:products',
-  productsTs:     'cache:products:ts',
-  shops:          'cache:shops',
-  shopsTs:        'cache:shops:ts',
-  shopProducts:   (id, page) => `cache:shop:${id}:${page}`,
-  shopProductsTs: (id, page) => `cache:shop:${id}:${page}:ts`,
+  products:     'products',
+  shops:        'shops',
+  shopProducts: (id, page) => `shop:${id}:${page}`,
 };
 
-// ─── أدوات Cache عامة ─────────────────────────────────────────────────────────
-const storage = {
-  get: (key) =>
-    Platform.OS === 'web'
-      ? Promise.resolve(localStorage.getItem(key))
-      : AsyncStorage.getItem(key),
-
-  set: (key, value) =>
-    Platform.OS === 'web'
-      ? Promise.resolve(localStorage.setItem(key, value))
-      : AsyncStorage.setItem(key, value),
-
-  remove: (key) =>
-    Platform.OS === 'web'
-      ? Promise.resolve(localStorage.removeItem(key))
-      : AsyncStorage.removeItem(key),
-};
-
-/**
- * يقرأ من الـ cache.
- * يُرجع { data, isStale } حيث isStale=true إذا انتهت المدة لكن البيانات موجودة.
- */
-const readCache = async (dataKey, tsKey, ttl) => {
+// ─── أدوات Cache (SQLite / localStorage) ─────────────────────────────────────
+const readCache = async (key, ttl) => {
   try {
-    const [raw, ts] = await Promise.all([storage.get(dataKey), storage.get(tsKey)]);
-    if (!raw || !ts) return null;
-    const age = Date.now() - parseInt(ts);
-    return { data: JSON.parse(raw), isStale: age >= ttl };
+    const data = await db.get(key);
+    if (!data) return null;
+    // نُرجع دائماً البيانات مع علامة isStale=false لأن dbService يحذف المنتهية تلقائياً
+    return { data, isStale: false };
   } catch {
     return null;
   }
 };
 
-const writeCache = async (dataKey, tsKey, data) => {
+const writeCache = async (key, data, ttl) => {
   try {
-    await Promise.all([
-      storage.set(dataKey, JSON.stringify(data)),
-      storage.set(tsKey, Date.now().toString()),
-    ]);
+    await db.set(key, data, ttl);
   } catch (e) {
     console.warn('تعذّر حفظ الـ cache:', e.message);
   }
@@ -106,17 +77,11 @@ const mapProduct = (p, shop = null) => ({
 
 // ─── جلب المنتجات مع المتاجر (يُحلّ مشكلة N+1) ─────────────────────────────
 export const fetchProductsWithShops = async (forceRefresh = false) => {
-  // 1. قراءة الـ cache
+  // 1. قراءة الـ cache الحديث (SQLite بدل AsyncStorage)
   if (!forceRefresh) {
-    const cached = await readCache(KEYS.products, KEYS.productsTs, CACHE_TTL);
-    if (cached && !cached.isStale) {
+    const cached = await readCache(KEYS.products, CACHE_TTL);
+    if (cached) {
       console.log('📱 cache حديث — تحميل فوري بدون إنترنت');
-      return cached.data;
-    }
-    // بيانات منتهية المدة: نُرجعها فوراً ونحدّث في الخلفية
-    if (cached?.isStale) {
-      console.log('♻️ cache قديم — عرض البيانات + تحديث في الخلفية');
-      _refreshProductsBackground();
       return cached.data;
     }
   }
@@ -124,9 +89,10 @@ export const fetchProductsWithShops = async (forceRefresh = false) => {
   // 2. فحص الاتصال
   const online = await checkConnectivity();
   if (!online) {
+    // نجرّب النسخة الاحتياطية طويلة الأمد
     console.log('📵 لا اتصال — استخدام آخر cache متاح');
-    const stale = await readCache(KEYS.products, KEYS.productsTs, Infinity);
-    return stale?.data || [];
+    const backup = await db.get(KEYS.products + ':backup');
+    return backup || [];
   }
 
   return await _fetchAndCacheProducts();
@@ -143,18 +109,18 @@ const _refreshProductsBackground = async () => {
 };
 
 const _fetchAndCacheProducts = async () => {
-  // جلب المنتجات
   const products = await apiClient.get('/debug/products');
   const limited = products.slice(0, 100);
 
-  // جمع معرّفات المتاجر الفريدة — استعلام واحد بدل N استعلام
   const shopIds = [...new Set(limited.map(p => p.shopId).filter(Boolean))];
   const shopsMap = await _fetchShopsMap(shopIds);
 
   const result = limited.map(p => mapProduct(p, p.shopId ? shopsMap[p.shopId] : null));
 
-  await writeCache(KEYS.products, KEYS.productsTs, result);
-  console.log(`✅ ${result.length} منتج مخزّن في الـ cache`);
+  await writeCache(KEYS.products, result, CACHE_TTL);
+  // نسخة احتياطية طويلة الأمد للاستخدام offline (30 يوم)
+  await db.set(KEYS.products + ':backup', result, 30 * 24 * 60 * 60 * 1000);
+  console.log(`✅ ${result.length} منتج مخزّن في الـ cache (SQLite)`);
   return result;
 };
 
@@ -162,9 +128,8 @@ const _fetchAndCacheProducts = async () => {
 const _fetchShopsMap = async (shopIds) => {
   const map = {};
 
-  // أولاً: محاولة جلب كل المتاجر دفعة واحدة من الـ cache
-  const shopsCache = await readCache(KEYS.shops, KEYS.shopsTs, SHOPS_CACHE_TTL);
-  if (shopsCache && !shopsCache.isStale) {
+  const shopsCache = await readCache(KEYS.shops, SHOPS_CACHE_TTL);
+  if (shopsCache) {
     shopsCache.data.forEach(s => { map[s._id] = s; });
     if (shopIds.every(id => map[id])) {
       console.log('🏪 متاجر من cache');
@@ -184,9 +149,8 @@ const _fetchShopsMap = async (shopIds) => {
     }
   });
 
-  // تخزين المتاجر في cache منفصل
   if (allShops.length) {
-    await writeCache(KEYS.shops, KEYS.shopsTs, allShops);
+    await writeCache(KEYS.shops, allShops, SHOPS_CACHE_TTL);
   }
 
   return map;
@@ -195,10 +159,9 @@ const _fetchShopsMap = async (shopIds) => {
 // ─── منتجات متجر محدد ────────────────────────────────────────────────────────
 export const fetchProductsByShop = async (shopId, page = 1, limit = 20) => {
   const dataKey = KEYS.shopProducts(shopId, page);
-  const tsKey   = KEYS.shopProductsTs(shopId, page);
 
-  const cached = await readCache(dataKey, tsKey, SHOP_CACHE_TTL);
-  if (cached && !cached.isStale) return cached.data;
+  const cached = await readCache(dataKey, SHOP_CACHE_TTL);
+  if (cached) return cached.data;
 
   const online = await checkConnectivity();
   if (!online) return cached?.data || [];
@@ -215,7 +178,7 @@ export const fetchProductsByShop = async (shopId, page = 1, limit = 20) => {
     }
 
     const result = products.map(p => mapProduct(p));
-    await writeCache(dataKey, tsKey, result);
+    await writeCache(dataKey, result, SHOP_CACHE_TTL);
     return result;
   } catch (error) {
     console.error('fetchProductsByShop error:', error);
@@ -229,10 +192,8 @@ export const checkServerHealth = async () => checkConnectivity();
 // ─── مسح الـ cache ────────────────────────────────────────────────────────────
 export const clearProductsCache = async () => {
   await Promise.all([
-    storage.remove(KEYS.products),
-    storage.remove(KEYS.productsTs),
-    storage.remove(KEYS.shops),
-    storage.remove(KEYS.shopsTs),
+    db.remove(KEYS.products),
+    db.remove(KEYS.shops),
   ]);
   console.log('🗑️ cache المنتجات والمتاجر مُمسح');
 };

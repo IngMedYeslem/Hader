@@ -52,7 +52,22 @@ export default {
         useNextNotificationsApi: true
       },
       web: {
-        favicon: "./assets/adaptive-icon.png"
+        favicon: "./assets/adaptive-icon.png",
+        bundler: "metro",
+        // ─── PWA manifest ────────────────────────────────────────────────
+        name: "حاضر",
+        shortName: "Hader",
+        description: "تطبيق حاضر - تسوق من متاجر محلية قريبة منك",
+        lang: "ar",
+        dir: "rtl",
+        display: "standalone",
+        orientation: "portrait",
+        backgroundColor: "#ffffff",
+        themeColor: "#C8A55F",
+        startUrl: "/",
+        scope: "/",
+        // icons للتثبيت على الشاشة الرئيسية
+        preferRelatedApplications: false,
       },
       extra: {
         API_URL: process.env.API_URL || "http://172.20.10.8:3000", // Utilisation d'une variable d'environnement si elle est définie
