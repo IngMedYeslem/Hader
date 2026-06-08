@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, FlatList, ScrollView, TouchableOpacity, Image,
-  SafeAreaView, StatusBar, Animated, Dimensions, Modal, Alert, ActivityIndicator
+  SafeAreaView, StatusBar, Animated, Dimensions, Modal, ActivityIndicator
 } from 'react-native';
 import { fetchProductsByShop } from '../services/apiService';
 import { isShopOpen } from '../utils/shopSchedule';
@@ -27,6 +27,9 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
   const [quantity, setQuantity] = useState(1);
   const [showDifferentShopAlert, setShowDifferentShopAlert] = useState(false);
   const [pendingProduct, setPendingProduct] = useState(null);
+  const [infoAlert, setInfoAlert] = useState(null); // { title, message }
+
+  const showAlert = (title, message) => setInfoAlert({ title, message });
   const [deliveryTime, setDeliveryTime] = useState(null);
   const cartBarAnim = useRef(new Animated.Value(0)).current;
   const isRTL = currentLanguage === 'ar';
@@ -113,9 +116,9 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
 
   const handleAddToCart = useCallback((product) => {
     if (!shopOpen) {
-      Alert.alert(
-        isRTL ? 'المتجر مغلق حالياً' : 'Magasin fermé',
-        isRTL ? 'هذا المتجر خارج أوقات العمل' : 'Ce magasin est en dehors de ses horaires d\'ouverture'
+      showAlert(
+        isRTL ? '🔒 المتجر مغلق حالياً' : '🔒 Magasin fermé',
+        isRTL ? 'هذا المتجر خارج أوقات العمل. يرجى المحاولة لاحقاً.' : "Ce magasin est en dehors de ses horaires d'ouverture."
       );
       return;
     }
@@ -128,8 +131,8 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
     const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
     if (inCartQty + quantity > maxQty) {
-      Alert.alert(
-        isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
+      showAlert(
+        isRTL ? '⚠️ كمية غير كافية' : '⚠️ Stock insuffisant',
         isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
       );
       return;
@@ -137,7 +140,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
     addToCart(product, quantity, shop);
     setSelectedProduct(null);
     setQuantity(1);
-  }, [cartShop, shop, availableStock, cartItems, quantity, addToCart]);
+  }, [cartShop, shop, availableStock, cartItems, quantity, addToCart, shopOpen, isRTL]);
 
   const confirmClearAndAdd = () => {
     if (pendingProduct) {
@@ -168,6 +171,28 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
           </Text>
         </View>
       )}
+
+      {/* Info Alert — يعمل على الويب والموبايل */}
+      <Modal visible={!!infoAlert} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 10 }}>
+              {infoAlert?.title}
+            </Text>
+            <Text style={{ color: '#555', textAlign: 'center', lineHeight: 22, marginBottom: 20 }}>
+              {infoAlert?.message}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setInfoAlert(null)}
+              style={{ backgroundColor: '#FF6B35', padding: 14, borderRadius: 12, alignItems: 'center' }}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>
+                {isRTL ? 'حسناً' : 'OK'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Different Shop Alert */}
       <Modal visible={showDifferentShopAlert} transparent animationType="fade">
@@ -453,12 +478,19 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
                 cartItems={cartItems}
                 availableStock={availableStock}
                 onQuickAdd={() => {
+                  if (!shopOpen) {
+                    showAlert(
+                      isRTL ? '🔒 المتجر مغلق حالياً' : '🔒 Magasin fermé',
+                      isRTL ? 'هذا المتجر خارج أوقات العمل.' : "Ce magasin est en dehors de ses horaires d'ouverture."
+                    );
+                    return;
+                  }
                   const pid = item._id || item.id;
                   const maxQty = availableStock[pid] !== undefined ? availableStock[pid] : Infinity;
                   const inCartQty = cartItems.find(i => i._id === pid)?.quantity || 0;
                   if (inCartQty + 1 > maxQty) {
-                    Alert.alert(
-                      isRTL ? 'كمية غير كافية' : 'Stock insuffisant',
+                    showAlert(
+                      isRTL ? '⚠️ كمية غير كافية' : '⚠️ Stock insuffisant',
                       isRTL ? `الكمية المتاحة: ${maxQty}` : `Quantité disponible: ${maxQty}`
                     );
                     return;
