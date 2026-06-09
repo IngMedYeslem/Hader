@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Platform, Image, SafeAreaView, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from '../translations';
+import { QR_DATA_URL } from '../config/qrCode';
 
-const QR_URL = 'https://hader.up.railway.app/hader-qr.png';
 const APP_URL = 'https://hader.up.railway.app';
 
 function InstallModal({ visible, onClose, isRTL }) {
@@ -33,7 +33,7 @@ function InstallModal({ visible, onClose, isRTL }) {
             <View style={{ alignItems: 'center', marginBottom: 20 }}>
               <View style={{ padding: 12, backgroundColor: '#fff', borderRadius: 16, borderWidth: 2, borderColor: '#f0e6d3', elevation: 2, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 8 }}>
                 <Image
-                  source={{ uri: QR_URL }}
+                  source={{ uri: QR_DATA_URL }}
                   style={{ width: 180, height: 180 }}
                   resizeMode="contain"
                 />
