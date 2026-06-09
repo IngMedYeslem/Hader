@@ -1305,19 +1305,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    // padding أسفل يحسب safe-area على الهواتف ذات الشق
+    paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   shopInfoContainer: {
     backgroundColor: 'white',
-    margin: 20,
     padding: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    maxWidth: '90%',
-    width: 300,
+    shadowRadius: 8,
+    elevation: 8,
+    // عرض متجاوب: يناسب الهاتف والتابلت
+    width: '100%',
+    maxWidth: 480,
+    // الأهم: تحديد الارتفاع الأقصى حتى يعمل ScrollView
+    maxHeight: '90%',
+    // flex للسماح للـ ScrollView بالتمدد الصحيح
+    flexShrink: 1,
   },
   shopInfoTitle: {
     fontSize: 20,

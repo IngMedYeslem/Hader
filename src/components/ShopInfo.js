@@ -239,7 +239,7 @@ const ShopInfo = ({ shop, visible, onClose, allowEdit = false, onShopUpdated }) 
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.shopInfoOverlay}>
         <View style={styles.shopInfoContainer}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
             <Text style={styles.shopInfoTitle}>
               {isEditing ? t('editInfo') : updatedShop.name}
             </Text>
