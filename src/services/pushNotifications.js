@@ -27,8 +27,7 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Permission non accordée !");
-      return;
+      return null;
     }
     const token = (await Notifications.getExpoPushTokenAsync({
       projectId: 'f4c5d89a-8df8-42e8-85d1-19deee902f1a'
@@ -36,7 +35,7 @@ async function registerForPushNotificationsAsync() {
     console.log("Expo Push Token:", token);
     return token;
   } else {
-    alert("Doit être exécuté sur un appareil physique");
+    return null;
   }
 }
 
