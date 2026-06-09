@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, FlatList, ScrollView, TouchableOpacity, Image,
-  SafeAreaView, StatusBar, Animated, Dimensions, Modal, ActivityIndicator
+  SafeAreaView, StatusBar, Animated, Modal, ActivityIndicator,
+  Platform, useWindowDimensions,
 } from 'react-native';
 import { fetchProductsByShop } from '../services/apiService';
 import { isShopOpen } from '../utils/shopSchedule';
@@ -11,9 +12,14 @@ import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
 import MediaCarousel from './MediaCarousel';
 
-const { width } = Dimensions.get('window');
 
 export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
+  const { width: winW, height: winH } = useWindowDimensions();
+  // ارتفاع الغلاف متجاوب: 22% من ارتفاع الشاشة، بين 130 و 200 بكسل
+  const coverHeight = Math.max(130, Math.min(200, winH * 0.22));
+  // padding أسفل القائمة: يحسب شريط المتصفح على الويب
+  const listBottomPad = Platform.OS === 'web' ? 160 : 120;
+
   const { addToCart, cartItems, getTotalItems, getTotalAmount, cartShop } = useCart();
   const { t, currentLanguage } = useTranslation();
   const [products, setProducts] = useState([]);
@@ -329,7 +335,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
       {/* Shop Header - ثابت */}
       <View>
         {/* Cover */}
-        <View style={{ height: 200, backgroundColor: '#FF6B35' }}>
+        <View style={{ height: coverHeight, backgroundColor: '#FF6B35' }}>
             {mainImageUri ? (
               <Image source={{ uri: mainImageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
             ) : (
@@ -449,7 +455,7 @@ export default function RestaurantScreen({ shop, onBack, onOpenCart }) {
           data={flatListData}
           keyExtractor={item => item.key}
           style={{ flex: 1 }}
-          contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: listBottomPad }}
           showsVerticalScrollIndicator={false}
           onEndReached={loadMore}
           onEndReachedThreshold={0.4}

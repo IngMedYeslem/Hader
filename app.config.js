@@ -66,8 +66,11 @@ export default {
         themeColor: "#C8A55F",
         startUrl: "/",
         scope: "/",
-        // icons للتثبيت على الشاشة الرئيسية
         preferRelatedApplications: false,
+        // viewport-fit=cover يسمح للمحتوى بملء الشاشة كاملة مع safe-area
+        meta: {
+          viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+        },
       },
       extra: {
         API_URL: process.env.API_URL || "http://172.20.10.8:3000", // Utilisation d'une variable d'environnement si elle est définie
