@@ -1,9 +1,9 @@
 // Service Worker — Hader PWA
 // يخزن الأصول الثابتة ويسمح للتطبيق بالعمل بدون إنترنت
 
-const CACHE_NAME = 'hader-v1';
-const STATIC_CACHE = 'hader-static-v1';
-const API_CACHE = 'hader-api-v1';
+const CACHE_NAME = 'hader-v3';
+const STATIC_CACHE = 'hader-static-v3';
+const API_CACHE = 'hader-api-v3';
 
 // ملفات يتم تخزينها عند التثبيت
 const PRECACHE_URLS = [
