@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>حاضر — حمّل التطبيق</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #FF6B35 0%, #C8A55F 100%);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 36px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .logo {
+      font-size: 52px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #FF6B35;
+      margin-bottom: 4px;
+    }
+    .tagline {
+      color: #888;
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    .qr-wrap {
+      background: #f9f9f9;
+      border-radius: 20px;
+      padding: 18px;
+      display: inline-block;
+      margin-bottom: 24px;
+      border: 2px solid #f0e6d3;
+    }
+    .qr-wrap img {
+      width: 200px;
+      height: 200px;
+      display: block;
+    }
+    .scan-hint {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 24px;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .divider hr { flex: 1; border: none; border-top: 1px solid #eee; }
+    .divider span { color: #ccc; font-size: 13px; }
+    .install-btn {
+      display: block;
+      background: linear-gradient(135deg, #FF6B35, #e55a25);
+      color: white;
+      text-decoration: none;
+      padding: 16px 24px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 4px 16px rgba(255,107,53,0.4);
+    }
+    .install-btn:active { transform: scale(0.98); }
+    .install-steps {
+      background: #fff8f5;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 20px;
+      text-align: right;
+    }
+    .install-steps h3 {
+      font-size: 14px;
+      color: #FF6B35;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #555;
+      flex-direction: row-reverse;
+    }
+    .step-num {
+      background: #FF6B35;
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 16px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🛍️</div>
+    <h1>حاضر</h1>
+    <p class="tagline">تسوق من متاجر محلية قريبة منك</p>
+
+    <div class="qr-wrap">
+      <img src="/hader-qr.png" alt="QR Code حاضر" />
+    </div>
+    <p class="scan-hint">📷 امسح الـ QR بكاميرا هاتفك</p>
+
+    <div class="divider">
+      <hr /><span>أو</span><hr />
+    </div>
+
+    <a href="https://hader.up.railway.app" class="install-btn">
+      🚀 افتح التطبيق مباشرة
+    </a>
+
+    <div class="install-steps">
+      <h3>📲 كيف تثبّت التطبيق على هاتفك؟</h3>
+      <div class="step">
+        <span>امسح الـ QR أو انقر الزر أعلاه</span>
+        <div class="step-num">1</div>
+      </div>
+      <div class="step">
+        <span><strong>iPhone:</strong> انقر مشاركة ← "أضف إلى الشاشة الرئيسية"</span>
+        <div class="step-num">2</div>
+      </div>
+      <div class="step">
+        <span><strong>Android:</strong> انقر القائمة ← "تثبيت التطبيق"</span>
+        <div class="step-num">2</div>
+      </div>
+      <div class="step">
+        <span>ستجد أيقونة حاضر على شاشتك — جاهز!</span>
+        <div class="step-num">3</div>
+      </div>
+    </div>
+
+    <span class="badge">✅ بدون تحميل من المتجر — مجاناً</span>
+  </div>
+</body>
+</html>
