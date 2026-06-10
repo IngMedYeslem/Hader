@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { API_URL } from '../config/api';
@@ -38,7 +38,33 @@ export default function CreateShop({ onBack, onShopCreated }) {
   });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
   const isRTL = currentLanguage === 'ar';
+
+  const handleGetLocation = () => {
+    if (!navigator?.geolocation && Platform.OS !== 'web') {
+      alert('الموقع الجغرافي غير متاح على هذا الجهاز');
+      return;
+    }
+    setLocating(true);
+    const geo = Platform.OS === 'web' ? navigator.geolocation : navigator?.geolocation;
+    if (!geo) { setLocating(false); return; }
+    geo.getCurrentPosition(
+      (pos) => {
+        setFormData(prev => ({
+          ...prev,
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
+        }));
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        alert(isRTL ? 'تعذّر تحديد الموقع. تأكد من السماح بالوصول للموقع.' : 'Impossible de localiser. Vérifiez les permissions de localisation.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handleCreateShop = async () => {
     // Validation - tous les champs sont obligatoires
@@ -242,6 +268,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
                       backgroundColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.08)',
                       borderWidth: 1,
                       borderColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.2)',
+                      cursor: 'pointer',
                     }}
                   >
                     <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
@@ -253,23 +280,29 @@ export default function CreateShop({ onBack, onShopCreated }) {
               })}
             </View>
 
-            <TextInput
-              style={styles.addProductInput}
-              placeholder="Latitude (ex: 5.3364) *"
-              placeholderTextColor="#999"
-              value={formData.latitude}
-              onChangeText={(text) => setFormData(prev => ({...prev, latitude: text}))}
-              keyboardType="numeric"
-            />
-
-            <TextInput
-              style={styles.addProductInput}
-              placeholder="Longitude (ex: -4.0267) *"
-              placeholderTextColor="#999"
-              value={formData.longitude}
-              onChangeText={(text) => setFormData(prev => ({...prev, longitude: text}))}
-              keyboardType="numeric"
-            />
+            {/* الموقع الجغرافي */}
+            <TouchableOpacity
+              onPress={handleGetLocation}
+              disabled={locating}
+              style={{
+                backgroundColor: formData.latitude ? '#e8f5e9' : '#FF6B35',
+                borderRadius: 10, padding: 14, alignItems: 'center',
+                marginBottom: 8, flexDirection: 'row', justifyContent: 'center', gap: 8,
+              }}
+            >
+              {locating
+                ? <ActivityIndicator color="white" size="small" />
+                : <Text style={{ fontSize: 18 }}>📍</Text>
+              }
+              <Text style={{ color: formData.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 14 }}>
+                {locating
+                  ? (isRTL ? 'جاري تحديد الموقع...' : 'Localisation en cours...')
+                  : formData.latitude
+                    ? (isRTL ? `✓ تم تحديد الموقع (${formData.latitude}, ${formData.longitude})` : `✓ Localisé (${formData.latitude}, ${formData.longitude})`)
+                    : (isRTL ? 'حدد موقع متجرك تلقائياً' : 'Localiser ma boutique')
+                }
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.submitBtn, { opacity: loading ? 0.7 : 1 }]}
