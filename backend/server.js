@@ -1099,9 +1099,20 @@ app.delete('/api/products/:productId', async (req, res) => {
 // يخدم ملفات dist/ إذا كانت موجودة (بعد npx expo export --platform web)
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath, { maxAge: '1d' }));
-  // أي مسار غير معروف → index.html (SPA routing)
+  // index.html و sw.js بدون كاش — دائماً نسخة جديدة
+  app.get(['/index.html', '/sw.js', '/'], (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    if (req.path === '/sw.js') {
+      res.sendFile(path.join(distPath, 'sw.js'));
+    } else {
+      res.sendFile(path.join(distPath, 'index.html'));
+    }
+  });
+  // الملفات الثابتة (JS/CSS/assets) مع كاش طويل
+  app.use(express.static(distPath, { maxAge: '7d' }));
+  // SPA routing
   app.get('*', (req, res) => {
+    res.set('Cache-Control', 'no-store');
     res.sendFile(path.join(distPath, 'index.html'));
   });
   console.log('🌐 Web app served from dist/');
