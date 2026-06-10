@@ -39,16 +39,13 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [showManualCoords, setShowManualCoords] = useState(false);
   const isRTL = currentLanguage === 'ar';
 
   const handleGetLocation = () => {
-    if (!navigator?.geolocation && Platform.OS !== 'web') {
-      alert('الموقع الجغرافي غير متاح على هذا الجهاز');
-      return;
-    }
+    const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
+    if (!geo) { setShowManualCoords(true); return; }
     setLocating(true);
-    const geo = Platform.OS === 'web' ? navigator.geolocation : navigator?.geolocation;
-    if (!geo) { setLocating(false); return; }
     geo.getCurrentPosition(
       (pos) => {
         setFormData(prev => ({
@@ -57,10 +54,11 @@ export default function CreateShop({ onBack, onShopCreated }) {
           longitude: pos.coords.longitude.toFixed(6),
         }));
         setLocating(false);
+        setShowManualCoords(false);
       },
-      (err) => {
+      () => {
         setLocating(false);
-        alert(isRTL ? 'تعذّر تحديد الموقع. تأكد من السماح بالوصول للموقع.' : 'Impossible de localiser. Vérifiez les permissions de localisation.');
+        setShowManualCoords(true);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -281,28 +279,70 @@ export default function CreateShop({ onBack, onShopCreated }) {
             </View>
 
             {/* الموقع الجغرافي */}
+            <Text style={{ color: '#777', fontSize: 13, marginBottom: 6, marginTop: 4 }}>
+              📍 {isRTL ? 'الموقع الجغرافي' : 'Localisation'} *
+            </Text>
+
             <TouchableOpacity
               onPress={handleGetLocation}
               disabled={locating}
               style={{
                 backgroundColor: formData.latitude ? '#e8f5e9' : '#FF6B35',
-                borderRadius: 10, padding: 14, alignItems: 'center',
+                borderRadius: 10, padding: 12, alignItems: 'center',
                 marginBottom: 8, flexDirection: 'row', justifyContent: 'center', gap: 8,
               }}
             >
               {locating
                 ? <ActivityIndicator color="white" size="small" />
-                : <Text style={{ fontSize: 18 }}>📍</Text>
+                : <Text style={{ fontSize: 16 }}>📍</Text>
               }
-              <Text style={{ color: formData.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 14 }}>
+              <Text style={{ color: formData.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 13 }}>
                 {locating
                   ? (isRTL ? 'جاري تحديد الموقع...' : 'Localisation en cours...')
                   : formData.latitude
-                    ? (isRTL ? `✓ تم تحديد الموقع (${formData.latitude}, ${formData.longitude})` : `✓ Localisé (${formData.latitude}, ${formData.longitude})`)
-                    : (isRTL ? 'حدد موقع متجرك تلقائياً' : 'Localiser ma boutique')
+                    ? `✓ ${formData.latitude}, ${formData.longitude}`
+                    : (isRTL ? 'حدد موقعي تلقائياً' : 'Localiser automatiquement')
                 }
               </Text>
             </TouchableOpacity>
+
+            {/* إدخال يدوي عند فشل GPS */}
+            {(showManualCoords || formData.latitude) && (
+              <View style={{ backgroundColor: '#fff8f5', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                <Text style={{ fontSize: 12, color: '#FF6B35', fontWeight: '700', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                  {isRTL ? '✏️ أدخل الإحداثيات يدوياً' : '✏️ Saisie manuelle des coordonnées'}
+                </Text>
+                <Text style={{ fontSize: 11, color: '#888', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                  {isRTL
+                    ? 'افتح Google Maps → اضغط على موقع متجرك → انسخ الأرقام من الأسفل'
+                    : 'Ouvre Google Maps → appuie sur ton emplacement → copie les coordonnées'}
+                </Text>
+                <TextInput
+                  style={[styles.addProductInput, { marginBottom: 6 }]}
+                  placeholder={isRTL ? 'خط العرض (مثال: 18.0735)' : 'Latitude (ex: 18.0735)'}
+                  placeholderTextColor="#bbb"
+                  value={formData.latitude}
+                  onChangeText={(t) => setFormData(prev => ({ ...prev, latitude: t }))}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  style={styles.addProductInput}
+                  placeholder={isRTL ? 'خط الطول (مثال: -15.9582)' : 'Longitude (ex: -15.9582)'}
+                  placeholderTextColor="#bbb"
+                  value={formData.longitude}
+                  onChangeText={(t) => setFormData(prev => ({ ...prev, longitude: t }))}
+                  keyboardType="numeric"
+                />
+              </View>
+            )}
+
+            {!formData.latitude && !showManualCoords && (
+              <TouchableOpacity onPress={() => setShowManualCoords(true)}>
+                <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center', marginBottom: 8, textDecorationLine: 'underline' }}>
+                  {isRTL ? 'إدخال يدوي بدلاً من ذلك' : 'Saisie manuelle à la place'}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={[styles.submitBtn, { opacity: loading ? 0.7 : 1 }]}
