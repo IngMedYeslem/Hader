@@ -328,7 +328,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 placeholderTextColor="#bbb"
                 value={formData.latitude}
                 onChangeText={(t) => setFormData(prev => ({ ...prev, latitude: t }))}
-                keyboardType="numeric"
+                keyboardType="default"
+                autoCorrect={false}
+                autoCapitalize="none"
               />
               <TextInput
                 style={styles.addProductInput}
@@ -336,7 +338,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 placeholderTextColor="#bbb"
                 value={formData.longitude}
                 onChangeText={(t) => setFormData(prev => ({ ...prev, longitude: t }))}
-                keyboardType="numeric"
+                keyboardType="default"
+                autoCorrect={false}
+                autoCapitalize="none"
               />
             </View>
 
