@@ -176,9 +176,12 @@ export default function CreateShop({ onBack, onShopCreated }) {
           <LanguageSwitcher style={{ backgroundColor: 'rgba(255,107,53,0.15)' }} />
         </View>
 
-        <View style={styles.centeredContainer}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
-          <View style={styles.card}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, paddingTop: 8 }}
+        >
+          <View style={[styles.card, { width: undefined, maxWidth: undefined, alignSelf: 'stretch' }]}>
             <Text style={[styles.authTitle, { fontSize: 24, marginBottom: 30 }]}>
               {t('createShop')}
             </Text>
@@ -363,8 +366,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
               </Text>
             </View>
           </View>
-          </ScrollView>
-        </View>
+        </ScrollView>
     </View>
   );
 }

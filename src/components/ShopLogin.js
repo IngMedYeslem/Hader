@@ -302,10 +302,9 @@ const SHOP_CATEGORIES = [
             transform: [{ translateY: slideAnim }],
             opacity: fadeAnim,
             backgroundColor: 'white',
-            borderRadius: 20, padding: 20,
+            borderRadius: 20, padding: 18,
             shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.15, shadowRadius: 16, elevation: 10,
-            width: '100%',
           }}>
 
             <Text style={{ color: '#FF6B35', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
