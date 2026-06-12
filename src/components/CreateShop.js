@@ -39,7 +39,6 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [showManualCoords, setShowManualCoords] = useState(false);
   const isRTL = currentLanguage === 'ar';
 
   const handleGetLocation = () => {
@@ -54,11 +53,9 @@ export default function CreateShop({ onBack, onShopCreated }) {
           longitude: pos.coords.longitude.toFixed(6),
         }));
         setLocating(false);
-        setShowManualCoords(false);
       },
       () => {
         setLocating(false);
-        setShowManualCoords(true);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -283,66 +280,65 @@ export default function CreateShop({ onBack, onShopCreated }) {
               📍 {isRTL ? 'الموقع الجغرافي' : 'Localisation'} *
             </Text>
 
+            {/* زر GPS */}
             <TouchableOpacity
               onPress={handleGetLocation}
               disabled={locating}
               style={{
-                backgroundColor: formData.latitude ? '#e8f5e9' : '#FF6B35',
-                borderRadius: 10, padding: 12, alignItems: 'center',
-                marginBottom: 8, flexDirection: 'row', justifyContent: 'center', gap: 8,
+                backgroundColor: formData.latitude ? '#e8f5e9' : 'rgba(255,107,53,0.1)',
+                borderRadius: 10, padding: 11, alignItems: 'center',
+                marginBottom: 10, flexDirection: 'row', justifyContent: 'center', gap: 8,
+                borderWidth: 1, borderColor: formData.latitude ? '#a5d6a7' : '#FF6B35',
               }}
             >
               {locating
-                ? <ActivityIndicator color="white" size="small" />
-                : <Text style={{ fontSize: 16 }}>📍</Text>
+                ? <ActivityIndicator color="#FF6B35" size="small" />
+                : <Text style={{ fontSize: 15 }}>📍</Text>
               }
-              <Text style={{ color: formData.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 13 }}>
+              <Text style={{ color: formData.latitude ? '#2e7d32' : '#FF6B35', fontWeight: '700', fontSize: 12 }}>
                 {locating
                   ? (isRTL ? 'جاري تحديد الموقع...' : 'Localisation en cours...')
                   : formData.latitude
-                    ? `✓ ${formData.latitude}, ${formData.longitude}`
-                    : (isRTL ? 'حدد موقعي تلقائياً' : 'Localiser automatiquement')
+                    ? `✓ GPS: ${formData.latitude}, ${formData.longitude}`
+                    : (isRTL ? 'تحديد موقعي تلقائياً عبر GPS' : 'Localiser via GPS automatiquement')
                 }
               </Text>
             </TouchableOpacity>
 
-            {/* إدخال يدوي عند فشل GPS */}
-            {(showManualCoords || formData.latitude) && (
-              <View style={{ backgroundColor: '#fff8f5', borderRadius: 10, padding: 12, marginBottom: 8 }}>
-                <Text style={{ fontSize: 12, color: '#FF6B35', fontWeight: '700', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
-                  {isRTL ? '✏️ أدخل الإحداثيات يدوياً' : '✏️ Saisie manuelle des coordonnées'}
-                </Text>
-                <Text style={{ fontSize: 11, color: '#888', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+            {/* إدخال يدوي — دائماً ظاهر */}
+            <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+              <Text style={{ fontSize: 12, color: '#555', fontWeight: '600', marginBottom: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? '🗺️ أو أدخل الإحداثيات يدوياً:' : '🗺️ Ou saisir manuellement :'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  if (Platform.OS === 'web') window.open('https://maps.google.com', '_blank');
+                }}
+                style={{ marginBottom: 8 }}
+              >
+                <Text style={{ fontSize: 11, color: '#1565C0', textDecorationLine: 'underline', textAlign: isRTL ? 'right' : 'left' }}>
                   {isRTL
-                    ? 'افتح Google Maps → اضغط على موقع متجرك → انسخ الأرقام من الأسفل'
-                    : 'Ouvre Google Maps → appuie sur ton emplacement → copie les coordonnées'}
-                </Text>
-                <TextInput
-                  style={[styles.addProductInput, { marginBottom: 6 }]}
-                  placeholder={isRTL ? 'خط العرض (مثال: 18.0735)' : 'Latitude (ex: 18.0735)'}
-                  placeholderTextColor="#bbb"
-                  value={formData.latitude}
-                  onChangeText={(t) => setFormData(prev => ({ ...prev, latitude: t }))}
-                  keyboardType="numeric"
-                />
-                <TextInput
-                  style={styles.addProductInput}
-                  placeholder={isRTL ? 'خط الطول (مثال: -15.9582)' : 'Longitude (ex: -15.9582)'}
-                  placeholderTextColor="#bbb"
-                  value={formData.longitude}
-                  onChangeText={(t) => setFormData(prev => ({ ...prev, longitude: t }))}
-                  keyboardType="numeric"
-                />
-              </View>
-            )}
-
-            {!formData.latitude && !showManualCoords && (
-              <TouchableOpacity onPress={() => setShowManualCoords(true)}>
-                <Text style={{ color: '#aaa', fontSize: 12, textAlign: 'center', marginBottom: 8, textDecorationLine: 'underline' }}>
-                  {isRTL ? 'إدخال يدوي بدلاً من ذلك' : 'Saisie manuelle à la place'}
+                    ? '→ افتح Google Maps ← اضغط على موقعك ← انسخ الرقمين من الأسفل'
+                    : '→ Google Maps ← appuie sur ta position ← copie les 2 chiffres en bas'}
                 </Text>
               </TouchableOpacity>
-            )}
+              <TextInput
+                style={[styles.addProductInput, { marginBottom: 6 }]}
+                placeholder={isRTL ? 'خط العرض — مثال: 18.0735' : 'Latitude — ex: 18.0735'}
+                placeholderTextColor="#bbb"
+                value={formData.latitude}
+                onChangeText={(t) => setFormData(prev => ({ ...prev, latitude: t }))}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.addProductInput}
+                placeholder={isRTL ? 'خط الطول — مثال: -15.9582' : 'Longitude — ex: -15.9582'}
+                placeholderTextColor="#bbb"
+                value={formData.longitude}
+                onChangeText={(t) => setFormData(prev => ({ ...prev, longitude: t }))}
+                keyboardType="numeric"
+              />
+            </View>
 
             <TouchableOpacity
               style={[styles.submitBtn, { opacity: loading ? 0.7 : 1 }]}
