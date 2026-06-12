@@ -19,6 +19,7 @@ import ShopDashboard from './src/components/ShopDashboard';
 import AdminInterface from './src/components/AdminInterface';
 import styles from './src/components/styles';
 import pushNotificationService from './src/services/pushNotifications';
+import InstallBanner from './src/components/InstallBanner';
 
 const clearCache = async () => {
   try {
@@ -230,7 +231,10 @@ export default function App() {
     <ApolloProvider client={client}>
       <NavigationProvider>
         <CartProvider>
-          <AppContent />
+          <View style={{ flex: 1 }}>
+            <AppContent />
+            <InstallBanner />
+          </View>
         </CartProvider>
       </NavigationProvider>
     </ApolloProvider>
