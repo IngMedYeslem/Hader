@@ -249,7 +249,7 @@ const SHOP_CATEGORIES = [
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white', minHeight: screenHeight }}>
+    <View style={{ flex: 1, backgroundColor: 'white', minHeight: screenHeight, overflow: 'hidden' }}>
       {/* طبقة علوية */}
       <View style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
