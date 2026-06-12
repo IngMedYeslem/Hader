@@ -279,7 +279,7 @@ const SHOP_CATEGORIES = [
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: isRegister ? 'flex-start' : 'center',
-            paddingHorizontal: 24,
+            paddingHorizontal: 16,
             paddingVertical: 40,
           }}
           showsVerticalScrollIndicator={false}
@@ -302,9 +302,10 @@ const SHOP_CATEGORIES = [
             transform: [{ translateY: slideAnim }],
             opacity: fadeAnim,
             backgroundColor: 'white',
-            borderRadius: 20, padding: 24,
+            borderRadius: 20, padding: 20,
             shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.15, shadowRadius: 16, elevation: 10,
+            width: '100%',
           }}>
 
             <Text style={{ color: '#FF6B35', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
@@ -353,20 +354,21 @@ const SHOP_CATEGORIES = [
 
                   {/* الصنف */}
                   <Text style={{ color: '#333', fontSize: 11, fontWeight: 'bold', marginBottom: 8, marginTop: 4, opacity: 0.6 }}>🏷️ صنف المتجر *</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
                     {SHOP_CATEGORIES.map(cat => (
                       <TouchableOpacity
                         key={cat.id}
                         onPress={() => setCategory(cat.id)}
                         style={{
                           flexDirection: 'row', alignItems: 'center',
-                          paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
+                          paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
                           backgroundColor: category === cat.id ? '#FF6B35' : 'transparent',
                           borderWidth: 1, borderColor: '#FF6B35',
+                          marginRight: 6, marginBottom: 6,
                         }}
                       >
-                        <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: category === cat.id ? 'white' : '#FF6B35' }}>
+                        <Text style={{ fontSize: 13, marginRight: 3 }}>{cat.icon}</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: category === cat.id ? 'white' : '#FF6B35' }}>
                           {cat.label}
                         </Text>
                       </TouchableOpacity>

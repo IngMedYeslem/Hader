@@ -250,7 +250,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
             <Text style={{ color: '#777', fontSize: 13, marginBottom: 6, marginTop: 4 }}>
               {t('category')} *
             </Text>
-            <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
               {SHOP_CATEGORIES.map(cat => {
                 const selected = selectedCategory === cat.id;
                 return (
@@ -259,15 +259,15 @@ export default function CreateShop({ onBack, onShopCreated }) {
                     onPress={() => setSelectedCategory(cat.id)}
                     style={{
                       flexDirection: 'row', alignItems: 'center',
-                      paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+                      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
                       backgroundColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.08)',
                       borderWidth: 1,
                       borderColor: selected ? '#FF6B35' : 'rgba(255,107,53,0.2)',
-                      cursor: 'pointer',
+                      marginRight: 6, marginBottom: 6,
                     }}
                   >
-                    <Text style={{ fontSize: 14, marginRight: 4 }}>{cat.icon}</Text>
-                    <Text style={{ fontSize: 12, color: selected ? 'white' : '#FF6B35', fontWeight: '600' }}>
+                    <Text style={{ fontSize: 13, marginRight: 3 }}>{cat.icon}</Text>
+                    <Text style={{ fontSize: 11, color: selected ? 'white' : '#FF6B35', fontWeight: '600' }}>
                       {cat.label}
                     </Text>
                   </TouchableOpacity>
