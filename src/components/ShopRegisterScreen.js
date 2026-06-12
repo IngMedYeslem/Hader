@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, Animated, KeyboardAvoidingView } from 'react-native';
-import * as Location from 'expo-location';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
 import { useTranslation } from '../translations';
@@ -188,23 +187,20 @@ export default function ShopRegisterScreen({ navigation }) {
                 {currentStep === 3 && (
                   <TouchableOpacity 
                     style={[styles.submitBtn, { backgroundColor: '#FF6B35', marginBottom: 10 }]} 
-                    onPress={async () => {
-                      try {
-                        const { status } = await Location.requestForegroundPermissionsAsync();
-                        if (status !== 'granted') {
-                          Platform.OS === 'web' ? alert('Permission de localisation requise') : Alert.alert('Permission refusée', 'Permission de localisation requise');
-                          return;
-                        }
-                        const location = await Location.getCurrentPositionAsync({});
-                        setFormData({
-                          ...formData,
-                          latitude: location.coords.latitude.toString(),
-                          longitude: location.coords.longitude.toString()
-                        });
-                        Platform.OS === 'web' ? alert('Localisation obtenue automatiquement') : Alert.alert('Succès', 'Localisation obtenue automatiquement');
-                      } catch (error) {
-                        Platform.OS === 'web' ? alert('Impossible d\'obtenir la localisation') : Alert.alert('Erreur', 'Impossible d\'obtenir la localisation');
-                      }
+                    onPress={() => {
+                      const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
+                      if (!geo) return;
+                      geo.getCurrentPosition(
+                        (pos) => {
+                          setFormData({
+                            ...formData,
+                            latitude: pos.coords.latitude.toString(),
+                            longitude: pos.coords.longitude.toString(),
+                          });
+                        },
+                        () => {},
+                        { enableHighAccuracy: true, timeout: 10000 }
+                      );
                     }}
                   >
                     <Text style={[styles.submitText, { fontSize: 14, color: '#333' }]}>📍 Obtenir ma localisation</Text>

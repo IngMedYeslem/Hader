@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Location from 'expo-location';
 import SimpleNavbar from './SimpleNavbar';
 import SimplePasswordInput from './SimplePasswordInput';
 import styles from './styles';
@@ -61,26 +60,21 @@ const SHOP_CATEGORIES = [
     ]).start();
   }, []);
 
-  const getCurrentLocation = async () => {
+  const getCurrentLocation = () => {
     setLoadingLocation(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Platform.OS === 'web' ? alert('Permission de localisation requise') : Alert.alert('Permission refusée', 'Permission de localisation requise');
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: location.coords.latitude.toString(),
-        longitude: location.coords.longitude.toString()
-      });
-      Platform.OS === 'web' ? alert('Localisation obtenue automatiquement') : Alert.alert('Succès', 'Localisation obtenue automatiquement');
-    } catch (error) {
-      Platform.OS === 'web' ? alert('Impossible d\'obtenir la localisation') : Alert.alert('Erreur', 'Impossible d\'obtenir la localisation');
-    } finally {
-      setLoadingLocation(false);
-    }
+    const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
+    if (!geo) { setLoadingLocation(false); return; }
+    geo.getCurrentPosition(
+      (pos) => {
+        setLocation({
+          latitude: pos.coords.latitude.toString(),
+          longitude: pos.coords.longitude.toString(),
+        });
+        setLoadingLocation(false);
+      },
+      () => { setLoadingLocation(false); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const syncLocalData = async () => {
