@@ -46,23 +46,38 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const handleGetLocation = async () => {
     setGpsError(null);
     setLocating(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setGpsError('denied');
-        setLocating(false);
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      setFormData(prev => ({
-        ...prev,
-        latitude: loc.coords.latitude.toFixed(6),
-        longitude: loc.coords.longitude.toFixed(6),
-      }));
-    } catch {
-      setGpsError('failed');
-    } finally {
-      setLocating(false);
+
+    if (Platform.OS !== 'web') {
+      // Native iOS/Android — expo-location
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') { setGpsError('denied'); setLocating(false); return; }
+        const loc = await Location.getCurrentPositionAsync({});
+        setFormData(prev => ({
+          ...prev,
+          latitude: loc.coords.latitude.toFixed(6),
+          longitude: loc.coords.longitude.toFixed(6),
+        }));
+      } catch { setGpsError('failed'); }
+      finally { setLocating(false); }
+    } else {
+      // PWA / Safari — navigator.geolocation directement
+      if (!navigator?.geolocation) { setLocating(false); setGpsError('unsupported'); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setFormData(prev => ({
+            ...prev,
+            latitude: pos.coords.latitude.toFixed(6),
+            longitude: pos.coords.longitude.toFixed(6),
+          }));
+          setLocating(false);
+        },
+        (err) => {
+          setLocating(false);
+          setGpsError(err.code === 1 ? 'denied' : 'failed');
+        },
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+      );
     }
   };
 

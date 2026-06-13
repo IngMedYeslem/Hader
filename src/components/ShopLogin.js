@@ -65,22 +65,36 @@ const SHOP_CATEGORIES = [
   const getCurrentLocation = async () => {
     setGpsError(null);
     setLoadingLocation(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setGpsError('denied');
-        setLoadingLocation(false);
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: loc.coords.latitude.toFixed(6),
-        longitude: loc.coords.longitude.toFixed(6),
-      });
-    } catch {
-      setGpsError('failed');
-    } finally {
-      setLoadingLocation(false);
+
+    if (Platform.OS !== 'web') {
+      // Native iOS/Android — expo-location
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') { setGpsError('denied'); setLoadingLocation(false); return; }
+        const loc = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: loc.coords.latitude.toFixed(6),
+          longitude: loc.coords.longitude.toFixed(6),
+        });
+      } catch { setGpsError('failed'); }
+      finally { setLoadingLocation(false); }
+    } else {
+      // PWA / Safari — navigator.geolocation directement
+      if (!navigator?.geolocation) { setLoadingLocation(false); setGpsError('unsupported'); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLocation({
+            latitude: pos.coords.latitude.toFixed(6),
+            longitude: pos.coords.longitude.toFixed(6),
+          });
+          setLoadingLocation(false);
+        },
+        (err) => {
+          setLoadingLocation(false);
+          setGpsError(err.code === 1 ? 'denied' : 'failed');
+        },
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+      );
     }
   };
 
