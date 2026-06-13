@@ -39,11 +39,13 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [gpsError, setGpsError] = useState(null);
   const isRTL = currentLanguage === 'ar';
 
   const handleGetLocation = () => {
+    setGpsError(null);
     const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
-    if (!geo) { setShowManualCoords(true); return; }
+    if (!geo) { setGpsError('unsupported'); return; }
     setLocating(true);
     geo.getCurrentPosition(
       (pos) => {
@@ -53,11 +55,13 @@ export default function CreateShop({ onBack, onShopCreated }) {
           longitude: pos.coords.longitude.toFixed(6),
         }));
         setLocating(false);
+        setGpsError(null);
       },
-      () => {
+      (err) => {
         setLocating(false);
+        setGpsError(err.code === 1 ? 'denied' : 'failed');
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -307,6 +311,21 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 }
               </Text>
             </TouchableOpacity>
+
+            {/* رسائل خطأ GPS */}
+            {gpsError === 'denied' && (
+              <View style={{ backgroundColor: '#fff3cd', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#ffc107' }}>
+                <Text style={{ color: '#856404', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>🔒 الموقع محجوب</Text>
+                <Text style={{ color: '#856404', fontSize: 12, lineHeight: 18 }}>
+                  {'الإعدادات ← الخصوصية ← خدمات الموقع ← Safari ← اسمح'}
+                </Text>
+              </View>
+            )}
+            {gpsError === 'failed' && (
+              <Text style={{ color: '#e74c3c', fontSize: 11, textAlign: 'center', marginBottom: 8 }}>
+                ⚠️ تعذّر تحديد الموقع — اضغط الزر مجدداً
+              </Text>
+            )}
 
             {/* إدخال يدوي — دائماً ظاهر */}
             <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginBottom: 8 }}>

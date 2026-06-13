@@ -62,10 +62,10 @@ const SHOP_CATEGORIES = [
   }, []);
 
   const getCurrentLocation = () => {
-    setGpsError(false);
+    setGpsError(null);
     setLoadingLocation(true);
     const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
-    if (!geo) { setLoadingLocation(false); setGpsError(true); return; }
+    if (!geo) { setLoadingLocation(false); setGpsError('unsupported'); return; }
     geo.getCurrentPosition(
       (pos) => {
         setLocation({
@@ -73,9 +73,16 @@ const SHOP_CATEGORIES = [
           longitude: pos.coords.longitude.toFixed(6),
         });
         setLoadingLocation(false);
-        setGpsError(false);
+        setGpsError(null);
       },
-      () => { setLoadingLocation(false); setGpsError(true); },
+      (err) => {
+        setLoadingLocation(false);
+        if (err.code === 1) {
+          setGpsError('denied');
+        } else {
+          setGpsError('failed');
+        }
+      },
       { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   };
@@ -405,9 +412,25 @@ const SHOP_CATEGORIES = [
                     </Text>
                   </TouchableOpacity>
 
-                  {gpsError && (
+                  {gpsError === 'denied' && (
+                    <View style={{ backgroundColor: '#fff3cd', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#ffc107' }}>
+                      <Text style={{ color: '#856404', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>
+                        🔒 الموقع محجوب
+                      </Text>
+                      <Text style={{ color: '#856404', fontSize: 12, lineHeight: 18 }}>
+                        لتفعيله على iPhone:{'\n'}
+                        <Text style={{ fontWeight: '700' }}>الإعدادات ← الخصوصية ← خدمات الموقع ← Safari ← اسمح</Text>
+                      </Text>
+                    </View>
+                  )}
+                  {gpsError === 'failed' && (
                     <Text style={{ color: '#e74c3c', fontSize: 11, textAlign: 'center', marginBottom: 8 }}>
-                      ⚠️ لم يتم الوصول للموقع — تأكد من السماح للمتصفح باستخدام GPS ثم حاول مجدداً
+                      ⚠️ تعذّر تحديد الموقع — اضغط الزر مجدداً
+                    </Text>
+                  )}
+                  {gpsError === 'unsupported' && (
+                    <Text style={{ color: '#e74c3c', fontSize: 11, textAlign: 'center', marginBottom: 8 }}>
+                      ⚠️ المتصفح لا يدعم GPS
                     </Text>
                   )}
 
