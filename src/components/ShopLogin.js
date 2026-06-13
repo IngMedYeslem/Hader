@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from './SimpleNavbar';
 import SimplePasswordInput from './SimplePasswordInput';
@@ -23,6 +23,7 @@ function ShopLogin({ onLogin }) {
   const [whatsapp, setWhatsapp] = useState('');
   const [location, setLocation] = useState({ latitude: '', longitude: '' });
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [gpsError, setGpsError] = useState(false);
   const [category, setCategory] = useState('');
 
 const SHOP_CATEGORIES = [
@@ -61,19 +62,21 @@ const SHOP_CATEGORIES = [
   }, []);
 
   const getCurrentLocation = () => {
+    setGpsError(false);
     setLoadingLocation(true);
     const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
-    if (!geo) { setLoadingLocation(false); return; }
+    if (!geo) { setLoadingLocation(false); setGpsError(true); return; }
     geo.getCurrentPosition(
       (pos) => {
         setLocation({
-          latitude: pos.coords.latitude.toString(),
-          longitude: pos.coords.longitude.toString(),
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
         });
         setLoadingLocation(false);
+        setGpsError(false);
       },
-      () => { setLoadingLocation(false); },
-      { enableHighAccuracy: true, timeout: 10000 }
+      () => { setLoadingLocation(false); setGpsError(true); },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -375,23 +378,74 @@ const SHOP_CATEGORIES = [
                   </View>
 
                   {/* الموقع */}
-                  <Text style={{ color: '#333', fontSize: 11, fontWeight: 'bold', marginBottom: 6, opacity: 0.6 }}>📍 الموقع</Text>
+                  <Text style={{ color: '#333', fontSize: 11, fontWeight: 'bold', marginBottom: 8, opacity: 0.6 }}>📍 الموقع الجغرافي *</Text>
+
+                  {/* زر GPS */}
                   <TouchableOpacity
                     onPress={getCurrentLocation}
                     disabled={loadingLocation}
                     style={{
-                      backgroundColor: loadingLocation ? '#ccc' : '#FF6B35',
-                      borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginBottom: 6,
+                      backgroundColor: location.latitude ? '#e8f5e9' : '#FF6B35',
+                      borderRadius: 10, paddingVertical: 13,
+                      alignItems: 'center', marginBottom: 8,
+                      flexDirection: 'row', justifyContent: 'center',
+                      borderWidth: location.latitude ? 1 : 0,
+                      borderColor: '#a5d6a7',
                     }}
                   >
-                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
-                      {loadingLocation ? '🔄 ' + t('loading') + '...' : '📍 ' + t('getLocation')}
+                    {loadingLocation
+                      ? <ActivityIndicator color={location.latitude ? '#2e7d32' : 'white'} size="small" style={{ marginRight: 8 }} />
+                      : <Text style={{ fontSize: 16, marginRight: 6 }}>📍</Text>
+                    }
+                    <Text style={{ color: location.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 13 }}>
+                      {loadingLocation
+                        ? 'جاري تحديد الموقع...'
+                        : location.latitude
+                          ? `✓ ${location.latitude}, ${location.longitude}`
+                          : 'تحديد موقعي تلقائياً'}
                     </Text>
                   </TouchableOpacity>
-                  {location.latitude && location.longitude ? (
-                    <Text style={{ color: '#2ecc71', fontSize: 12, textAlign: 'center', marginBottom: 10 }}>✅ {t('locationSet')}</Text>
-                  ) : (
-                    <Text style={{ color: '#e74c3c', fontSize: 12, textAlign: 'center', marginBottom: 10 }}>⚠️ {t('locationRequired')}</Text>
+
+                  {/* رسالة خطأ GPS مع حقول يدوية */}
+                  {(gpsError || !location.latitude) && (
+                    <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                      {gpsError && (
+                        <Text style={{ color: '#e74c3c', fontSize: 12, marginBottom: 8, textAlign: 'center' }}>
+                          ⚠️ تعذّر تحديد الموقع تلقائياً
+                        </Text>
+                      )}
+                      <Text style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>
+                        🗺️ أدخل الإحداثيات يدوياً:
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => { if (Platform.OS === 'web') window.open('https://maps.google.com', '_blank'); }}
+                        style={{ marginBottom: 8 }}
+                      >
+                        <Text style={{ fontSize: 11, color: '#1565C0', textDecorationLine: 'underline' }}>
+                          → افتح Google Maps ← اضغط موقعك ← انسخ الرقمين
+                        </Text>
+                      </TouchableOpacity>
+                      <TextInput
+                        style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, fontSize: 13, marginBottom: 6, backgroundColor: 'white' }}
+                        placeholder="خط العرض — مثال: 18.0735"
+                        placeholderTextColor="#bbb"
+                        value={location.latitude}
+                        onChangeText={(v) => setLocation(prev => ({ ...prev, latitude: v }))}
+                        keyboardType="default"
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                      />
+                      <TextInput
+                        style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: 'white' }}
+                        placeholder="خط الطول — مثال: -15.9582"
+                        placeholderTextColor="#bbb"
+                        value={location.longitude}
+                        onChangeText={(v) => setLocation(prev => ({ ...prev, longitude: v }))}
+                        keyboardType="default"
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                      />
+                    </View>
                   )}
 
                   {/* بيانات الدخول */}
