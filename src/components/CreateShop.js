@@ -307,7 +307,7 @@ export default function CreateShop({ onBack, onShopCreated }) {
                 {locating
                   ? (isRTL ? 'جاري تحديد الموقع...' : 'Localisation en cours...')
                   : formData.latitude
-                    ? `✓ GPS: ${formData.latitude}, ${formData.longitude}`
+                    ? (isRTL ? '✓ تم تحديد الموقع' : '✓ Localisation obtenue')
                     : (isRTL ? 'تحديد موقعي تلقائياً عبر GPS' : 'Localiser via GPS automatiquement')
                 }
               </Text>

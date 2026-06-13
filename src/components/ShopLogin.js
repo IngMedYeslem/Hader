@@ -404,7 +404,7 @@ const SHOP_CATEGORIES = [
                       {loadingLocation
                         ? 'جاري تحديد الموقع...'
                         : location.latitude
-                          ? `✓ ${location.latitude}, ${location.longitude}`
+                          ? '✓ تم تحديد الموقع'
                           : 'الحصول على موقعي'}
                     </Text>
                   </TouchableOpacity>
