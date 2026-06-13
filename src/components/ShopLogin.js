@@ -425,13 +425,25 @@ const SHOP_CATEGORIES = [
 
                   {gpsError === 'denied' && (
                     <View style={{ backgroundColor: '#fff3cd', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#ffc107' }}>
-                      <Text style={{ color: '#856404', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>
-                        🔒 الموقع محجوب
+                      <Text style={{ color: '#856404', fontSize: 13, fontWeight: '700', marginBottom: 8 }}>
+                        🔒 الموقع محجوب — فعّله هكذا:
                       </Text>
-                      <Text style={{ color: '#856404', fontSize: 12, lineHeight: 18 }}>
-                        لتفعيله على iPhone:{'\n'}
-                        <Text style={{ fontWeight: '700' }}>الإعدادات ← الخصوصية ← خدمات الموقع ← Safari ← اسمح</Text>
-                      </Text>
+                      <View style={{ backgroundColor: 'white', borderRadius: 8, padding: 10, marginBottom: 6 }}>
+                        <Text style={{ color: '#333', fontSize: 12, fontWeight: '700', marginBottom: 4 }}>
+                          📱 في Safari (الأسرع):
+                        </Text>
+                        <Text style={{ color: '#555', fontSize: 12, lineHeight: 20 }}>
+                          {'اضغط «Aa» في شريط العنوان\n← «إعدادات الموقع»\n← «الموقع» ← «اسمح»'}
+                        </Text>
+                      </View>
+                      <View style={{ backgroundColor: 'white', borderRadius: 8, padding: 10 }}>
+                        <Text style={{ color: '#333', fontSize: 12, fontWeight: '700', marginBottom: 4 }}>
+                          ⚙️ أو من الإعدادات:
+                        </Text>
+                        <Text style={{ color: '#555', fontSize: 12, lineHeight: 20 }}>
+                          {'الإعدادات ← الخصوصية\n← خدمات الموقع\n← Safari ← اسمح'}
+                        </Text>
+                      </View>
                     </View>
                   )}
                   {gpsError === 'failed' && (
