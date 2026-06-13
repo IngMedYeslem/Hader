@@ -4,7 +4,6 @@ import {
   SafeAreaView, StatusBar, Alert, ActivityIndicator, Image,
   Clipboard, Platform, Modal, Linking,
 } from 'react-native';
-import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useCart } from '../contexts/CartContext';
 import { useTranslation } from '../translations';
@@ -107,18 +106,18 @@ export default function CheckoutScreen({ onBack, onOrderPlaced }) {
 
   useEffect(() => { fetchGpsLocation(); }, []);
 
-  const fetchGpsLocation = async () => {
+  const fetchGpsLocation = () => {
+    const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
+    if (!geo) return;
     setGpsLoading(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-      setGpsLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-    } catch (e) {
-      console.log('GPS error:', e);
-    } finally {
-      setGpsLoading(false);
-    }
+    geo.getCurrentPosition(
+      (pos) => {
+        setGpsLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setGpsLoading(false);
+      },
+      () => { setGpsLoading(false); },
+      { enableHighAccuracy: false, timeout: 15000 }
+    );
   };
 
   useEffect(() => {
