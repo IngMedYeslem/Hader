@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated, ActivityIndicator } from 'react-native';
+import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SimpleNavbar from './SimpleNavbar';
 import SimplePasswordInput from './SimplePasswordInput';
@@ -61,30 +62,26 @@ const SHOP_CATEGORIES = [
     ]).start();
   }, []);
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = async () => {
     setGpsError(null);
     setLoadingLocation(true);
-    const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
-    if (!geo) { setLoadingLocation(false); setGpsError('unsupported'); return; }
-    geo.getCurrentPosition(
-      (pos) => {
-        setLocation({
-          latitude: pos.coords.latitude.toFixed(6),
-          longitude: pos.coords.longitude.toFixed(6),
-        });
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setGpsError('denied');
         setLoadingLocation(false);
-        setGpsError(null);
-      },
-      (err) => {
-        setLoadingLocation(false);
-        if (err.code === 1) {
-          setGpsError('denied');
-        } else {
-          setGpsError('failed');
-        }
-      },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
-    );
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: loc.coords.latitude.toFixed(6),
+        longitude: loc.coords.longitude.toFixed(6),
+      });
+    } catch {
+      setGpsError('failed');
+    } finally {
+      setLoadingLocation(false);
+    }
   };
 
   const syncLocalData = async () => {

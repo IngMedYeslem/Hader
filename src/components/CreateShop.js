@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import * as Location from 'expo-location';
 import styles from './styles';
 import { useTranslation } from '../translations';
 import { API_URL } from '../config/api';
@@ -42,27 +43,27 @@ export default function CreateShop({ onBack, onShopCreated }) {
   const [gpsError, setGpsError] = useState(null);
   const isRTL = currentLanguage === 'ar';
 
-  const handleGetLocation = () => {
+  const handleGetLocation = async () => {
     setGpsError(null);
-    const geo = typeof navigator !== 'undefined' ? navigator.geolocation : null;
-    if (!geo) { setGpsError('unsupported'); return; }
     setLocating(true);
-    geo.getCurrentPosition(
-      (pos) => {
-        setFormData(prev => ({
-          ...prev,
-          latitude: pos.coords.latitude.toFixed(6),
-          longitude: pos.coords.longitude.toFixed(6),
-        }));
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setGpsError('denied');
         setLocating(false);
-        setGpsError(null);
-      },
-      (err) => {
-        setLocating(false);
-        setGpsError(err.code === 1 ? 'denied' : 'failed');
-      },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
-    );
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      setFormData(prev => ({
+        ...prev,
+        latitude: loc.coords.latitude.toFixed(6),
+        longitude: loc.coords.longitude.toFixed(6),
+      }));
+    } catch {
+      setGpsError('failed');
+    } finally {
+      setLocating(false);
+    }
   };
 
   const handleCreateShop = async () => {
