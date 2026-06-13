@@ -380,7 +380,6 @@ const SHOP_CATEGORIES = [
                   {/* الموقع */}
                   <Text style={{ color: '#333', fontSize: 11, fontWeight: 'bold', marginBottom: 8, opacity: 0.6 }}>📍 الموقع الجغرافي *</Text>
 
-                  {/* زر GPS */}
                   <TouchableOpacity
                     onPress={getCurrentLocation}
                     disabled={loadingLocation}
@@ -394,7 +393,7 @@ const SHOP_CATEGORIES = [
                     }}
                   >
                     {loadingLocation
-                      ? <ActivityIndicator color={location.latitude ? '#2e7d32' : 'white'} size="small" style={{ marginRight: 8 }} />
+                      ? <ActivityIndicator color="white" size="small" style={{ marginRight: 8 }} />
                       : <Text style={{ fontSize: 16, marginRight: 6 }}>📍</Text>
                     }
                     <Text style={{ color: location.latitude ? '#2e7d32' : 'white', fontWeight: '700', fontSize: 13 }}>
@@ -402,50 +401,14 @@ const SHOP_CATEGORIES = [
                         ? 'جاري تحديد الموقع...'
                         : location.latitude
                           ? `✓ ${location.latitude}, ${location.longitude}`
-                          : 'تحديد موقعي تلقائياً'}
+                          : 'الحصول على موقعي'}
                     </Text>
                   </TouchableOpacity>
 
-                  {/* رسالة خطأ GPS مع حقول يدوية */}
-                  {(gpsError || !location.latitude) && (
-                    <View style={{ backgroundColor: '#f9f9f9', borderRadius: 10, padding: 12, marginBottom: 8 }}>
-                      {gpsError && (
-                        <Text style={{ color: '#e74c3c', fontSize: 12, marginBottom: 8, textAlign: 'center' }}>
-                          ⚠️ تعذّر تحديد الموقع تلقائياً
-                        </Text>
-                      )}
-                      <Text style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>
-                        🗺️ أدخل الإحداثيات يدوياً:
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => { if (Platform.OS === 'web') window.open('https://maps.google.com', '_blank'); }}
-                        style={{ marginBottom: 8 }}
-                      >
-                        <Text style={{ fontSize: 11, color: '#1565C0', textDecorationLine: 'underline' }}>
-                          → افتح Google Maps ← اضغط موقعك ← انسخ الرقمين
-                        </Text>
-                      </TouchableOpacity>
-                      <TextInput
-                        style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, fontSize: 13, marginBottom: 6, backgroundColor: 'white' }}
-                        placeholder="خط العرض — مثال: 18.0735"
-                        placeholderTextColor="#bbb"
-                        value={location.latitude}
-                        onChangeText={(v) => setLocation(prev => ({ ...prev, latitude: v }))}
-                        keyboardType="default"
-                        autoCorrect={false}
-                        autoCapitalize="none"
-                      />
-                      <TextInput
-                        style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: 'white' }}
-                        placeholder="خط الطول — مثال: -15.9582"
-                        placeholderTextColor="#bbb"
-                        value={location.longitude}
-                        onChangeText={(v) => setLocation(prev => ({ ...prev, longitude: v }))}
-                        keyboardType="default"
-                        autoCorrect={false}
-                        autoCapitalize="none"
-                      />
-                    </View>
+                  {gpsError && (
+                    <Text style={{ color: '#e74c3c', fontSize: 11, textAlign: 'center', marginBottom: 8 }}>
+                      ⚠️ لم يتم الوصول للموقع — تأكد من السماح للمتصفح باستخدام GPS ثم حاول مجدداً
+                    </Text>
                   )}
 
                   {/* بيانات الدخول */}
